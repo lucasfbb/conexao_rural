@@ -5,7 +5,7 @@ import LoadingScreen from "@/components/loadingScreen";
 import { router } from 'expo-router'
 import Button from "@/components/button";
 
-export default function Home() {
+export default function Index() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -20,7 +20,7 @@ export default function Home() {
 
     return (
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-            <Button title="Login" onPress={() => router.push("./dashboard")} />
+            <Button title="Login" onPress={() => router.push("./configuracoes")} />
         </View>
     );
 }

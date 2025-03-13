@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 
 import Header from '@/components/header';
 
-export default function Dashboard() {
+export default function Configuracoes() {
     return (
         <View style={styles.container}>
             {/* 🔹 Header Fixo no Topo */}
@@ -11,7 +11,7 @@ export default function Dashboard() {
 
             {/* 🔹 Conteúdo separado do Header */}
             <View style={styles.content}>
-                <Text style={styles.title}>Dashboard</Text>
+                <Text style={styles.title}>Configurações</Text>
                 <Button title='Voltar' onPress={() => router.back()} />
             </View>
         </View>
