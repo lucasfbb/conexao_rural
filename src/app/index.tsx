@@ -1,25 +1,26 @@
-import { useState } from 'react'
-import { View, Text, StyleSheet, Alert, Image } from "react-native"
-import { DrawerToggleButton } from '@react-navigation/drawer'
+import { useEffect, useState } from "react";
+import { View, Text } from "react-native";
+import LoadingScreen from "@/components/loadingScreen";
 
 import { router } from 'expo-router'
+import Button from "@/components/button";
 
-import Button from "@/components/button"
-import Input from "@/components/input"
-import Header from '@/components/header'
+export default function Home() {
+    const [isLoading, setIsLoading] = useState(true);
 
-export default function Index(){
+    useEffect(() => {
+        setTimeout(() => {
+            setIsLoading(false);
+        }, 2000); // Simula um carregamento de 2 segundos
+    }, []);
 
-    // const [name, setName] = useState('')
+    if (isLoading) {
+        return <LoadingScreen />;
+    }
 
-    // function handleNext() {
-    //     router.navigate('/dashboard')
-    // }
-
-    return (    
-        <Header />
-    )
+    return (
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <Button title="Login" onPress={() => router.push("./dashboard")} />
+        </View>
+    );
 }
-
-
-
