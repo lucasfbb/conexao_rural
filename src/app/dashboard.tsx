@@ -1,29 +1,35 @@
-import { View, Text, StyleSheet} from 'react-native'
+import { View, Text, StyleSheet, Button } from 'react-native';
+import { router } from 'expo-router';
 
-import { router } from 'expo-router'
-
-import Button from '@/components/button'
+import Header from '@/components/header';
 
 export default function Dashboard() {
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Dashboard</Text>
-            <Button title='Voltar' onPress={() => router.back()} />
+            {/* 🔹 Header Fixo no Topo */}
+            <Header />
+
+            {/* 🔹 Conteúdo separado do Header */}
+            <View style={styles.content}>
+                <Text style={styles.title}>Dashboard</Text>
+                <Button title='Voltar' onPress={() => router.back()} />
+            </View>
         </View>
-    )
+    );
 }
 
-export const styles = StyleSheet.create({
+const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 32,
-        gap: 16
+        backgroundColor: 'white',
     },
-
+    content: {
+        flex: 1, // 🔹 Faz o conteúdo ocupar a área abaixo do Header
+        padding: 20,
+    },
     title: {
-        fontSize: 18,
-        fontWeight: 'bold'
-    }
-})
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 20,
+    },
+});
