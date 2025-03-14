@@ -29,7 +29,7 @@ export default function CustomDrawer(props: any) {
                 </View>
 
                 <DrawerItemList {...props}/>
-                <DrawerItem label={"Logout"} onPress={() => router.back()}/>
+                {/* <DrawerItem label={"Logout"} onPress={() => router.back()}/> */}
             </DrawerContentScrollView>
 
             <View style={{
