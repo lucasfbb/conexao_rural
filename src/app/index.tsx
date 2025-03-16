@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { View } from "react-native";
-import { router } from 'expo-router'
+import { View, Image, Text, StyleSheet} from "react-native";
 
 import LoadingScreen from "@/components/loadingScreen";
+import LoginScreen from '@/app/login'
 import Button from "@/components/button";
+import { router } from "expo-router";
 
 export default function Index() {
     const [isLoading, setIsLoading] = useState(true);
@@ -12,7 +13,10 @@ export default function Index() {
     useEffect(() => {
         setTimeout(() => {
             setFadeOut(true); // 🔹 Ativa a animação de saída
-            setTimeout(() => setIsLoading(false), 1000); // 🔹 Aguarda a animação antes de remover
+            setTimeout(() => {
+                setIsLoading(false);
+                // router.replace("/login");
+            }, 1000); // Aguarda a animação antes de remover
         }, 2000); // Simula um carregamento de 2 segundos
     }, []);
 
@@ -21,8 +25,7 @@ export default function Index() {
     }
 
     return (
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-            <Button title="Login" onPress={() => router.push("./configuracoes")} />
-        </View>
-    );
+            <LoginScreen/>
+        );
 }
+

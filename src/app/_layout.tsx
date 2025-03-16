@@ -1,10 +1,23 @@
+import { useEffect, useState } from "react";
+import { usePathname, router, Slot } from "expo-router";
 import { Drawer } from "expo-router/drawer";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Feather } from "@expo/vector-icons";
+import { View } from 'react-native'
 
 import CustomDrawer from "@/components/customDrawer"
 
 export default function DrawerLayout() {
+
+    const pathname = usePathname(); // Obtém a rota atual
+
+    // console.log(pathname)
+
+    // Se a rota for "/login", não exibe o Drawer
+    // if (pathname === "/") {
+    //     return <Slot />;
+    // }
+
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
             <Drawer drawerContent={CustomDrawer} screenOptions={{ 
@@ -48,6 +61,25 @@ export default function DrawerLayout() {
                         drawerIcon: ({ color }) => <Feather name="settings" size={20} color={'white'} />,
                     }} 
                 />
+
+                <Drawer.Screen 
+                    name="home" 
+                    options={{ 
+                        drawerLabel: () => null, // 🔹 Oculta do menu
+                        title: "", // 🔹 Remove o título do header
+                        drawerItemStyle: { height: 0 } // 🔹 Evita espaço vazio no Drawer
+                    }} 
+                />
+
+                <Drawer.Screen 
+                    name="index"
+                    options={{ 
+                        drawerLabel: () => null, // 🔹 Oculta do menu
+                        title: "", // 🔹 Remove o título do header
+                        drawerItemStyle: { height: 0 } // 🔹 Evita espaço vazio no Drawer
+                    }} 
+                />
+
             </Drawer>
         </GestureHandlerRootView>
     );

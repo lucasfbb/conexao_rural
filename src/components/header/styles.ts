@@ -1,38 +1,34 @@
 import { StyleSheet } from "react-native"
 
 export const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: 'white'
+    safeContainer: {
+        backgroundColor: "#4D7E1B",
     },
 
-    header: {
-        width: "100%",
-        flexDirection: 'row',
+    container: {
+        flexDirection: "row",
         alignItems: "center",
-        justifyContent: "space-between", // Mantém os itens espaçados corretamente
-        paddingHorizontal: 10, // Adiciona um espaçamento nas laterais
+        justifyContent: "space-between",
+        width: "100%",
+        paddingHorizontal: 10,
         paddingVertical: 10,
-        backgroundColor: '#4D7E1B'
+        backgroundColor: "#4D7E1B",
     },
 
     img: {
-        width: 60, // Aumenta um pouco o tamanho da imagem
+        width: 80, 
         height: 30,
-        resizeMode: 'contain',
-        flex: 1, // Ocupa o espaço restante e permite alinhamento correto
-        textAlign: "center"
-    },
-
-    toggleButton: {
-        width: 40, // Define um tamanho para o botão
-        height: 40,
+        resizeMode: "contain",
+        flex: 1,
+        textAlign: "center",
         justifyContent: "center",
         alignItems: "center"
     },
 
-    // content: {
-    //     flex: 1, // Faz o conteúdo ocupar o espaço abaixo do Header
-    //     padding: 20,
-    // },
+    toggleButton: {
+        width: 40,
+        height: 40,
+        justifyContent: "center",
+        alignItems: "center",
+    },
 });

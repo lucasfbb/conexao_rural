@@ -35,10 +35,10 @@ export default function CustomDrawer(props: any) {
             <View style={{
                 padding: 20,
                 paddingLeft: 25,
-                paddingBottom: 20 + bottom,
-                flexDirection: "row",  // 🔹 Alinha os itens na horizontal
-                alignItems: "center",   // 🔹 Alinha verticalmente o ícone e o texto
-                gap: 8,  // 🔹 Espaço entre o ícone e o texto (pode ajustar)
+                paddingBottom: 30 + bottom,
+                flexDirection: "row",  // Alinha os itens na horizontal
+                alignItems: "center",   // Alinha verticalmente o ícone e o texto
+                gap: 8,  // Espaço entre o ícone e o texto
             }}>
 
                 <MaterialIcons name="logout" size={20} color={'white'} />
