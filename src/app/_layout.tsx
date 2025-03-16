@@ -72,6 +72,15 @@ export default function DrawerLayout() {
                 />
 
                 <Drawer.Screen 
+                    name="login/index" 
+                    options={{ 
+                        drawerLabel: () => null, // 🔹 Oculta do menu
+                        title: "", // 🔹 Remove o título do header
+                        drawerItemStyle: { height: 0 } // 🔹 Evita espaço vazio no Drawer
+                    }} 
+                />
+
+                <Drawer.Screen 
                     name="index"
                     options={{ 
                         drawerLabel: () => null, // 🔹 Oculta do menu
