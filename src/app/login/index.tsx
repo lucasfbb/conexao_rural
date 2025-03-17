@@ -28,8 +28,9 @@ export default function LoginScreen() {
                     {/* Botões */}
                     <View style={styles.buttonContainer}>
     
-                        <Button title="Entrar" style={styles.signInButton} textStyle={styles.signInText} onPress={() => router.push('/configuracoes')}/>
-                        <Button title="Sair" style={styles.signUpButton} textStyle={styles.signUpText}/>
+                        <Button title="Entrar" style={styles.signInButton} textStyle={styles.signInText} onPress={() => router.push('/login/loginPage')}/>
+                        <Button title="Cadastrar" style={styles.signUpButton} textStyle={styles.signUpText} onPress={() => router.push('/login/cadastroPage')} />
+                        <Button title="Config" style={styles.signUpButton} textStyle={styles.signUpText} onPress={() => router.push('/configuracoes')} />
     
                     </View>
                 </View>
@@ -60,7 +61,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     title: {
-        fontSize: 22,
+        fontSize: 28,
         fontWeight: "bold",
         fontStyle: "italic",
         color: "#FFF",
@@ -69,7 +70,7 @@ const styles = StyleSheet.create({
     description: {
         textAlign: "center",
         color: "#FFF",
-        fontSize: 14,
+        fontSize: 18,
         marginBottom: 100,
         paddingHorizontal: 10,
         marginTop: 25

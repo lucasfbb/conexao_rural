@@ -72,7 +72,7 @@ export default function DrawerLayout() {
                 />
 
                 <Drawer.Screen 
-                    name="login/index" 
+                    name="login" 
                     options={{ 
                         drawerLabel: () => null, // 🔹 Oculta do menu
                         title: "", // 🔹 Remove o título do header

@@ -1,14 +1,21 @@
 import { StyleSheet } from "react-native"
 
 export const styles = StyleSheet.create({
-    input:{
+    container: {
         width: "100%",
-        height: 52,
-        borderRadius: 10,
-        borderWidth: 1,
-        borderColor: '#121214',
-        padding: 12,
-        fontSize: 16
+        alignItems: "flex-start", // 🔹 Alinha o input com o underline
+        marginBottom: 20,
     },
-    
-})
+    input: {
+        fontSize: 20,
+        fontStyle: "italic",
+        color: "white",
+        paddingVertical: 5,
+        width: "100%", // 🔹 Faz o input ocupar toda a largura
+    },
+    underline: {
+        height: 1,
+        backgroundColor: "white",
+        width: "100%", // 🔹 Faz a linha cobrir toda a área do input
+    },
+});
