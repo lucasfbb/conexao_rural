@@ -1,17 +1,19 @@
 import { useWindowDimensions } from "react-native";
 import { View, Image, Text, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView } from "react-native";
 import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
+import PhoneInput from "react-native-international-phone-number";
+import ICountry from "react-native-international-phone-number";
 import { router } from "expo-router";
 import { useState } from "react";
 
 import Button from "@/components/button";
 import Input from "@/components/input";
 
-export default function LoginPage() {
+export default function ForgotPassword() {
     const { width, height } = useWindowDimensions(); // 🔹 Obtém dimensões da tela
     
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [phone, setPhone] = useState("");
+    const [selectedCountry, setSelectedCountry] = useState<any | null>(null);
 
     return (
         <View style={styles.container}>
@@ -25,31 +27,42 @@ export default function LoginPage() {
                     />
                 </TouchableOpacity>
 
-                <Image
-                    source={require("../../../assets/images/logo_carro_verde.png")}
-                    style={[styles.logo, { marginTop: height * 0.01 }]}
-                    resizeMode="contain"
-                />
+
             </SafeAreaView>
 
-            {/* 🔹 Texto "Entrar" + Descrição */}
-            <View style={[styles.textContainer, { paddingHorizontal: width * 0.08 }]}>
-                <Text style={[styles.titleText, { fontSize: width * 0.07, marginBottom: height * 0.01}]}>Entrar</Text>
-                <Text style={[styles.descriptionText, { fontSize: width * 0.04 }]}>
-                    Lorem ipsum is simply dummy text of the printing and typesetting industry.
-                </Text>
+            <View style={[styles.logoContainer, { paddingHorizontal: width * 0.08 }]}>
+                <Image  
+                    source={require("../../../assets/images/logo_carro_verde.png")}
+                    style={[styles.logo, { marginTop: height * 0.01, marginBottom: height * 0.04}]}
+                    resizeMode="contain"
+                />
             </View>
 
             {/* 🔹 Inputs e Botão */}
             <View style={styles.bottomContainer}>
-                <Input placeholder="Digite seu e-mail" containerStyle={[styles.inputContainer, { width: width * 0.75 }]} onChangeText={setEmail} />
-                <Input placeholder="Digite sua senha" containerStyle={[styles.inputContainer, { width: width * 0.75 }]} secureTextEntry onChangeText={setPassword}/>
+
+                <Text style={[styles.infoTitle, { fontSize: width * 0.05 }]}>Esqueceu sua senha ?</Text>
+                
+                <View style={{ width: width * 0.8, marginBottom: height * 0.01 }}>
+                    <PhoneInput
+                        defaultCountry="BR"
+                        value={phone}
+                        onChangeText={setPhone}
+                        onChangePhoneNumber={(number) => setPhone(number)}
+                        selectedCountry={selectedCountry}
+                        onChangeSelectedCountry={setSelectedCountry}
+                        placeholder="Digite seu telefone"
+                    />
+                </View>
+                
 
                 <TouchableOpacity onPress={() => router.push('/login/forgotPassword')}>
-                    <Text style={[styles.forgotPassword, { fontSize: width * 0.04 }]}>Esqueceu a senha?</Text>
+                    <Text style={[styles.infoTelefone, { fontSize: width * 0.033, width: width * 0.75, marginBottom: height * 0.03}]}>Recuperar pelo email</Text>
                 </TouchableOpacity>
+                <Text style={[styles.info, { fontSize: width * 0.04, width: width * 0.75}]}>Enviaremos as instruções para você alterar a senha no seu E-mail</Text>
+                
+                <Button title="Enviar" style={[styles.signInButton, { width: width * 0.6 }]} textStyle={[styles.signInText, { fontSize: width * 0.045 }]} onPress={() => router.push('/login/forgotPasswordCode')} /> 
 
-                <Button title="Entrar" style={[styles.signInButton, { width: width * 0.6 }]} textStyle={[styles.signInText, { fontSize: width * 0.045 }]} onPress={() => router.push('/home')} />
             </View>
         </View>
     );
@@ -60,32 +73,50 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "#FFF",
     },
+    info: {
+        color: "white",
+        fontStyle: "italic",
+        marginTop: 10,
+        marginBottom: 40,
+        textAlign: 'center'
+    },
+    infoTelefone: {
+        color: "darkred",
+        fontStyle: "italic",
+        textAlign: 'right'
+    },
+    infoTitle: {
+        color: "white",
+        fontStyle: "italic",
+        fontSize: 20,
+        marginTop: 10,
+        marginBottom: 30,
+    },
     topContainer: {
-        flex: 0.3,
         flexDirection: "row",
         justifyContent: "space-between",
-        paddingHorizontal: 20, // 🔹 Garante espaço lateral
+        paddingHorizontal: 20 // 🔹 Garante espaço lateral
     },
-    textContainer: {
-        flex: 0.6, // 🔹 Mantém o conteúdo ajustado ao tamanho da tela
+    logoContainer: {
+        flex:0.4,
         justifyContent: "center",
-        alignItems: 'flex-start'
+        alignItems: 'center'
     },
     logo: {
-        width: 80, // 🔹 Define um tamanho fixo adequado
-        height: 50,
+        width: 110, // 🔹 Define um tamanho fixo adequado
+        height: 80
     },
     logoVoltar: {
         width: 30,
         height: 30,
     },
     bottomContainer: {
-        flex: 1.5,
+        flex: 1,
         backgroundColor: "#4D7E1B",
         borderTopLeftRadius: 70,
         alignItems: "center",
-        paddingVertical: "7%",
-        paddingTop: '20%'
+        paddingVertical: "2%",
+        paddingTop: '10%'
     },
     titleText: {
         fontSize: 24,
@@ -103,14 +134,6 @@ const styles = StyleSheet.create({
         alignItems: "center",
         maxWidth: 400, // 🔹 Evita que os inputs fiquem muito largos em telas grandes
         minWidth: 280, // 🔹 Evita que os inputs fiquem muito pequenos em telas menores
-        marginBottom: 15, // 🔹 Garante espaço entre os campos
-    },
-    forgotPassword: {
-        color: "darkred",
-        fontStyle: "italic",
-        fontSize: 16,
-        marginTop: 10,
-        marginBottom: 30,
     },
     signInButton: {
         backgroundColor: "#FFF",

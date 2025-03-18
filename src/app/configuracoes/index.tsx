@@ -12,7 +12,6 @@ export default function Configuracoes() {
             {/* 🔹 Conteúdo separado do Header */}
             <View style={styles.content}>
                 <Text style={styles.title}>Configurações</Text>
-                <Button title='Voltar' onPress={() => router.back()} />
             </View>
         </View>
     );

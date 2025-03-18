@@ -1,6 +1,6 @@
 import { DrawerContentScrollView, DrawerItem, DrawerItemList } from "@react-navigation/drawer"
 import { router } from 'expo-router'
-import { View, Text, Button, Image } from "react-native";
+import { View, Text, Button, Image, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialIcons} from "@expo/vector-icons";
 
@@ -17,15 +17,17 @@ export default function CustomDrawer(props: any) {
             >
 
                 <View style={{ padding:20, paddingLeft: 70, paddingTop: 5}}>
-                    <Image
-                        source={require('../../../assets/images/logo_carro.png')}
-                        style={{ 
-                            width: 80, // Aumenta um pouco o tamanho da imagem
-                            height: 40,
-                            resizeMode: 'contain',
-                            flex: 1, // Ocupa o espaço restante e permite alinhamento correto
-                        }}
-                    />
+                    <TouchableOpacity onPress={() => router.push('/home')}>
+                        <Image
+                            source={require('../../../assets/images/logo_carro.png')}
+                            style={{ 
+                                width: 80, // Aumenta um pouco o tamanho da imagem
+                                height: 40,
+                                resizeMode: 'contain',
+                                flex: 1, // Ocupa o espaço restante e permite alinhamento correto
+                            }}
+                        />
+                    </TouchableOpacity>
                 </View>
 
                 <DrawerItemList {...props}/>

@@ -1,7 +1,8 @@
-import { View, Image } from "react-native";
+import { View, Image, TouchableOpacity } from "react-native";
 import { DrawerToggleButton } from '@react-navigation/drawer';
 import { styles } from './styles';
 import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
+import { router } from "expo-router";
 
 export default function Header() {
 
