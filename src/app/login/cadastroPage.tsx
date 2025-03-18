@@ -1,66 +1,94 @@
-import { useEffect, useState } from "react";
-import { View, Image, Text, StyleSheet, TextInput, TouchableOpacity } from "react-native";
+import { Keyboard, useWindowDimensions } from "react-native";
+import { View, Image, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView } from "react-native";
 import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { router } from "expo-router";
 
 import Button from "@/components/button";
 import Input from "@/components/input";
 import Select from "@/components/select";
-
+import { useEffect, useState } from "react";
 
 export default function CadastroPage() {
-    
-    return (
+    const { width, height } = useWindowDimensions(); // 🔹 Obtém a largura e altura da tela
+    const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
+    let fontSizeResponsive = height * 0.02
+
+        useEffect(() => {
+            const keyboardDidShowListener = Keyboard.addListener("keyboardDidShow", () => {
+                setIsKeyboardVisible(true);
+            });
+
+            const keyboardDidHideListener = Keyboard.addListener("keyboardDidHide", () => {
+                setIsKeyboardVisible(false);
+            });
+
+            return () => {
+                keyboardDidShowListener.remove();
+                keyboardDidHideListener.remove();
+            };
+        }, []);
+
+        return (
+            
             <View style={styles.container}>
-                {/* Logo na parte superior */}
-                <SafeAreaView style={styles.topContainer}>
-                    <TouchableOpacity onPress={() => router.push('/')}>
+                {/* 🔹 Cabeçalho (Some quando o teclado está aberto) */}
+                {!isKeyboardVisible && (
+                    <SafeAreaView style={styles.topContainer}>
+                        <TouchableOpacity onPress={() => router.push('/')}>
+                            <Image
+                                source={require("../../../assets/images/voltar26.png")}
+                                style={[styles.logoVoltar, { marginTop: height * 0.03 }]} 
+                                resizeMode="contain"
+                            />
+                        </TouchableOpacity>
+
                         <Image
-                            source={require("../../../assets/images/voltar26.png")}
-                            style={styles.logoVoltar}
+                            source={require("../../../assets/images/logo_carro_verde.png")}
+                            style={[styles.logo, { marginTop: height * 0.01 }]}
                             resizeMode="contain"
                         />
-                    </TouchableOpacity>
+                    </SafeAreaView>
+                )}
 
-                    <Image
-                        source={require("../../../assets/images/logo_carro_verde.png")}
-                        style={styles.logo}
-                        resizeMode="contain"
-                    />
-                </SafeAreaView>
-
-                <View style={styles.textContainer}>
-                    <Text style={styles.titleText}>Cadastro</Text>
-                    <Text style={styles.descriptionText}>
-                        «Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa, quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt, explicabo. Nemo enim ipsam voluptatem, quia voluptas sit, aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos, qui ratione voluptatem sequi nesciunt, neque porro quisquam est, qui dolorem ipsum, quia dolor sit, amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt, ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure
+                {/* 🔹 Título e Descrição (Some quando o teclado está aberto) */}
+                
+                <View style={[styles.textContainer, { paddingHorizontal: width * 0.08 }]}>
+                    <Text style={[styles.titleText, { fontSize: width * 0.07, marginBottom: height * 0.01}]}>Cadastro</Text> 
+                    <Text style={[styles.descriptionText, { fontSize: width * 0.04 }]}>
+                        Lorem ipsum is simply dummy text of the printing and typesetting industry.
                     </Text>
                 </View>
-    
-                {/* Parte inferior verde com conteúdo */}
+               
+
+                {/* 🔹 Inputs e Botão */}
                 <View style={styles.bottomContainer}>
+                    <Input placeholder="Digite seu nome completo*" containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
+                    <Input placeholder="Digite seu e-mail*" containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
+                    <Input placeholder="Digite seu CPF*" containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive}} />
                     
-                    <Input placeholder="Digite seu nome completo*" containerStyle={styles.containerEmail}/>
-                    <Input placeholder="Digite seu e-mail*" containerStyle={styles.containerSenha}/>
-                    <Input placeholder="Digite seu CPF*" containerStyle={styles.containerSenha}/>
                     <Select 
                         options={["Categoria 1", "Categoria 2", "Categoria 3"]} 
                         placeholder="Selecione uma categoria" 
                         onSelect={(value) => console.log("Selecionado:", value)}
                     />
-                    <Input placeholder="Digite seu primeiro telefone*" containerStyle={styles.containerSenha}/>
-                    <Input placeholder="Digite seu segundo telefone" containerStyle={styles.containerSenha}/>
-                    <Input placeholder="Digite sua senha*" containerStyle={styles.containerSenha} secureTextEntry />
-                    <Input placeholder="Confirme sua senha*" containerStyle={styles.containerSenha} secureTextEntry />
 
-                    {/* Botões */}
-                    <View style={styles.buttonContainer}>
+                    <Input placeholder="Digite seu primeiro telefone*" containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
+                    <Input placeholder="Digite seu segundo telefone" containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
+                    <Input placeholder="Digite sua senha*" containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} secureTextEntry />
+                    <Input placeholder="Confirme sua senha*" containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} secureTextEntry />
 
-                        <Button title="Cadastrar" style={styles.signInButton} textStyle={styles.signInText} onPress={() => router.push('/configuracoes')}/>
-    
-                    </View>
+                    <Button 
+                        title="Cadastrar" 
+                        style={[styles.signInButton, { width: width * 0.35, height: height * 0.055, marginTop: height * 0.02}]} 
+                        textStyle={[styles.signInText, { fontSize: fontSizeResponsive }]} 
+                        onPress={() => router.push('/configuracoes')} 
+                    />
                 </View>
             </View>
-        );
+            
+    );
 }
 
 const styles = StyleSheet.create({
@@ -69,109 +97,212 @@ const styles = StyleSheet.create({
         backgroundColor: "#FFF",
     },
     topContainer: {
-        flex: 0.3, //  Parte superior maior que a inferior
-        flexDirection: 'row',
+        flex: 0.2,
+        flexDirection: "row",
         justifyContent: "space-between",
-        // backgroundColor: 'yellow'
+        paddingHorizontal: 20,
     },
     textContainer: {
-        flex: 0.8, //  Parte superior maior que a inferior
-        alignItems: 'flex-start',
-        justifyContent: 'center',
-        // backgroundColor: 'blue',
-        marginLeft: 40,
-        marginRight: 40
+        flex: 0.5,
+        justifyContent: "center",
     },
     logo: {
-        marginTop: 10,
-        marginRight:30
+        width: 80,
+        height: 50,
     },
     logoVoltar: {
-        marginTop: 30,
-        marginLeft:30,
+        width: 30,
+        height: 30,
     },
     bottomContainer: {
         flex: 2,
-        backgroundColor: "#4D7E1B", // Verde
-        borderTopLeftRadius: 70, // Arredondamento do topo
-        padding: 20,
+        backgroundColor: "#4D7E1B",
+        borderTopLeftRadius: 70,
         alignItems: "center",
-    },
-    title: {
-        fontSize: 28,
-        fontWeight: "bold",
-        fontStyle: "italic",
-        color: "#FFF",
-        marginBottom: 10,
+        paddingVertical: "5%",
     },
     titleText: {
-        fontSize: 28,
         fontWeight: "bold",
         fontStyle: "italic",
         color: "black",
-        marginBottom: 10,
-    },
-    description: {
-        textAlign: "center",
-        color: "#FFF",
-        fontSize: 18,
-        marginBottom: 100,
-        paddingHorizontal: 10,
-        marginTop: 25
+        textAlign: "left",
     },
     descriptionText: {
         textAlign: "center",
         color: "black",
-        fontSize: 14,
-        marginBottom: 45,
-        paddingHorizontal: 10,
-        // backgroundColor:'red'
     },
-    buttonContainer: {
-        width:'80%',
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: 'center'
+    inputContainer: {
+        maxWidth: 400,
+        minWidth: 280,
+        marginBottom: 15,
     },
     signInButton: {
         backgroundColor: "#FFF",
         paddingVertical: 8,
-        paddingHorizontal: 30,
         borderRadius: 20,
-        width: "60%",
-        height: 52,
-        justifyContent: 'center',
-        alignItems: 'center'
+        justifyContent: "center",
+        alignItems: "center"
     },
     signInText: {
         color: "#4D7E1B",
-        fontSize: 18,
         fontWeight: "bold",
     },
-    containerEmail: {
-        alignItems: 'center',
-        width: '60%'
-    },
-    containerSenha: {
-        alignItems: 'center',
-        width: '60%',
-        // marginTop: 10
-    },
-    forgotPassword: {
-        alignSelf: "flex-end",
-        color: "darkred",
-        fontStyle: "italic",
-        fontSize: 16,
-        marginBottom: 60,
-        marginTop: 15
-    },
-    input: {
-        backgroundColor:'blue',
-        // alignItems:'flex-start'
-    },
-    underline: {
-        height: 1,
-        backgroundColor: "white",
-        width: "100%",
-    },
 });
+
+// import { useState, useEffect } from "react";
+// import { 
+//     View, Image, Text, StyleSheet, TouchableOpacity, Keyboard, useWindowDimensions
+// } from "react-native";
+// import { SafeAreaView } from "react-native-safe-area-context";
+// import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+// import { router } from "expo-router";
+
+// import Button from "@/components/button";
+// import Input from "@/components/input";
+// import Select from "@/components/select";
+
+// export default function CadastroPage() {
+//     const { width, height } = useWindowDimensions(); // 🔹 Obtém a largura e altura da tela
+//     const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
+//     let fontSizeResponsive = height * 0.02;
+
+//     useEffect(() => {
+//         const keyboardDidShowListener = Keyboard.addListener("keyboardDidShow", () => {
+//             setIsKeyboardVisible(true);
+//         });
+
+//         const keyboardDidHideListener = Keyboard.addListener("keyboardDidHide", () => {
+//             setIsKeyboardVisible(false);
+//         });
+
+//         return () => {
+//             keyboardDidShowListener.remove();
+//             keyboardDidHideListener.remove();
+//         };
+//     }, []);
+
+//     return (
+//         <KeyboardAwareScrollView 
+//             // contentContainerStyle={{ flexGrow: 1 }}
+//             enableOnAndroid={true}
+//             // extraScrollHeight={height * 0.15} 
+//             // enableAutomaticScroll={true}
+//             keyboardShouldPersistTaps="handled"
+//             // resetScrollToCoords={{ x: 0, y: 0 }}
+//         >
+//             <View style={styles.container}>
+//                 {/* 🔹 Cabeçalho (Some quando o teclado está aberto) */}
+//                 {!isKeyboardVisible && (
+//                     <SafeAreaView style={styles.topContainer}>
+//                         <TouchableOpacity onPress={() => router.push('/')}>
+//                             <Image
+//                                 source={require("../../../assets/images/voltar26.png")}
+//                                 style={[styles.logoVoltar, { marginTop: height * 0.03 }]} 
+//                                 resizeMode="contain"
+//                             />
+//                         </TouchableOpacity>
+
+//                         <Image
+//                             source={require("../../../assets/images/logo_carro_verde.png")}
+//                             style={[styles.logo, { marginTop: height * 0.01 }]}
+//                             resizeMode="contain"
+//                         />
+//                     </SafeAreaView>
+//                 )}
+
+//                 {/* 🔹 Título e Descrição (Some quando o teclado está aberto) */}
+//                 {!isKeyboardVisible && (
+//                     <View style={[styles.textContainer, { paddingHorizontal: width * 0.08 }]}>
+//                         <Text style={[styles.titleText, { fontSize: width * 0.07, marginBottom: height * 0.01}]}>Cadastro</Text> 
+//                         <Text style={[styles.descriptionText, { fontSize: width * 0.04 }]}>
+//                             Lorem ipsum is simply dummy text of the printing and typesetting industry.
+//                         </Text>
+//                     </View>
+//                 )}
+
+//                 {/* 🔹 Inputs e Botão */}
+//                 <View style={styles.bottomContainer}>
+//                     <Input placeholder="Digite seu nome completo*" containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
+//                     <Input placeholder="Digite seu e-mail*" containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
+//                     <Input placeholder="Digite seu CPF*" containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive}} />
+                    
+//                     <Select 
+//                         options={["Categoria 1", "Categoria 2", "Categoria 3"]} 
+//                         placeholder="Selecione uma categoria" 
+//                         onSelect={(value) => console.log("Selecionado:", value)}
+//                     />
+
+//                     <Input placeholder="Digite seu primeiro telefone*" containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
+//                     <Input placeholder="Digite seu segundo telefone" containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
+//                     <Input placeholder="Digite sua senha*" containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} secureTextEntry />
+//                     <Input placeholder="Confirme sua senha*" containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} secureTextEntry />
+
+//                     <Button 
+//                         title="Cadastrar" 
+//                         style={[styles.signInButton, { width: width * 0.35, height: height * 0.055, marginTop: height * 0.02}]} 
+//                         textStyle={[styles.signInText, { fontSize: fontSizeResponsive }]} 
+//                         onPress={() => router.push('/configuracoes')} 
+//                     />
+//                 </View>
+//             </View>
+//         </KeyboardAwareScrollView>
+//     );
+// }
+
+// const styles = StyleSheet.create({
+//     container: {
+//         flex: 1,
+//         backgroundColor: "#FFF",
+//     },
+//     topContainer: {
+//         flexDirection: "row",
+//         justifyContent: "space-between",
+//         paddingHorizontal: 20,
+//     },
+//     textContainer: {
+//         justifyContent: "center",
+//     },
+//     logo: {
+//         width: 80,
+//         height: 50,
+//     },
+//     logoVoltar: {
+//         width: 30,
+//         height: 30,
+//     },
+//     bottomContainer: {
+//         flexGrow: 1,
+//         backgroundColor: "#4D7E1B",
+//         borderTopLeftRadius: 70,
+//         alignItems: "center",
+//         paddingVertical: "5%",
+//     },
+//     titleText: {
+//         fontWeight: "bold",
+//         fontStyle: "italic",
+//         color: "black",
+//         textAlign: "left",
+//     },
+//     descriptionText: {
+//         textAlign: "center",
+//         color: "black",
+//     },
+//     inputContainer: {
+//         maxWidth: 400,
+//         minWidth: 280,
+//         marginBottom: 15,
+//     },
+//     signInButton: {
+//         backgroundColor: "#FFF",
+//         paddingVertical: 8,
+//         borderRadius: 20,
+//         justifyContent: "center",
+//         alignItems: "center"
+//     },
+//     signInText: {
+//         color: "#4D7E1B",
+//         fontWeight: "bold",
+//     },
+// });
+

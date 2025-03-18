@@ -1,59 +1,58 @@
-import { useEffect, useState } from "react";
-import { View, Image, Text, StyleSheet, TextInput, TouchableOpacity } from "react-native";
+import { useWindowDimensions } from "react-native";
+import { View, Image, Text, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView } from "react-native";
 import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
+import { useState } from "react";
 
 import Button from "@/components/button";
 import Input from "@/components/input";
 
-
 export default function LoginPage() {
+    const { width, height } = useWindowDimensions(); // 🔹 Obtém dimensões da tela
     
-    return (
-            <View style={styles.container}>
-                {/* Logo na parte superior */}
-                <SafeAreaView style={styles.topContainer}>
-                    <TouchableOpacity onPress={() => router.push('/')}>
-                        <Image
-                            source={require("../../../assets/images/voltar26.png")}
-                            style={styles.logoVoltar}
-                            resizeMode="contain"
-                        />
-                    </TouchableOpacity>
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
 
+    return (
+        <View style={styles.container}>
+            {/* 🔹 Logo + Botão Voltar */}
+            <SafeAreaView style={styles.topContainer}>
+                <TouchableOpacity onPress={() => router.push('/')}>
                     <Image
-                        source={require("../../../assets/images/logo_carro_verde.png")}
-                        style={styles.logo}
+                        source={require("../../../assets/images/voltar26.png")}
+                        style={[styles.logoVoltar, { marginTop: height * 0.03 }]} // 🔹 Ajuste dinâmico
                         resizeMode="contain"
                     />
-                </SafeAreaView>
+                </TouchableOpacity>
 
-                <View style={styles.textContainer}>
-                    <Text style={styles.titleText}>Entrar</Text>
-                    <Text style={styles.descriptionText}>
-                        «Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa, quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt, explicabo. Nemo enim ipsam voluptatem, quia voluptas sit, aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos, qui ratione voluptatem sequi nesciunt, neque porro quisquam est, qui dolorem ipsum, quia dolor sit, amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt, ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure
-                    </Text>
-                </View>
-    
-                {/* Parte inferior verde com conteúdo */}
-                <View style={styles.bottomContainer}>
-                    
-                    <Input placeholder="Digite seu e-mail" containerStyle={styles.containerEmail}/>
-                    <Input placeholder="Digite sua senha" containerStyle={styles.containerSenha} secureTextEntry />
+                <Image
+                    source={require("../../../assets/images/logo_carro_verde.png")}
+                    style={[styles.logo, { marginTop: height * 0.01 }]}
+                    resizeMode="contain"
+                />
+            </SafeAreaView>
 
-                    <TouchableOpacity>
-                        <Text style={styles.forgotPassword}>Esqueceu a senha?</Text>
-                    </TouchableOpacity>
-
-                    {/* Botões */}
-                    <View style={styles.buttonContainer}>
-
-                        <Button title="Entrar" style={styles.signInButton} textStyle={styles.signInText} onPress={() => router.push('/configuracoes')}/>
-    
-                    </View>
-                </View>
+            {/* 🔹 Texto "Entrar" + Descrição */}
+            <View style={[styles.textContainer, { paddingHorizontal: width * 0.08 }]}>
+                <Text style={[styles.titleText, { fontSize: width * 0.07, marginBottom: height * 0.01}]}>Entrar</Text>
+                <Text style={[styles.descriptionText, { fontSize: width * 0.04 }]}>
+                    Lorem ipsum is simply dummy text of the printing and typesetting industry.
+                </Text>
             </View>
-        );
+
+            {/* 🔹 Inputs e Botão */}
+            <View style={styles.bottomContainer}>
+                <Input placeholder="Digite seu e-mail" containerStyle={[styles.inputContainer, { width: width * 0.75 }]} onChangeText={setEmail} />
+                <Input placeholder="Digite sua senha" containerStyle={[styles.inputContainer, { width: width * 0.75 }]} secureTextEntry onChangeText={setPassword}/>
+
+                <TouchableOpacity>
+                    <Text style={[styles.forgotPassword, { fontSize: width * 0.04 }]}>Esqueceu a senha?</Text>
+                </TouchableOpacity>
+
+                <Button title="Entrar" style={[styles.signInButton, { width: width * 0.6 }]} textStyle={[styles.signInText, { fontSize: width * 0.045 }]} onPress={() => router.push('/configuracoes')} />
+            </View>
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({
@@ -62,110 +61,71 @@ const styles = StyleSheet.create({
         backgroundColor: "#FFF",
     },
     topContainer: {
-        flex: 0.3, //  Parte superior maior que a inferior
-        flexDirection: 'row',
+        flex: 0.3,
+        flexDirection: "row",
         justifyContent: "space-between",
-        // backgroundColor: 'yellow'
+        paddingHorizontal: 20, // 🔹 Garante espaço lateral
     },
     textContainer: {
-        flex: 0.8, //  Parte superior maior que a inferior
-        alignItems: 'flex-start',
-        justifyContent: 'center',
-        // backgroundColor: 'blue',
-        marginLeft: 40,
-        marginRight: 40
+        flex: 0.6, // 🔹 Mantém o conteúdo ajustado ao tamanho da tela
+        justifyContent: "center",
+        alignItems: 'flex-start'
     },
     logo: {
-        marginTop: 10,
-        marginRight:30
+        width: 80, // 🔹 Define um tamanho fixo adequado
+        height: 50,
     },
     logoVoltar: {
-        marginTop: 30,
-        marginLeft:30,
+        width: 30,
+        height: 30,
     },
     bottomContainer: {
-        flex: 2,
-        backgroundColor: "#4D7E1B", // Verde
-        borderTopLeftRadius: 70, // Arredondamento do topo
-        padding: 20,
+        flex: 1.5,
+        backgroundColor: "#4D7E1B",
+        borderTopLeftRadius: 70,
         alignItems: "center",
-    },
-    title: {
-        fontSize: 28,
-        fontWeight: "bold",
-        fontStyle: "italic",
-        color: "#FFF",
-        marginBottom: 10,
+        paddingVertical: "7%",
+        paddingTop: '20%'
     },
     titleText: {
-        fontSize: 28,
+        fontSize: 24,
         fontWeight: "bold",
         fontStyle: "italic",
         color: "black",
-        marginBottom: 10,
-    },
-    description: {
         textAlign: "center",
-        color: "#FFF",
-        fontSize: 18,
-        marginBottom: 100,
-        paddingHorizontal: 10,
-        marginTop: 25
     },
     descriptionText: {
         textAlign: "center",
         color: "black",
         fontSize: 14,
-        marginBottom: 45,
-        paddingHorizontal: 10,
-        // backgroundColor:'red'
     },
-    buttonContainer: {
-        width:'80%',
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: 'center'
+    inputContainer: {
+        alignItems: "center",
+        maxWidth: 400, // 🔹 Evita que os inputs fiquem muito largos em telas grandes
+        minWidth: 280, // 🔹 Evita que os inputs fiquem muito pequenos em telas menores
+        marginBottom: 15, // 🔹 Garante espaço entre os campos
+    },
+    forgotPassword: {
+        color: "darkred",
+        fontStyle: "italic",
+        fontSize: 16,
+        marginTop: 10,
+        marginBottom: 30,
     },
     signInButton: {
         backgroundColor: "#FFF",
         paddingVertical: 8,
-        paddingHorizontal: 30,
         borderRadius: 20,
-        width: "60%",
         height: 52,
-        justifyContent: 'center',
-        alignItems: 'center'
+        justifyContent: "center",
+        alignItems: "center",
     },
     signInText: {
         color: "#4D7E1B",
         fontSize: 18,
         fontWeight: "bold",
     },
-    containerEmail: {
-        alignItems: 'center',
-        width: '60%',
-        marginTop: 60
-    },
-    containerSenha: {
-        alignItems: 'center',
-        width: '60%',
-        marginTop: 10
-    },
-    forgotPassword: {
-        alignSelf: "flex-end",
-        color: "darkred",
-        fontStyle: "italic",
-        fontSize: 16,
-        marginBottom: 60,
-        marginTop: 15
-    },
-    input: {
-        backgroundColor:'blue',
-        // alignItems:'flex-start'
-    },
-    underline: {
-        height: 1,
-        backgroundColor: "white",
-        width: "100%",
-    },
 });
+
+
+

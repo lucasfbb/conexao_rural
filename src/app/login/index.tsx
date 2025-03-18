@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import { View, Image, Text, StyleSheet} from "react-native";
+import { View, Image, Text, StyleSheet, Dimensions } from "react-native";
 
 import Button from "@/components/button";
 import { router } from "expo-router";
+
+const { height } = Dimensions.get("window");
 
 export default function LoginScreen() {
     
@@ -59,26 +61,28 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 70, // Arredondamento do topo
         padding: 20,
         alignItems: "center",
+        paddingBottom: height * 0.05,
     },
     title: {
         fontSize: 28,
         fontWeight: "bold",
         fontStyle: "italic",
         color: "#FFF",
-        marginBottom: 10,
+        marginBottom: height * 0.02,
     },
     description: {
         textAlign: "center",
         color: "#FFF",
         fontSize: 18,
-        marginBottom: 100,
         paddingHorizontal: 10,
-        marginTop: 25
+        marginTop: height * 0.02,
+        marginBottom: height * 0.07,
     },
     buttonContainer: {
         width:'80%',
         flexDirection: "row",
         justifyContent: "space-between",
+        marginBottom: height * 0.02,
     },
     signInButton: {
         borderWidth: 2,
@@ -87,7 +91,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 30,
         borderRadius: 20,
         width: "45%",
-        height: 52,
+        height: 52, // talvez tenha que mudar para algo mais responsivo
         justifyContent: 'center',
         alignItems: 'center'
     },
