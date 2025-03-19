@@ -40,7 +40,7 @@ export default function PerfilHome() {
         <View style={styles.container}>
             <Header />
 
-            <ScrollView contentContainerStyle={{  padding: 20 }} showsVerticalScrollIndicator={false}>
+            <ScrollView contentContainerStyle={{  padding: 20 }} showsVerticalScrollIndicator={true}>
                 
                 {/* 🔹 Perfil do Cliente */}
                 <View style={styles.profile}>
