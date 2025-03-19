@@ -1,0 +1,145 @@
+import { View, Text, Button, StyleSheet, Alert, Image, TouchableOpacity, ScrollView, TextInput, FlatList, useWindowDimensions, Dimensions } from "react-native";
+import { router } from "expo-router";
+import Header from '@/components/header'
+import Card from "@/components/card"; // Importa o componente de Cartão
+import { Item } from "@/types/types";
+
+import { AntDesign, Feather } from '@expo/vector-icons'
+
+const { width, height } = Dimensions.get("window"); // 🔹 Obtém tamanho da tela
+
+export default function PerfilHome() {
+
+    const Cliente = Array(5).fill({
+        nome: "Teste da Silva Junior",
+        email: "teste@gmail.com",
+        categoria: "Comprador",
+        primeiroTelefone: "(21) 99999-9999",
+        segundoTelefone: "(21) 99999-9988",
+    });
+
+    const enderecos = [
+        { title: "Nome Endereço 1", subtitle: "Rua teste 134", details: ["Endereço", "000000-000", "bloco H"] },
+        { title: "Nome Endereço 2", subtitle: "Rua teste 134", details: ["Endereço", "000000-000", "bloco H"] },
+        { addNew: true }
+    ];
+    
+    const pagamentos = [
+        { title: "Cartão 1", subtitle: "Crédito", details: ["●●●● 9999"] },
+        { title: "Cartão 2", subtitle: "Crédito", details: ["●●●● 9999"] },
+        { addNew: true }
+    ];
+
+    const produtos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
+    const ultimosPedidos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
+    const agricultoresFavoritos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
+
+    const renderItem = ({ item }: { item: any }) => (
+        <Card title={item.title} subtitle={item.subtitle} details={item.details} isPayment={item.isPayment} />
+    );
+
+    return (
+        
+        <View style={styles.conteiner}>
+            <Header />
+            {/* <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}> */}
+            <View style={styles.content}>
+                <View  style={styles.profile}>
+                    <View style={{ flexDirection: 'row', paddingBottom: 10, width: '100%', justifyContent: 'space-around'}}>
+                        <View style={{ justifyContent: 'flex-start', marginRight: 15, marginLeft: 20}}>
+                            <Text style={[styles.informacao, { fontSize: height * 0.012 }]}>{Cliente[0].categoria}</Text>
+                            <Text style={{ fontSize: height * 0.012, marginBottom: height * 0.02 }}>Categoria</Text>
+                            <Image 
+                                source={require("../../../assets/images/perfil-de-usuario.png")}
+                                style={{ height: 80, width: 80, marginTop: height * 0.01 }}
+                            />
+                        </View>
+                        <View>
+                            <Text style={[styles.informacao, { fontSize: height * 0.012 }]}>{Cliente[0].nome}</Text>
+                            <Text style={{ fontSize: height * 0.012 }}>Nome Completo</Text>
+                            <Text style={[styles.informacao, { fontSize: height * 0.012 }]}>{Cliente[0].email}</Text>
+                            <Text style={{ fontSize: height * 0.012 }}>E-mail de contato</Text>
+                            <Text style={[styles.informacao, { fontSize: height * 0.012 }]}>{Cliente[0].primeiroTelefone}</Text>
+                            <Text style={{ fontSize: height * 0.012 }}>Primeiro Telefone</Text>
+                            <Text style={[styles.informacao, { fontSize: height * 0.012 }]}>{Cliente[0].segundoTelefone}</Text>
+                            <Text style={{ fontSize: height * 0.012 }}>Segundo telefone</Text>
+                        </View>
+                        <View style={{ marginTop: height * 0.006 }}>
+                            <AntDesign name="edit" size={16} color={'black'} />
+                        </View>
+                    </View>
+                </View>
+
+                <Text style={[styles.sectionTitle, { marginBottom: height * 0.01, color: '#4D7E1B' }]}>Endereços</Text>
+                <FlatList
+                    data={[...enderecos ]} 
+                    renderItem={({ item }) =>
+                    item.addNew ? (
+                        <TouchableOpacity style={styles.addCard}>
+                        <Feather name="plus" size={30} color="green" />
+                        </TouchableOpacity>
+                    ) : (renderItem({ item }))
+                    }
+                    keyExtractor={(item, index) => index.toString()}
+                    numColumns={3} // Organiza em colunas
+                />
+
+                <Text style={[styles.sectionTitle, { marginBottom: height * 0.01, color: '#4D7E1B' }]}>Pagamentos</Text>
+                <FlatList
+                    data={[...pagamentos ]} 
+                    renderItem={({ item }) =>
+                    item.addNew ? (
+                        <TouchableOpacity style={styles.addCard}>
+                        <Feather name="plus" size={30} color="green" />
+                        </TouchableOpacity>
+                    ) : (renderItem({ item }))
+                    }
+                    keyExtractor={(item, index) => index.toString()}
+                    numColumns={3} // Organiza em colunas
+                />
+
+                {/* 🛍️ Produtos Sazonais */}
+                <Text style={[styles.sectionTitle, { marginBottom: height * 0.005, color: '#4D7E1B' }]}>Produtos sazonais</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
+                    {produtos.map((produto, index) => (
+                        <TouchableOpacity key={index} style={styles.productItem}>
+                            <Text style={styles.productText}>{produto}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
+
+                {/* <Text style={[styles.sectionTitle, { marginBottom: height * 0.005, color: '#4D7E1B' }]}>Produtos sazonais</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
+                    {ultimosPedidos.map((produto, index) => (
+                        <TouchableOpacity key={index} style={styles.productItem}>
+                            <Text style={styles.productText}>{produto}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView> */}
+
+                {/* <Text style={[styles.sectionTitle, { marginBottom: height * 0.005, color: '#4D7E1B' }]}>Produtos sazonais</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
+                    {agricultoresFavoritos.map((produto, index) => (
+                        <TouchableOpacity key={index} style={styles.productItem}>
+                            <Text style={styles.productText}>{produto}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView> */}
+
+            {/* </ScrollView> */}
+            </View>
+        </View>
+    );
+}
+
+const styles = StyleSheet.create({
+    conteiner: { flex: 1, backgroundColor: 'white' },
+    content: { flex: 1, padding: 20 }, 
+    profile: {alignItems: "center", marginVertical: 20, marginHorizontal: 5,  borderColor: '#4D7E1B', borderWidth: 1, justifyContent: "center", borderRadius: 10},
+    informacao: {borderBottomWidth: 1, borderBottomColor: '#4D7E1B', padding: 10, width: '100%'},
+    sectionTitle: { fontSize: 18, fontWeight: "bold", fontStyle: "italic", marginTop: height * 0.005, marginLeft: 7 },
+    addCard: {flex: 1,borderWidth: 1.5,borderColor: "green",borderRadius: 10,justifyContent: "center",alignItems: "center",width: "45%",minHeight: 120,margin: width * 0.013,},
+    productScroll: { flexDirection: "row", marginVertical: 10 },
+    productItem: { padding: 10, borderWidth: 1, borderRadius: 10, marginHorizontal: 5, borderColor: '#4D7E1B' },
+    productText: { fontSize: 14 },
+});

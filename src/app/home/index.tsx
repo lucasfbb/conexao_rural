@@ -20,6 +20,7 @@ export default function Home(){
     }
     
     const produtos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
+    
     const agricultores = Array(5).fill({
         nome: "Nome Loja",
         endereco: "R. 47 - Guaxuma",
