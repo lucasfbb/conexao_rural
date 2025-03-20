@@ -32,7 +32,7 @@ export default function LoginScreen() {
     
                         <Button title="Entrar" style={styles.signInButton} textStyle={styles.signInText} onPress={() => router.push('/login/loginPage')}/>
                         <Button title="Cadastrar" style={styles.signUpButton} textStyle={styles.signUpText} onPress={() => router.push('/login/cadastroPage')} />
-                        <Button title="Config" style={styles.signUpButton} textStyle={styles.signUpText} onPress={() => router.push('/configuracoes')} />
+                        {/* <Button title="Config" style={styles.signUpButton} textStyle={styles.signUpText} onPress={() => router.push('/configuracoes')} /> */}
     
                     </View>
                 </View>

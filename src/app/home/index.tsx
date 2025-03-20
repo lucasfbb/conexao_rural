@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { View, Text, StyleSheet, Alert, Image, TouchableOpacity, ScrollView, TextInput, FlatList, useWindowDimensions } from "react-native"
 import { DrawerToggleButton } from '@react-navigation/drawer'
 import Carousel from 'react-native-reanimated-carousel';
-import { Feather, Ionicons } from "@expo/vector-icons";
+import { Feather, Ionicons, Fontisto } from "@expo/vector-icons";
 
 import { router } from 'expo-router'
 
@@ -22,20 +22,23 @@ export default function Home(){
     const produtos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
     
     const agricultores = Array(5).fill({
-        nome: "Nome Loja",
+        nome: "Raiz E Fruto",
         endereco: "R. 47 - Guaxuma",
         distancia: "10km"
     });
 
     const renderAgricultor = ({ item } : { item: Item }) => (
-        <TouchableOpacity style={styles.agricultorItem}>
+        <TouchableOpacity 
+            style={styles.agricultorItem} 
+            onPress={() => router.push({ pathname: "/perfil/produtorProfile", params: { nome: String(item.nome), endereco: String(item.endereco), distancia: String(item.distancia) } })}
+        >
             <View style={styles.logoPlaceholder} />
             <View style={styles.agricultorInfo}>
                 <Text style={styles.nomeLoja}>{item.nome}</Text>
                 <Text style={styles.endereco}>{item.endereco} - {item.distancia}</Text>
             </View>
             <TouchableOpacity style={styles.bookmarkIcon}>
-                {/* <Text>🔖</Text> Ícone de salvar */}
+                <Fontisto name="favorite" size={20} color={"#4D7E1B"} style={styles.icon} /> {/* Ícone de salvar */}
             </TouchableOpacity>
         </TouchableOpacity>
     );
@@ -50,7 +53,7 @@ export default function Home(){
                 {/* 🔹 Conteúdo separado do Header */}
                 <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
 
-                    {/* 🔎 Barra de Pesquisa e Localização */}
+                    {/*  Barra de Pesquisa e Localização */}
                     <View style={styles.searchContainer}>
                         <Feather name="search" size={20} color={"#4D7E1B"} style={styles.icon} />
                         <TextInput style={styles.searchInput} placeholder='O que você procura hoje ?'/>
@@ -60,7 +63,7 @@ export default function Home(){
                         </TouchableOpacity>
                     </View>
 
-                    {/* 🔄 Carrossel de Avisos/Promoções */}
+                    {/*  Carrossel de Avisos/Promoções */}
                     <View style={styles.carouselContainer}>
                         <Carousel
                             width={width * 0.8} // Largura dos itens
@@ -76,7 +79,7 @@ export default function Home(){
                         />
                     </View>
 
-                    {/* 🛍️ Produtos Sazonais */}
+                    {/*  Produtos Sazonais */}
                     <Text style={[styles.sectionTitle, { marginBottom: height * 0.005, color: '#4D7E1B' }]}>Produtos sazonais</Text>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
                         {produtos.map((produto, index) => (
@@ -86,7 +89,7 @@ export default function Home(){
                         ))}
                     </ScrollView>
 
-                    {/* 🚜 Agricultores por Perto */}
+                    {/*  Agricultores por Perto */}
                     <Text style={[styles.sectionTitle, { textAlign: 'center', marginBottom: height * 0.01, color: '#4D7E1B' }]}>Agricultores por perto</Text>
                         <FlatList
                             data={agricultores}
