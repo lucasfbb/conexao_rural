@@ -10,18 +10,25 @@ export default function ProdutorScreen() {
 
     const params = useLocalSearchParams();
 
-    const produtosPromocao = [
-        { id: "1", nome: "Produto 01", preco: "R$ 10,00/KG" },
-        { id: "2", nome: "Produto 02", preco: "R$ 10,00/KG" },
-        { id: "3", nome: "Produto 03", preco: "R$ 10,00/KG" },
-        { id: "4", nome: "Produto 04", preco: "R$ 10,00/KG" },
+    const imagens = {
+        maca: require("../../../assets/images/promocoes/maca.png"),
+        alface: require("../../../assets/images/principais/alface.png"),
+    } as const;
+    
+    type ImagemKeys = keyof typeof imagens; // 'maca' | 'alface'
+
+    const produtosPromocao: { id: string; nome: string; preco: string; foto: ImagemKeys }[] = [
+        { id: "1", nome: "Produto 01", preco: "R$ 10,00/KG", foto: 'maca'},
+        { id: "2", nome: "Produto 02", preco: "R$ 10,00/KG", foto: 'maca' },
+        { id: "3", nome: "Produto 03", preco: "R$ 10,00/KG", foto: 'maca' },
+        { id: "4", nome: "Produto 04", preco: "R$ 10,00/KG", foto: 'maca' },
     ];
 
-    const produtosPrincipais = [
-        { id: "5", nome: "Produto 05", descricao: "Lorem ipsum is simply dummy text of the printing industry.", preco: "R$ 10,00/KG" },
-        { id: "6", nome: "Produto 06", descricao: "Lorem ipsum is simply dummy text of the printing industry.", preco: "R$ 10,00/KG" },
-        { id: "7", nome: "Produto 07", descricao: "Lorem ipsum is simply dummy text of the printing industry.", preco: "R$ 10,00/KG" },
-        { id: "8", nome: "Produto 08", descricao: "Lorem ipsum is simply dummy text of the printing industry.", preco: "R$ 10,00/KG" },
+    const produtosPrincipais: { id: string; nome: string; descricao: string; preco: string; foto: ImagemKeys }[] = [
+        { id: "5", nome: "Produto 05", descricao: "Lorem ipsum is simply dummy text of the printing industry.", preco: "R$ 10,00/KG", foto: 'alface' },
+        { id: "6", nome: "Produto 06", descricao: "Lorem ipsum is simply dummy text of the printing industry.", preco: "R$ 10,00/KG", foto: 'alface'  },
+        { id: "7", nome: "Produto 07", descricao: "Lorem ipsum is simply dummy text of the printing industry.", preco: "R$ 10,00/KG", foto: 'alface'  },
+        { id: "8", nome: "Produto 08", descricao: "Lorem ipsum is simply dummy text of the printing industry.", preco: "R$ 10,00/KG", foto: 'alface'  },
     ];
 
     return (
@@ -55,7 +62,7 @@ export default function ProdutorScreen() {
                     data={produtosPromocao}
                     renderItem={({ item }) => (
                         <TouchableOpacity style={styles.promoCard}>
-                            <Image source={{ uri: "https://via.placeholder.com/40" }} style={styles.produtoImagem} />
+                            <Image source={imagens[item.foto]} style={styles.produtoImagem} />
                             <View>
                                 <Text style={styles.produtoNome}>{item.nome}</Text>
                                 <Text style={styles.produtoPreco}>{item.preco}</Text>
@@ -76,7 +83,7 @@ export default function ProdutorScreen() {
                     data={produtosPrincipais}
                     renderItem={({ item }) => (
                         <TouchableOpacity style={styles.principalCard}>
-                            <Image source={{ uri: "https://via.placeholder.com/40" }} style={styles.produtoImagem} />
+                            <Image source={imagens[item.foto]} style={styles.produtoImagem} />
                             <View style={styles.produtoInfo}>
                                 <Text style={styles.produtoNome}>{item.nome}</Text>
                                 <Text style={styles.produtoDescricao}>{item.descricao}</Text>
