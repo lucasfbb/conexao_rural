@@ -22,7 +22,7 @@ export default function Home(){
     const produtos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
     
     const agricultores = Array(5).fill({
-        nome: "Raiz E Fruto",
+        nome: "Raiz E Frutoa",
         endereco: "R. 47 - Guaxuma",
         distancia: "10km"
     });
