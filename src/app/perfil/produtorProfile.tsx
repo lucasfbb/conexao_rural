@@ -1,5 +1,5 @@
 import React from "react";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { View, Text, Image, TouchableOpacity, ScrollView, FlatList, StyleSheet, Dimensions } from "react-native";
 import { AntDesign, Feather, MaterialIcons } from "@expo/vector-icons";
 import Header from "@/components/header";
@@ -34,7 +34,7 @@ export default function ProdutorScreen() {
     return (
         <ScrollView style={styles.container}>
             
-            <Header/>
+            <Header showFavoriteicon={true} showGoBack={true} />
 
             {/* 🔹 Banner */}
           
@@ -44,7 +44,7 @@ export default function ProdutorScreen() {
             <View style={styles.produtorInfo}>
                 <Image source={require("../../../assets/images/perfil_agricultor.png")} style={styles.logo} />
                 <Text style={styles.produtorNome}>{params?.nome || "Nome não disponível"}</Text>
-                <TouchableOpacity style={styles.localizacao}>
+                <TouchableOpacity style={styles.localizacao} onPress={() => router.push('/perfil/localizacaoProdutor')}>
                     <Feather name="map-pin" size={16} color="black" />
                     <Text style={styles.localizacaoText}> Localização</Text>
                 </TouchableOpacity>

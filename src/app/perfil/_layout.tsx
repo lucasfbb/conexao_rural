@@ -4,7 +4,8 @@ export default function PerfilLayout() {
     return (
         <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="index" />
-            {/* <Stack.Screen name="editar" /> */}
+            <Stack.Screen name="produtorProfile" />
+            <Stack.Screen name="localizacaoProdutor" />
         </Stack>
     );
 }

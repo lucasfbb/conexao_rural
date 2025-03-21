@@ -31,4 +31,10 @@ export const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
+
+    save: {
+        width: 40,
+        justifyContent: "center",
+        alignItems: "center",
+    },
 });
