@@ -13,8 +13,9 @@ export default function Header() {
                     <DrawerToggleButton tintColor="white" />
                 </View>
 
-                <Image source={require("../../../assets/images/logo_comprido.png")} style={styles.img} />
-
+                {/* <TouchableOpacity onPress={() => router.push('/home')} style={styles.img}> */}
+                    <Image source={require("../../../assets/images/logo_comprido.png")} style={styles.img} />
+                {/* </TouchableOpacity> */}
                 {/* 🔹 Espaço vazio para alinhar corretamente */}
                 <View style={{ width: 40 }} />
             </View>

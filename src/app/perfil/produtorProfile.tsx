@@ -36,7 +36,7 @@ export default function ProdutorScreen() {
             {/* 🔹 Informações do Produtor */}
             <View style={styles.produtorInfo}>
                 <Image source={require("../../../assets/images/perfil_agricultor.png")} style={styles.logo} />
-                <Text style={styles.produtorNome}>{params.nome}</Text>
+                <Text style={styles.produtorNome}>{params?.nome || "Nome não disponível"}</Text>
                 <TouchableOpacity style={styles.localizacao}>
                     <Feather name="map-pin" size={16} color="black" />
                     <Text style={styles.localizacaoText}> Localização</Text>
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     produtorInfo: { alignItems: "center", padding: 15, borderBottomWidth: 1, borderColor: "#ddd" },
     logo: { width: 90, height: 90, borderRadius: 30, marginBottom: 5 },
     produtorNome: { fontSize: 18, fontWeight: "bold" },
-    localizacao: { flexDirection: "row", alignItems: "center", marginVertical: 5 },
+    localizacao: { flexDirection: "row", alignItems: "center", marginVertical: 8 },
     localizacaoText: { fontSize: 14, color: "black" },
     produtorDetalhes: { flexDirection: "row", alignItems: "center", gap: 5 },
     avaliacao: { fontSize: 14, fontWeight: "bold", color: "#4D7E1B" },

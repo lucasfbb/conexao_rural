@@ -38,7 +38,7 @@ export default function Home(){
                 <Text style={styles.endereco}>{item.endereco} - {item.distancia}</Text>
             </View>
             <TouchableOpacity style={styles.bookmarkIcon}>
-                <Fontisto name="favorite" size={20} color={"#4D7E1B"} style={styles.icon} /> {/* Ícone de salvar */}
+                <Text><Fontisto name="favorite" size={20} color={"#4D7E1B"} style={styles.icon} /> </Text>{/* Ícone de salvar */}
             </TouchableOpacity>
         </TouchableOpacity>
     );
