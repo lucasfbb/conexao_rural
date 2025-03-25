@@ -7,6 +7,7 @@ import { useState } from "react";
 
 import ModalEndereco from '@/components/modais/modalEndereco'
 import ModalPagamento from '@/components/modais/modalPagamento'
+import ModalEditarPerfil from '@/components/modais/modalEditarPerfil'
 import { Item } from '@/types/types'
 
 const { width, height } = Dimensions.get("window");
@@ -15,14 +16,20 @@ export default function PerfilHome() {
 
     const [modalEnderecoVisible, setModalEnderecoVisible] = useState(false);
     const [modalPagamentoVisible, setModalPagamentoVisible] = useState(false);
+    const [modalEditarPerfilVisible, setModalEditarPerfilVisible] = useState(false);
 
-    const Cliente = Array(5).fill({
+    const [cliente, setCliente] = useState({
         nome: "Teste da Silva Junior",
         email: "teste@gmail.com",
         categoria: "Comprador",
         primeiroTelefone: "(21) 99999-9999",
         segundoTelefone: "(21) 99999-9988",
     });
+
+    const handleSavePerfil = (dadosAtualizados: { nome: string, email: string, categoria: string, primeiroTelefone: string, segundoTelefone: string}) => {
+        setCliente(prev => ({ ...prev, ...dadosAtualizados }));
+        setModalEditarPerfilVisible(false);
+    };
 
     const [enderecos, setEnderecos] = useState([
         { title: "Nome Endereço 1", subtitle: "Rua teste 134", details: ["Endereço", "000000-000", "bloco H"] },
@@ -73,6 +80,14 @@ export default function PerfilHome() {
                 onClose={() => setModalPagamentoVisible(false)}
                 onSave={handleSavePagamento}
             />
+            
+            {/* 🔹 Modal de Editar perfil do usuuário */}
+            <ModalEditarPerfil
+                visible={modalEditarPerfilVisible}
+                onClose={() => setModalEditarPerfilVisible(false)}
+                onSave={handleSavePerfil}
+                dadosIniciais={cliente}
+            />
 
             <ScrollView contentContainerStyle={{  padding: 20 }} showsVerticalScrollIndicator={true}>
                 
@@ -80,7 +95,7 @@ export default function PerfilHome() {
                 <View style={styles.profile}>
                     <View style={styles.profileContent}>
                         <View style={styles.profileInfo}>
-                            <Text style={styles.informacao}>{Cliente[0].categoria}</Text>
+                            <Text style={styles.informacao}>{cliente.categoria}</Text>
                             <Text style={styles.label}>Categoria</Text>
                             <Image 
                                 source={require("../../../assets/images/perfil-de-usuario.png")}
@@ -88,16 +103,16 @@ export default function PerfilHome() {
                             />
                         </View>
                         <View>
-                            <Text style={styles.informacao}>{Cliente[0].nome}</Text>
+                            <Text style={styles.informacao}>{cliente.nome}</Text>
                             <Text style={styles.label}>Nome Completo</Text>
-                            <Text style={styles.informacao}>{Cliente[0].email}</Text>
+                            <Text style={styles.informacao}>{cliente.email}</Text>
                             <Text style={styles.label}>E-mail de contato</Text>
-                            <Text style={styles.informacao}>{Cliente[0].primeiroTelefone}</Text>
+                            <Text style={styles.informacao}>{cliente.primeiroTelefone}</Text>
                             <Text style={styles.label}>Primeiro Telefone</Text>
-                            <Text style={styles.informacao}>{Cliente[0].segundoTelefone}</Text>
+                            <Text style={styles.informacao}>{cliente.segundoTelefone}</Text>
                             <Text style={styles.label}>Segundo telefone</Text>
                         </View>
-                        <TouchableOpacity style={styles.editIcon}>
+                        <TouchableOpacity style={styles.editIcon} onPress={() => setModalEditarPerfilVisible(true)}>
                             <AntDesign name="edit" size={16} color={'black'} />
                         </TouchableOpacity>
                     </View>
