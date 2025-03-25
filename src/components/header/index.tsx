@@ -11,7 +11,7 @@ interface HeaderProps {
     backRoute?: string
 }
 
-export default function Header({ showFavoriteicon = false, showGoBack = false, backRoute = '/home'}: HeaderProps) {
+export default function Header({ showFavoriteicon = false, showGoBack = false}: HeaderProps) {
 
     const router = useRouter();
     
@@ -19,9 +19,11 @@ export default function Header({ showFavoriteicon = false, showGoBack = false, b
         <SafeAreaView style={styles.safeContainer} edges={["top", "left", "right"]}>
             <View style={styles.container}>
 
-                {/* {showGoBack && backRoute ? (
+                {/* Drawer ou botao de voltar */}
+
+                {showGoBack ? (
                     <View style={styles.toggleButton}>
-                        <TouchableOpacity onPress={() => router.push(backRoute as const)}>
+                        <TouchableOpacity onPress={() => router.back()}>
                             <Text><AntDesign name="back" color={'white'} size={25}/></Text>
                         </TouchableOpacity>
                     </View>
@@ -30,16 +32,12 @@ export default function Header({ showFavoriteicon = false, showGoBack = false, b
                     <View style={styles.toggleButton}>
                         <DrawerToggleButton tintColor="white" />
                     </View>
-                )} */}
+                )}
 
-                    <View style={styles.toggleButton}>
-                        <DrawerToggleButton tintColor="white" />
-                    </View>
-
-                {/* <TouchableOpacity onPress={() => router.push('/home')} style={styles.img}> */}
-                    <Image source={require("../../../assets/images/logo_comprido.png")} style={styles.img} />
-                {/* </TouchableOpacity> */}
-                {/* 🔹 Espaço vazio para alinhar corretamente */}
+                
+                <Image source={require("../../../assets/images/logo_comprido.png")} style={styles.img} />
+               
+                {/* ícone de save ou espaço vazio */}
 
                 {showFavoriteicon ? (
                     <View style={styles.save}>

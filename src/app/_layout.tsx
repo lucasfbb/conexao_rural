@@ -29,6 +29,16 @@ export default function DrawerLayout() {
 
                 }}>
                 {/* 🔹 Cada item do Drawer aponta para um Stack Navigator */}
+
+                <Drawer.Screen 
+                    name="home"
+                    options={{ 
+                        drawerLabel: "Início",
+                        drawerLabelStyle: { color: "white" },
+                        drawerIcon: ({ color }) => <Feather name="home" size={20} color={'white'} />,
+                    }} 
+                />
+
                 <Drawer.Screen 
                     name="perfil"
                     options={{ 
@@ -59,15 +69,6 @@ export default function DrawerLayout() {
                         drawerLabel: "Configurações",
                         drawerLabelStyle: { color: "white" },
                         drawerIcon: ({ color }) => <Feather name="settings" size={20} color={'white'} />,
-                    }} 
-                />
-
-                <Drawer.Screen 
-                    name="home" 
-                    options={{ 
-                        drawerLabel: () => null, // 🔹 Oculta do menu
-                        title: "", // 🔹 Remove o título do header
-                        drawerItemStyle: { height: 0 } // 🔹 Evita espaço vazio no Drawer
                     }} 
                 />
 

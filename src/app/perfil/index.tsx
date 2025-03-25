@@ -3,10 +3,18 @@ import { router } from "expo-router";
 import Header from '@/components/header'
 import Card from "@/components/card"; 
 import { AntDesign, Feather } from '@expo/vector-icons'
+import { useState } from "react";
+
+import ModalEndereco from '@/components/modais/modalEndereco'
+import ModalPagamento from '@/components/modais/modalPagamento'
+import { Item } from '@/types/types'
 
 const { width, height } = Dimensions.get("window");
 
 export default function PerfilHome() {
+
+    const [modalEnderecoVisible, setModalEnderecoVisible] = useState(false);
+    const [modalPagamentoVisible, setModalPagamentoVisible] = useState(false);
 
     const Cliente = Array(5).fill({
         nome: "Teste da Silva Junior",
@@ -16,17 +24,29 @@ export default function PerfilHome() {
         segundoTelefone: "(21) 99999-9988",
     });
 
-    const enderecos = [
+    const [enderecos, setEnderecos] = useState([
         { title: "Nome Endereço 1", subtitle: "Rua teste 134", details: ["Endereço", "000000-000", "bloco H"] },
         { title: "Nome Endereço 2", subtitle: "Rua teste 134", details: ["Endereço", "000000-000", "bloco H"] },
         { addNew: true }
-    ];
+    ]);
     
-    const pagamentos = [
+    const handleSaveEndereco = (novoEndereco: { title: string; subtitle: string; details: string[] }) => {
+        // Remove o último item (addNew), adiciona o novo endereço, e depois adiciona de novo o addNew
+        setEnderecos(prev => [...prev.slice(0, -1), novoEndereco, { addNew: true }]);
+        setModalEnderecoVisible(false);
+    };
+
+    const [pagamentos, setPagamentos] = useState([
         { title: "Cartão 1", subtitle: "Crédito", details: ["●●●● 9999"] },
         { title: "Cartão 2", subtitle: "Crédito", details: ["●●●● 9999"] },
         { addNew: true }
-    ];
+    ]);
+
+    const handleSavePagamento = (novoPagamento: { title: string; subtitle: string; details: string[] }) => {
+        // Remove o último item (addNew), adiciona o novo pagamento, e depois adiciona de novo o addNew
+        setPagamentos(prev => [...prev.slice(0, -1), novoPagamento, { addNew: true }]);
+        setModalPagamentoVisible(false);
+    };
 
     const produtos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
     const ultimosPedidos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
@@ -39,6 +59,20 @@ export default function PerfilHome() {
     return (
         <View style={styles.container}>
             <Header />
+
+            {/* 🔹 Modal de Endereço */}
+            <ModalEndereco
+                visible={modalEnderecoVisible}
+                onClose={() => setModalEnderecoVisible(false)}
+                onSave={handleSaveEndereco}
+            />
+
+            {/* 🔹 Modal de Pagamento */}
+            <ModalPagamento
+                visible={modalPagamentoVisible}
+                onClose={() => setModalPagamentoVisible(false)}
+                onSave={handleSavePagamento}
+            />
 
             <ScrollView contentContainerStyle={{  padding: 20 }} showsVerticalScrollIndicator={true}>
                 
@@ -75,7 +109,7 @@ export default function PerfilHome() {
                     data={enderecos} 
                     renderItem={({ item }) =>
                         item.addNew ? (
-                            <TouchableOpacity style={styles.addCard}>
+                            <TouchableOpacity style={styles.addCard} onPress={() => setModalEnderecoVisible(true)}>
                                 <Feather name="plus" size={30} color="green" />
                             </TouchableOpacity>
                         ) : (renderItem({ item }))
@@ -92,7 +126,7 @@ export default function PerfilHome() {
                     data={pagamentos} 
                     renderItem={({ item }) =>
                         item.addNew ? (
-                            <TouchableOpacity style={styles.addCard}>
+                            <TouchableOpacity style={styles.addCard} onPress={() => setModalPagamentoVisible(true)}>
                                 <Feather name="plus" size={30} color="green" />
                             </TouchableOpacity>
                         ) : (renderItem({ item }))

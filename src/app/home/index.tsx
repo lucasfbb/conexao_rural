@@ -13,26 +13,37 @@ import Header from '@/components/header'
 export default function Home(){
     const { width, height } = useWindowDimensions();
 
+    const imagens = {
+        foto_perfil: require("../../../assets/images/perfil_agricultor.png"),
+    } as const;
+    
+    type ImagemKeys = keyof typeof imagens; 
+
     interface Item {
         nome: string;
         endereco: string;
-        distancia: string
+        distancia: string;
+        foto: ImagemKeys
     }
     
     const produtos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
     
-    const agricultores = Array(5).fill({
+    const agricultores: Item[] = Array(5).fill({
         nome: "Raiz E Fruto",
         endereco: "R. 47 - Guaxuma",
-        distancia: "10km"
+        distancia: "10km",
+        foto: 'foto_perfil', 
     });
 
     const renderAgricultor = ({ item } : { item: Item }) => (
         <TouchableOpacity 
             style={styles.agricultorItem} 
-            onPress={() => router.push({ pathname: "/perfil/produtorProfile", params: { nome: String(item.nome), endereco: String(item.endereco), distancia: String(item.distancia) } })}
+            onPress={() => router.push({ pathname: "/perfil/produtorProfile", params: { nome: String(item.nome), endereco: String(item.endereco), distancia: String(item.distancia), foto: String(item.foto)} })}
         >
-            <View style={styles.logoPlaceholder} />
+            <View style={styles.logoPlaceholder}>
+                <Image source={imagens[item.foto]} style={styles.produtoImagem} />
+            </View>
+            
             <View style={styles.agricultorInfo}>
                 <Text style={styles.nomeLoja}>{item.nome}</Text>
                 <Text style={styles.endereco}>{item.endereco} - {item.distancia}</Text>
@@ -118,12 +129,13 @@ const styles = StyleSheet.create({
     productItem: { padding: 10, borderWidth: 1, borderRadius: 10, marginHorizontal: 5, borderColor: '#4D7E1B' },
     productText: { fontSize: 14 },
     agricultorItem: { flexDirection: "row", alignItems: "center", padding: 10, borderBottomWidth: 1 },
-    logoPlaceholder: { width: 40, height: 40, backgroundColor: "#ddd", marginRight: 10 },
+    logoPlaceholder: { width: 40, height: 40, marginRight: 10 },
     agricultorInfo: { flex: 1 },
     nomeLoja: { fontWeight: "bold" },
     endereco: { fontSize: 12, color: "#777" },
     bookmarkIcon: { padding: 5 },
     card: { width: "100%", height: "100%", backgroundColor: "#ddd", justifyContent: "center", alignItems: "center", borderRadius: 10 },
     text: { fontSize: 18, fontWeight: "bold" },
-    icon: { marginLeft: 10 }
+    icon: { marginLeft: 10 },
+    produtoImagem: { width: 40, height: 40, marginRight: 10 }
 });
