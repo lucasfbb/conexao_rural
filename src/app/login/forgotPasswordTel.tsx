@@ -19,7 +19,7 @@ export default function ForgotPassword() {
         <View style={styles.container}>
             {/* 🔹 Logo + Botão Voltar */}
             <SafeAreaView style={styles.topContainer}>
-                <TouchableOpacity onPress={() => router.push('/')}>
+                <TouchableOpacity onPress={() => router.back()}>
                     <Image
                         source={require("../../../assets/images/voltar26.png")}
                         style={[styles.logoVoltar, { marginTop: height * 0.03 }]} // 🔹 Ajuste dinâmico

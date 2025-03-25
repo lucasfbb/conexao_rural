@@ -16,7 +16,7 @@ export default function Card({ title, subtitle, details, isPayment }: CardProps)
     <View style={styles.card}>
       {/* Ícone de edição */}
       <TouchableOpacity style={styles.editIcon}>
-        <AntDesign name="edit" size={8} color="green" />
+        <AntDesign name="edit" size={10} color="green" />
       </TouchableOpacity>
 
       {/* Conteúdo do Card */}
