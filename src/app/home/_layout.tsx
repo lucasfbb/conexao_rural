@@ -4,6 +4,8 @@ export default function HomeLayout() {
     return (
         <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="index" />
+            <Stack.Screen name="localizacaoProdutor" />
+            <Stack.Screen name="produtorProfile" />
         </Stack>
     );
 }

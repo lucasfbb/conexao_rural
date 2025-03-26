@@ -38,7 +38,7 @@ export default function Home(){
     const renderAgricultor = ({ item } : { item: Item }) => (
         <TouchableOpacity 
             style={styles.agricultorItem} 
-            onPress={() => router.push({ pathname: "/perfil/produtorProfile", params: { nome: String(item.nome), endereco: String(item.endereco), distancia: String(item.distancia), foto: String(item.foto)} })}
+            onPress={() => router.push({ pathname: "/home/produtorProfile", params: { nome: String(item.nome), endereco: String(item.endereco), distancia: String(item.distancia), foto: String(item.foto)} })}
         >
             <View style={styles.logoPlaceholder}>
                 <Image source={imagens[item.foto]} style={styles.produtoImagem} />

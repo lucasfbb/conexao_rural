@@ -8,10 +8,9 @@ import { useRouter } from "expo-router";
 interface HeaderProps {
     showFavoriteicon?: boolean;
     showGoBack?: boolean
-    backRoute?: string
 }
 
-export default function Header({ showFavoriteicon = false, showGoBack = false}: HeaderProps) {
+export default function Header({ showFavoriteicon = false, showGoBack = false }: HeaderProps) {
 
     const router = useRouter();
     
@@ -21,6 +20,25 @@ export default function Header({ showFavoriteicon = false, showGoBack = false}: 
 
                 {/* Drawer ou botao de voltar */}
 
+                {/* {showGoBack && backRoute === 'home' ? (
+                    <View style={styles.toggleButton}>
+                        <TouchableOpacity onPress={() => router.push('/home')}>
+                            <Text><AntDesign name="back" color={'white'} size={25}/></Text>
+                        </TouchableOpacity>
+                    </View>
+
+                ) : showGoBack && backRoute === 'produtorProfile' ? (
+                    <View style={styles.toggleButton}>
+                        <TouchableOpacity onPress={() => router.push('/home/produtorProfile')}>
+                            <Text><AntDesign name="back" color={'white'} size={25}/></Text>
+                        </TouchableOpacity>
+                    </View>
+                ) : (
+                    <View style={styles.toggleButton}>
+                        <DrawerToggleButton tintColor="white" />
+                    </View>
+                )} */}
+
                 {showGoBack ? (
                     <View style={styles.toggleButton}>
                         <TouchableOpacity onPress={() => router.back()}>
@@ -28,7 +46,7 @@ export default function Header({ showFavoriteicon = false, showGoBack = false}: 
                         </TouchableOpacity>
                     </View>
 
-                ) : (
+                ) :  (
                     <View style={styles.toggleButton}>
                         <DrawerToggleButton tintColor="white" />
                     </View>

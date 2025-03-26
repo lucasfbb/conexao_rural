@@ -34,7 +34,7 @@ export default function ProdutorScreen() {
     return (
         <ScrollView style={styles.container}>
             
-            <Header showFavoriteicon={true} showGoBack={true} />
+            <Header showFavoriteicon={true} showGoBack={true} backRoute="home" />
 
             {/* 🔹 Banner */}
           
@@ -44,7 +44,7 @@ export default function ProdutorScreen() {
             <View style={styles.produtorInfo}>
                 <Image source={require("../../../assets/images/perfil_agricultor.png")} style={styles.logo} />
                 <Text style={styles.produtorNome}>{params?.nome || "Nome não disponível"}</Text>
-                <TouchableOpacity style={styles.localizacao} onPress={() => router.push('/perfil/localizacaoProdutor')}>
+                <TouchableOpacity style={styles.localizacao} onPress={() => router.push('/home/localizacaoProdutor')}>
                     <Feather name="map-pin" size={16} color="black" />
                     <Text style={styles.localizacaoText}> Localização</Text>
                 </TouchableOpacity>

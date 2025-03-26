@@ -2,15 +2,19 @@ import { useEffect, useState } from "react";
 import MapView, { Marker } from "react-native-maps";
 import { View, StyleSheet, Text, Dimensions } from "react-native";
 import { Entypo, Feather, MaterialIcons } from "@expo/vector-icons";
-import Header from "@/components/header";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import Header from "@/components/header";
 import { requestForegroundPermissionsAsync, getCurrentPositionAsync, LocationObject } from "expo-location";
 import Button from "@/components/button";
 
 const { height, width } = Dimensions.get('window')
 
+
 export default function LocalizacaoProdutor() {
     const [location, setLocation] = useState<LocationObject | null >(null)
+    
+    const insets = useSafeAreaInsets();
 
     async function requestLocationPermissions() {
         const { granted } = await requestForegroundPermissionsAsync();
@@ -27,9 +31,9 @@ export default function LocalizacaoProdutor() {
     }, [])
     
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { paddingBottom: insets.bottom+25 }]}>
             
-            <Header showFavoriteicon={true} showGoBack={true} />
+            <Header showFavoriteicon={true} showGoBack={true} backRoute="produtorProfile" />
 
             <View style={styles.mapArea}>
                 {
