@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { View, Text, Image, TouchableOpacity, ScrollView, FlatList, StyleSheet, Dimensions } from "react-native";
 import { AntDesign, Feather, MaterialIcons } from "@expo/vector-icons";
 import Header from "@/components/header";
+
+import ModalProduto from "@/components/modais/modalProduto";
 
 const { width, height } = Dimensions.get("window");
 
@@ -10,12 +12,21 @@ export default function ProdutorScreen() {
 
     const params = useLocalSearchParams();
 
+    const [modalProdutoVisivel, setModalProdutoVisivel] = useState(false);
+
+    const [produtoSelecionado, setProdutoSelecionado] = useState<{
+        nome: string;
+        descricao?: string;
+        preco: string;
+        imagem: any;
+    } | null>(null);
+
     const imagens = {
         maca: require("../../../assets/images/promocoes/maca.png"),
         alface: require("../../../assets/images/principais/alface.png"),
     } as const;
     
-    type ImagemKeys = keyof typeof imagens; // 'maca' | 'alface'
+    type ImagemKeys = keyof typeof imagens;
 
     const produtosPromocao: { id: string; nome: string; preco: string; foto: ImagemKeys }[] = [
         { id: "1", nome: "Produto 01", preco: "R$ 10,00/KG", foto: 'maca'},
@@ -30,11 +41,29 @@ export default function ProdutorScreen() {
         { id: "7", nome: "Produto 07", descricao: "Lorem ipsum is simply dummy text of the printing industry.", preco: "R$ 10,00/KG", foto: 'alface'  },
         { id: "8", nome: "Produto 08", descricao: "Lorem ipsum is simply dummy text of the printing industry.", preco: "R$ 10,00/KG", foto: 'alface'  },
     ];
-
+    
     return (
-        <ScrollView style={styles.container}>
+
+
+        <ScrollView style={styles.container}> 
             
-            <Header showFavoriteicon={true} showGoBack={true} backRoute="home" />
+            <Header showFavoriteicon={true} showGoBack={true} />
+
+            {produtoSelecionado && (
+                <ModalProduto
+                    visible={modalProdutoVisivel}
+                    onClose={() => {
+                    setModalProdutoVisivel(false);
+                    setProdutoSelecionado(null);
+                    }}
+                    produto={produtoSelecionado}
+                    onAddToCart={(qtd) => {
+                    console.log(`Adicionar ${qtd} unidade(s) ao carrinho`);
+                    setModalProdutoVisivel(false);
+                    setProdutoSelecionado(null);
+                    }}
+                />
+            )}
 
             {/* 🔹 Banner */}
           
@@ -61,7 +90,18 @@ export default function ProdutorScreen() {
                 <FlatList
                     data={produtosPromocao}
                     renderItem={({ item }) => (
-                        <TouchableOpacity style={styles.promoCard}>
+                        <TouchableOpacity
+                            style={styles.promoCard}
+                            onPress={() => {
+                                const imagem = imagens[item.foto]; // pegar imagem baseada na chave
+                                setProdutoSelecionado({
+                                nome: item.nome,
+                                preco: item.preco,
+                                imagem,
+                                });
+                                setModalProdutoVisivel(true);
+                            }}
+                        >
                             <Image source={imagens[item.foto]} style={styles.produtoImagem} />
                             <View>
                                 <Text style={styles.produtoNome}>{item.nome}</Text>
@@ -82,7 +122,20 @@ export default function ProdutorScreen() {
                 <FlatList
                     data={produtosPrincipais}
                     renderItem={({ item }) => (
-                        <TouchableOpacity style={styles.principalCard}>
+                        <TouchableOpacity
+                        style={styles.principalCard}
+                        onPress={() => {
+                            // console.log("imagem selecionada:", imagens[item.foto]);
+                            const imagem = imagens[item.foto]; // pegar imagem baseada na chave
+                            setProdutoSelecionado({
+                            nome: item.nome,
+                            descricao: item.descricao,
+                            preco: item.preco,
+                            imagem,
+                            });
+                            setModalProdutoVisivel(true);
+                        }}
+                        >
                             <Image source={imagens[item.foto]} style={styles.produtoImagem} />
                             <View style={styles.produtoInfo}>
                                 <Text style={styles.produtoNome}>{item.nome}</Text>
