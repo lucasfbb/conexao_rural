@@ -1,34 +1,34 @@
-import { View, Text, StyleSheet, Button } from 'react-native';
-import { router } from 'expo-router';
-
+import React from 'react';
+import { View, Text, Switch, StyleSheet } from 'react-native';
 import Header from '@/components/header';
+import { useSettings } from '@/contexts/SettingsContext';
 
 export default function Configuracoes() {
-    return (
-        <View style={styles.container}>
-            {/* 🔹 Header Fixo no Topo */}
-            <Header />
+  const { isNightMode, setNightMode, allowNotifications, setAllowNotifications } = useSettings();
 
-            {/* 🔹 Conteúdo separado do Header */}
-            <View style={styles.content}>
-                <Text style={styles.title}>Configurações</Text>
+  return (
+    <View style={styles.container}>
+        <Header />
+        <View style={{ padding:20 }}>
+            <Text style={styles.title}>Configurações Gerais</Text>
+
+            <View style={styles.option}>
+                <Text style={styles.label}>Modo Noturno</Text>
+                <Switch value={isNightMode} onValueChange={setNightMode} />
+            </View>
+
+            <View style={styles.option}>
+                <Text style={styles.label}>Notificações</Text>
+                <Switch value={allowNotifications} onValueChange={setAllowNotifications} />
             </View>
         </View>
-    );
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: 'white',
-    },
-    content: {
-        flex: 1, // 🔹 Faz o conteúdo ocupar a área abaixo do Header
-        padding: 20,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 20,
-    },
+  container: { flex: 1, backgroundColor: 'white' },
+  title: { fontSize: 22, fontWeight: 'bold', color: '#4D7E1B', marginBottom: 20 },
+  option: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 15, borderBottomWidth: 1, borderColor: '#eee' },
+  label: { fontSize: 16 },
 });
