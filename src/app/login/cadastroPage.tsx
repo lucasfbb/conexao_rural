@@ -36,6 +36,7 @@ export default function CadastroPage() {
                 style={styles.container}
                 contentContainerStyle={{ flexGrow: 1 }}
                 enableOnAndroid
+                scrollEnabled={false}
                 extraScrollHeight={20} // Ajusta a altura ao focar em inputs
                 keyboardShouldPersistTaps="handled"
             >
