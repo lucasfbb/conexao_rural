@@ -32,35 +32,40 @@ export default function CadastroPage() {
 
         return (
             
-            <View style={styles.container}>
+            <KeyboardAwareScrollView
+                style={styles.container}
+                contentContainerStyle={{ flexGrow: 1 }}
+                enableOnAndroid
+                extraScrollHeight={20} // Ajusta a altura ao focar em inputs
+                keyboardShouldPersistTaps="handled"
+            >
                 {/* 🔹 Cabeçalho (Some quando o teclado está aberto) */}
-                {!isKeyboardVisible && (
-                    <SafeAreaView style={styles.topContainer}>
-                        <TouchableOpacity onPress={() => router.push('/')}>
-                            <Image
-                                source={require("../../../assets/images/voltar26.png")}
-                                style={[styles.logoVoltar, { marginTop: height * 0.03 }]} 
-                                resizeMode="contain"
-                            />
-                        </TouchableOpacity>
+              
+                <SafeAreaView style={styles.topContainer}>
+                    <TouchableOpacity onPress={() => router.push('/')}>
+                    <Image
+                        source={require("../../../assets/images/voltar26.png")}
+                        style={[styles.logoVoltar, { marginTop: height * 0.03 }]} 
+                        resizeMode="contain"
+                    />
+                    </TouchableOpacity>
 
-                        <Image
-                            source={require("../../../assets/images/logo_carro_verde.png")}
-                            style={[styles.logo, { marginTop: height * 0.01 }]}
-                            resizeMode="contain"
-                        />
-                    </SafeAreaView>
-                )}
+                    <Image
+                    source={require("../../../assets/images/logo_carro_verde.png")}
+                    style={[styles.logo, { marginTop: height * 0.01 }]}
+                    resizeMode="contain"
+                    />
+                </SafeAreaView>
+              
 
-                {/* 🔹 Título e Descrição (Some quando o teclado está aberto) */}
                 
                 <View style={[styles.textContainer, { paddingHorizontal: width * 0.08 }]}>
                     <Text style={[styles.titleText, { fontSize: width * 0.07, marginBottom: height * 0.01}]}>Cadastro</Text> 
                     <Text style={[styles.descriptionText, { fontSize: width * 0.04 }]}>
-                        Lorem ipsum is simply dummy text of the printing and typesetting industry.
+                    Lorem ipsum is simply dummy text of the printing and typesetting industry.
                     </Text>
                 </View>
-               
+              
 
                 {/* 🔹 Inputs e Botão */}
                 <View style={styles.bottomContainer}>
@@ -86,7 +91,7 @@ export default function CadastroPage() {
                         onPress={() => router.push('/configuracoes')} 
                     />
                 </View>
-            </View>
+            </KeyboardAwareScrollView>
             
     );
 }

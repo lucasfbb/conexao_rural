@@ -4,7 +4,7 @@ import { View, Image, Text, StyleSheet, Dimensions } from "react-native";
 import Button from "@/components/button";
 import { router } from "expo-router";
 
-const { height } = Dimensions.get("window");
+const { height, width } = Dimensions.get("window");
 
 export default function LoginScreen() {
     

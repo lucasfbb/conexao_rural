@@ -6,6 +6,7 @@ export default function CarrinhoLayout() {
             <Stack.Screen name="index" />
             <Stack.Screen name="secundaria" />
             <Stack.Screen name="confirmacao" />
+            <Stack.Screen name="finalizacao" />
         </Stack>
     );
 }
