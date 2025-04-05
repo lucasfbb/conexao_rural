@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { View, Image, Text, StyleSheet, Dimensions } from "react-native";
+import { RFValue } from "react-native-responsive-fontsize"
 
 import Button from "@/components/button";
 import { router } from "expo-router";
