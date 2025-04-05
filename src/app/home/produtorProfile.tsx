@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { View, Text, Image, TouchableOpacity, ScrollView, FlatList, StyleSheet, Dimensions } from "react-native";
 import { AntDesign, Feather, MaterialIcons } from "@expo/vector-icons";
-import Header from "@/components/header";
 
+import Header from "@/components/header";
 import ModalProduto from "@/components/modais/modalProduto";
 
 const { width, height } = Dimensions.get("window");

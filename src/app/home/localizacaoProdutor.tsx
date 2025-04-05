@@ -18,7 +18,7 @@ export default function LocalizacaoProdutor() {
 
     async function requestLocationPermissions() {
         const { granted } = await requestForegroundPermissionsAsync();
-
+ 
         if (granted) {
             const currentPosition = await getCurrentPositionAsync()
             setLocation(currentPosition)
@@ -33,7 +33,7 @@ export default function LocalizacaoProdutor() {
     return (
         <View style={[styles.container, { paddingBottom: insets.bottom+25 }]}>
             
-            <Header showFavoriteicon={true} showGoBack={true} backRoute="produtorProfile" />
+            <Header showFavoriteicon={true} showGoBack={true} />
 
             <View style={styles.mapArea}>
                 {

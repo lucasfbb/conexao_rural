@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Alert, Image, TouchableOpacity, ScrollView, Tex
 import { DrawerToggleButton } from '@react-navigation/drawer'
 import Carousel from 'react-native-reanimated-carousel';
 import { Feather, Ionicons, Fontisto } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { router } from 'expo-router'
 
@@ -54,10 +55,14 @@ export default function Home(){
         </TouchableOpacity>
     );
 
-    const data = ["Aviso 1", "Promoção 2", "Anúncio 3"];
+    const data = [
+        require("../../../assets/images/banner_teste.png"), 
+        require("../../../assets/images/banner_teste2.png"), 
+        require("../../../assets/images/banner_teste.png")
+    ];
 
     return (
-            <View style={styles.container}>
+            <ScrollView style={styles.container}>
                 {/* 🔹 Header Fixo no Topo */}
                 <Header />
     
@@ -77,15 +82,21 @@ export default function Home(){
                     {/*  Carrossel de Avisos/Promoções */}
                     <View style={styles.carouselContainer}>
                         <Carousel
-                            width={width * 0.8} // Largura dos itens
-                            height={150} // Altura dos itens
+                            width={width * 0.85} // Largura dos itens
+                            height={height * 0.23} // Altura dos itens
                             data={data}
                             scrollAnimationDuration={500} // Duração da animação
                             loop
                             renderItem={({ item }) => (
-                                <View style={styles.card}>
-                                    <Text style={styles.text}>{item}</Text>
-                                </View>
+                                <Image
+                                    source={item}
+                                    style={{
+                                    width: "100%",
+                                    height: "100%",
+                                    borderRadius: 10,
+                                    }}
+                                    resizeMode="cover"
+                                />
                             )}
                         />
                     </View>
@@ -109,7 +120,7 @@ export default function Home(){
                             scrollEnabled={false} // Para não conflitar com ScrollView
                         />
                 </ScrollView>
-            </View>
+            </ScrollView>
         );
 }
 
