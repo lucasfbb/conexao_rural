@@ -4,7 +4,7 @@ import { View, Image, Text, StyleSheet, Dimensions } from "react-native";
 import Button from "@/components/button";
 import { router } from "expo-router";
 
-const { height, width } = Dimensions.get("window");
+const { height } = Dimensions.get("window");
 
 export default function LoginScreen() {
     
@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
     },
     signInText: {
         color: "#FFF",
-        fontSize: 16,
+        fontSize: RFValue(12),
         fontWeight: "bold",
     },
     signUpButton: {
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     },
     signUpText: {
         color: "#4D7E1B",
-        fontSize: 16,
+        fontSize: RFValue(12),
         fontWeight: "bold",
     },
 });
