@@ -4,15 +4,14 @@ import { DrawerToggleButton } from '@react-navigation/drawer'
 import Carousel from 'react-native-reanimated-carousel';
 import { Feather, Ionicons, Fontisto } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-
 import { router } from 'expo-router'
 
-import Button from "@/components/button"
-import Input from "@/components/input"
 import Header from '@/components/header'
+import { useTema } from '@/contexts/ThemeContext';
 
 export default function Home(){
     const { width, height } = useWindowDimensions();
+    const { isNightMode, colors } = useTema();
 
     const imagens = {
         foto_perfil: require("../../../assets/images/perfil_agricultor.png"),
@@ -46,11 +45,11 @@ export default function Home(){
             </View>
             
             <View style={styles.agricultorInfo}>
-                <Text style={styles.nomeLoja}>{item.nome}</Text>
-                <Text style={styles.endereco}>{item.endereco} - {item.distancia}</Text>
+                <Text style={[styles.nomeLoja, { color: colors.text }]}>{item.nome}</Text>
+                <Text style={[styles.endereco, { color: colors.endereco }]}>{item.endereco} - {item.distancia}</Text>
             </View>
             <TouchableOpacity style={styles.bookmarkIcon}>
-                <Text><Fontisto name="favorite" size={20} color={"#4D7E1B"} style={styles.icon} /> </Text>{/* Ícone de salvar */}
+                <Text><Fontisto name="favorite" size={20} color={colors.title} style={styles.icon} /> </Text>{/* Ícone de salvar */}
             </TouchableOpacity>
         </TouchableOpacity>
     );
@@ -62,7 +61,7 @@ export default function Home(){
     ];
 
     return (
-            <ScrollView style={styles.container}>
+            <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
                 {/* 🔹 Header Fixo no Topo */}
                 <Header />
     
@@ -72,10 +71,10 @@ export default function Home(){
                     {/*  Barra de Pesquisa e Localização */}
                     <View style={styles.searchContainer}>
                         <Feather name="search" size={20} color={"#4D7E1B"} style={styles.icon} />
-                        <TextInput style={styles.searchInput} placeholder='O que você procura hoje ?'/>
+                        <TextInput style={[styles.searchInput, { color: colors.text, borderBottomColor: colors.text }]} placeholder='O que você procura hoje ?' placeholderTextColor={colors.text}/>
                         <TouchableOpacity style={[styles.locationButton, { marginTop: height * 0.01 }]}>
                             <Ionicons name="location-outline" size={20} color={"#4D7E1B"} />
-                            <Text style={styles.locationText}>Minha Localização</Text>
+                            <Text style={[styles.locationText, { color: colors.text }]}>Minha Localização</Text>
                         </TouchableOpacity>
                     </View>
 
@@ -91,9 +90,9 @@ export default function Home(){
                                 <Image
                                     source={item}
                                     style={{
-                                    width: "100%",
-                                    height: "100%",
-                                    borderRadius: 10,
+                                        width: "100%",
+                                        height: "100%",
+                                        borderRadius: 10,
                                     }}
                                     resizeMode="cover"
                                 />
@@ -102,17 +101,17 @@ export default function Home(){
                     </View>
 
                     {/*  Produtos Sazonais */}
-                    <Text style={[styles.sectionTitle, { marginBottom: height * 0.005, color: '#4D7E1B' }]}>Produtos sazonais</Text>
+                    <Text style={[styles.sectionTitle, { marginBottom: height * 0.005, color: colors.title }]}>Produtos sazonais</Text>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
                         {produtos.map((produto, index) => (
                             <TouchableOpacity key={index} style={styles.productItem}>
-                                <Text style={styles.productText}>{produto}</Text>
+                                <Text style={[styles.productText, { color: colors.text }]}>{produto}</Text>
                             </TouchableOpacity>
                         ))}
                     </ScrollView>
 
                     {/*  Agricultores por Perto */}
-                    <Text style={[styles.sectionTitle, { textAlign: 'center', marginBottom: height * 0.01, color: '#4D7E1B' }]}>Agricultores por perto</Text>
+                    <Text style={[styles.sectionTitle, { textAlign: 'center', marginBottom: height * 0.01, color: colors.title }]}>Agricultores por perto</Text>
                         <FlatList
                             data={agricultores}
                             renderItem={renderAgricultor}
@@ -143,7 +142,7 @@ const styles = StyleSheet.create({
     logoPlaceholder: { width: 40, height: 40, marginRight: 10 },
     agricultorInfo: { flex: 1 },
     nomeLoja: { fontWeight: "bold" },
-    endereco: { fontSize: 12, color: "#777" },
+    endereco: { fontSize: 12 },
     bookmarkIcon: { padding: 5 },
     card: { width: "100%", height: "100%", backgroundColor: "#ddd", justifyContent: "center", alignItems: "center", borderRadius: 10 },
     text: { fontSize: 18, fontWeight: "bold" },

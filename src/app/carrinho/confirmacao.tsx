@@ -3,11 +3,14 @@ import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Image } from 'rea
 import Header from '@/components/header';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useTema } from '@/contexts/ThemeContext';
 
 const { width, height } = Dimensions.get("window");
 
 export default function Confirmacao() {
   const router = useRouter();
+
+  const { colors } = useTema()
 
   const endereco = {
     local: 'Minha Localização',
@@ -28,14 +31,14 @@ export default function Confirmacao() {
   const totalFinal = total + frete;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header showGoBack />
       <View style={{ padding:25 }}>
-      <Text style={styles.titulo}>Carrinho</Text>
+      <Text style={[styles.titulo, { color: colors.title }]}>Carrinho</Text>
 
       {/* Endereço */}
-      <Text style={styles.label}>Endereço entrega</Text>
-      <View style={styles.card}>
+      <Text style={[styles.label, { color: colors.title }]}>Endereço entrega</Text>
+      <View style={[styles.card, { backgroundColor: colors.produtoContainer }]}>
         <View style={styles.row}>
           <Feather name="map-pin" size={20} color="#4D7E1B" />
           <View style={{ marginLeft: 10 }}>
@@ -48,8 +51,8 @@ export default function Confirmacao() {
       </View>
 
       {/* Data */}
-      <Text style={styles.label}>Data de entrega</Text>
-      <View style={styles.card}>
+      <Text style={[styles.label, { color: colors.title }]}>Data de entrega</Text>
+      <View style={[styles.card, { backgroundColor: colors.produtoContainer }]}>
         <View style={styles.row}>
           <MaterialIcons name="calendar-today" size={20} color="#4D7E1B" />
           <View style={{ marginLeft: 10 }}>
@@ -60,8 +63,8 @@ export default function Confirmacao() {
       </View>
 
       {/* Pagamento */}
-      <Text style={styles.label}>Forma de pagamento</Text>
-      <View style={styles.card}>
+      <Text style={[styles.label, { color: colors.title }]}>Forma de pagamento</Text>
+      <View style={[styles.card, { backgroundColor: colors.produtoContainer }]}>
         <View style={styles.row}>
           <Feather name="credit-card" size={20} color="#4D7E1B" />
           <View style={{ marginLeft: 10 }}>
@@ -89,7 +92,7 @@ export default function Confirmacao() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff'},
   titulo: { fontSize: 22, fontWeight: 'bold', color: '#4D7E1B', marginBottom: height * 0.015, fontStyle: 'italic' },
-  label: { fontSize: 16, fontWeight: 'bold', color: '#4D7E1B', marginTop: height * 0.025, marginBottom: height * 0.01 },
+  label: { fontSize: 16, fontWeight: 'bold', marginTop: height * 0.025, marginBottom: height * 0.01 },
   card: {
     backgroundColor: '#F7FAF0',
     borderRadius: 10,

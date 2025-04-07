@@ -1,10 +1,12 @@
 import React from 'react';
 import { View, Text, Switch, StyleSheet } from 'react-native';
 import Header from '@/components/header';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSettings } from '@/contexts/SettingsContext';
+import { useTema } from '@/contexts/ThemeContext';
 
 export default function Configuracoes() {
-  const { isNightMode, setNightMode, allowNotifications, setAllowNotifications } = useSettings();
+  const { isNightMode, toggleNightMode } = useTema();
 
   return (
     <View style={styles.container}>
@@ -14,12 +16,12 @@ export default function Configuracoes() {
 
             <View style={styles.option}>
                 <Text style={styles.label}>Modo Noturno</Text>
-                <Switch value={isNightMode} onValueChange={setNightMode} />
+                <Switch value={isNightMode} onValueChange={toggleNightMode} />
             </View>
 
             <View style={styles.option}>
                 <Text style={styles.label}>Notificações</Text>
-                <Switch value={allowNotifications} onValueChange={setAllowNotifications} />
+                <Switch value={isNightMode} onValueChange={toggleNightMode} />
             </View>
         </View>
     </View>

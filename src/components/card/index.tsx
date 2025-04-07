@@ -10,8 +10,11 @@ interface CardProps {
 }
 
 import { styles } from "./styles";
+import { useTema } from "@/contexts/ThemeContext";
 
 export default function Card({ title, subtitle, details, isPayment }: CardProps) {
+  const { colors } = useTema()
+
   return (
     <View style={styles.card}>
       {/* Ícone de edição */}
@@ -20,11 +23,11 @@ export default function Card({ title, subtitle, details, isPayment }: CardProps)
       </TouchableOpacity>
 
       {/* Conteúdo do Card */}
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.subtitle}>{subtitle}</Text>
+      <Text style={[styles.title, { color: colors.title }]}>{title}</Text>
+      <Text style={[styles.subtitle, { color: colors.endereco }]}>{subtitle}</Text>
 
       {details.map((item, index) => (
-        <Text key={index} style={styles.detail}>{item}</Text>
+        <Text key={index} style={[styles.detail, { color: colors.detail }]}>{item}</Text>
       ))}
 
       {/* Se for pagamento, mostra o nome do titular */}

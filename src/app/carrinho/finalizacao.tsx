@@ -1,10 +1,14 @@
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import Header from '@/components/header';
+import { useTema } from '@/contexts/ThemeContext';
 
 const { width, height } = Dimensions.get("window");
 
 export default function Finalizacao() {
+
+  const { colors } = useTema()
+
   const produtor = {
     nome: 'Produtor 001',
     subtitulo: 'Voltar para loja',
@@ -18,12 +22,12 @@ export default function Finalizacao() {
   const total = subtotal + frete;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header showGoBack />
 
       <View style={{ padding: 25 }}>
       
-        <Text style={styles.title}>Finalização</Text>
+        <Text style={[styles.title, { color: colors.title }]}>Finalização</Text>
 
         {/* Produtor */}
         <View style={styles.produtorContainer}>
@@ -35,7 +39,7 @@ export default function Finalizacao() {
         </View>
 
         {/* Resumo */}
-        <Text style={styles.sectionTitle}>Resumo</Text>
+        <Text style={[styles.sectionTitle, { color: colors.title }]}>Resumo</Text>
         <View style={styles.resumo}>
           <View style={styles.linha}>
             <Text style={styles.label}>Subtotal</Text>

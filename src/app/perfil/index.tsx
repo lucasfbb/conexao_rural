@@ -9,6 +9,7 @@ import ModalEndereco from '@/components/modais/modalEndereco'
 import ModalPagamento from '@/components/modais/modalPagamento'
 import ModalEditarPerfil from '@/components/modais/modalEditarPerfil'
 import { Item } from '@/types/types'
+import { useTema } from "@/contexts/ThemeContext";
 
 const { width, height } = Dimensions.get("window");
 
@@ -17,6 +18,8 @@ export default function PerfilHome() {
     const [modalEnderecoVisible, setModalEnderecoVisible] = useState(false);
     const [modalPagamentoVisible, setModalPagamentoVisible] = useState(false);
     const [modalEditarPerfilVisible, setModalEditarPerfilVisible] = useState(false);
+
+    const { colors, isNightMode } = useTema()
 
     const [cliente, setCliente] = useState({
         nome: "Teste da Silva Junior",
@@ -64,7 +67,7 @@ export default function PerfilHome() {
     );
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: colors.background }] }>
             <Header />
 
             {/* 🔹 Modal de Endereço */}
@@ -95,22 +98,31 @@ export default function PerfilHome() {
                 <View style={styles.profile}>
                     <View style={styles.profileContent}>
                         <View style={styles.profileInfo}>
-                            <Text style={styles.informacao}>{cliente.categoria}</Text>
-                            <Text style={styles.label}>Categoria</Text>
-                            <Image 
-                                source={require("../../../assets/images/perfil-de-usuario.png")}
-                                style={styles.profileImage}
-                            />
+                            <Text style={[styles.informacao, { color: colors.text }]}>{cliente.categoria}</Text>
+                            <Text style={[styles.label, { color: colors.text }]}>Categoria</Text>
+                            
+                            { isNightMode ? 
+                                <Image 
+                                    source={require("../../../assets/images/perfil-de-usuario-branco.png")}
+                                    style={styles.profileImage}
+                                />
+                            :
+                                <Image 
+                                    source={require("../../../assets/images/perfil-de-usuario.png")}
+                                    style={styles.profileImage}
+                                />
+                            }
+                            
                         </View>
                         <View>
-                            <Text style={styles.informacao}>{cliente.nome}</Text>
-                            <Text style={styles.label}>Nome Completo</Text>
-                            <Text style={styles.informacao}>{cliente.email}</Text>
-                            <Text style={styles.label}>E-mail de contato</Text>
-                            <Text style={styles.informacao}>{cliente.primeiroTelefone}</Text>
-                            <Text style={styles.label}>Primeiro Telefone</Text>
-                            <Text style={styles.informacao}>{cliente.segundoTelefone}</Text>
-                            <Text style={styles.label}>Segundo telefone</Text>
+                            <Text style={[styles.informacao, { color: colors.text }]}>{cliente.nome}</Text>
+                            <Text style={[styles.label, { color: colors.text }]}>Nome Completo</Text>
+                            <Text style={[styles.informacao, { color: colors.text }]}>{cliente.email}</Text>
+                            <Text style={[styles.label, { color: colors.text }]}>E-mail de contato</Text>
+                            <Text style={[styles.informacao, { color: colors.text }]}>{cliente.primeiroTelefone}</Text>
+                            <Text style={[styles.label, { color: colors.text }]}>Primeiro Telefone</Text>
+                            <Text style={[styles.informacao, { color: colors.text }]}>{cliente.segundoTelefone}</Text>
+                            <Text style={[styles.label, { color: colors.text }]}>Segundo telefone</Text>
                         </View>
                         <TouchableOpacity style={styles.editIcon} onPress={() => setModalEditarPerfilVisible(true)}>
                             <AntDesign name="edit" size={16} color={'black'} />
@@ -119,7 +131,7 @@ export default function PerfilHome() {
                 </View>
 
                 {/* 🔹 Endereços */}
-                <Text style={styles.sectionTitle}>Endereços</Text>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>Endereços</Text>
                 <FlatList
                     data={enderecos} 
                     renderItem={({ item }) =>
@@ -136,7 +148,7 @@ export default function PerfilHome() {
                 />
 
                 {/* 🔹 Pagamentos */}
-                <Text style={styles.sectionTitle}>Pagamentos</Text>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>Pagamentos</Text>
                 <FlatList
                     data={pagamentos} 
                     renderItem={({ item }) =>
@@ -153,31 +165,31 @@ export default function PerfilHome() {
                 />
 
                 {/* 🔹 Produtos Favoritos */}
-                <Text style={styles.sectionTitle}>Produtos favoritos</Text>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>Produtos favoritos</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
                     {produtos.map((produto, index) => (
                         <TouchableOpacity key={index} style={styles.productItem}>
-                            <Text style={styles.productText}>{produto}</Text>
+                            <Text style={[styles.productText, { color: colors.text }]}>{produto}</Text>
                         </TouchableOpacity>
                     ))}
                 </ScrollView>
                 
                 {/* 🔹 Últimos pedidos */}
-                <Text style={[styles.sectionTitle, { marginBottom: height * 0.005, color: '#4D7E1B' }]}>Últimos pedidos</Text>
+                <Text style={[styles.sectionTitle, { marginBottom: height * 0.005, color: colors.text }]}>Últimos pedidos</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
                     {ultimosPedidos.map((produto, index) => (
                         <TouchableOpacity key={index} style={styles.productItem}>
-                            <Text style={styles.productText}>{produto}</Text>
+                            <Text style={[styles.productText, { color: colors.text }]}>{produto}</Text>
                         </TouchableOpacity>
                     ))}
                 </ScrollView>
                 
                 {/* 🔹 Agricultores favoritos */}
-                <Text style={[styles.sectionTitle, { marginBottom: height * 0.005, color: '#4D7E1B' }]}>Agricultores favoritos</Text>
+                <Text style={[styles.sectionTitle, { marginBottom: height * 0.005, color: colors.text }]}>Agricultores favoritos</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
                     {agricultoresFavoritos.map((produto, index) => (
                         <TouchableOpacity key={index} style={styles.productItem}>
-                            <Text style={styles.productText}>{produto}</Text>
+                            <Text style={[styles.productText, { color: colors.text }]}>{produto}</Text>
                         </TouchableOpacity>
                     ))}
                 </ScrollView>

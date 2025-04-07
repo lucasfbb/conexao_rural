@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import Header from '@/components/header';
 import { router } from 'expo-router';
+import { useTema } from '@/contexts/ThemeContext';
 
 const { width, height } = Dimensions.get("window");
 
@@ -34,6 +35,8 @@ export default function Carrinho() {
 
     const [carrinho, setCarrinho] = useState(mockCarrinho);
 
+    const { colors, isNightMode } = useTema()
+
     const diminuirQuantidade = (id: string) => {
         setCarrinho(prev =>
         prev
@@ -55,22 +58,22 @@ export default function Carrinho() {
     const total = carrinho.reduce((acc, item) => acc + item.preco * item.qtd, 0);
     
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
           <Header />
     
-          <Text style={styles.title}>Carrinho</Text>
+          <Text style={[styles.title, { color: colors.title }]}>Carrinho</Text>
     
           <FlatList
             data={carrinho}
             keyExtractor={(item) => item.id}
             contentContainerStyle={{ padding: 15 }}
             renderItem={({ item }) => (
-              <View style={styles.produtoContainer}>
+              <View style={[styles.produtoContainer, { backgroundColor: colors.produtoContainer }]}>
                 <Image source={item.imagem} style={styles.img} />
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.nome}>{item.nome}</Text>
+                  <Text style={[styles.nome, { color: colors.title }]}>{item.nome}</Text>
                   <Text style={styles.descricao}>{item.descricao}</Text>
-                  <Text style={styles.preco}>R$ {item.preco.toFixed(2)}</Text>
+                  <Text style={[styles.preco, { color: colors.title }]}>R$ {item.preco.toFixed(2)}</Text>
                 </View>
                 <View style={styles.qtdContainer}>
                   <TouchableOpacity onPress={() => diminuirQuantidade(item.id)}>
@@ -86,7 +89,7 @@ export default function Carrinho() {
           />
     
           <View style={styles.footer}>
-            <Text style={styles.total}>Total sem entrega: R$ {total.toFixed(2)}</Text>
+            <Text style={[styles.total, { color: colors.title }]}>Total sem entrega: R$ {total.toFixed(2)}</Text>
             <TouchableOpacity style={styles.continuar} onPress={() => router.push('/carrinho/confirmacao')}>
               <Text style={styles.continuarText}>Continuar</Text>
             </TouchableOpacity>
@@ -114,7 +117,6 @@ const styles = StyleSheet.create({
     produtoContainer: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: '#F7FAF0',
       borderRadius: 10,
       padding: 10,
       marginBottom: height * 0.015,

@@ -6,7 +6,7 @@ import { Feather } from "@expo/vector-icons";
 import { View } from 'react-native'
 
 import CustomDrawer from "@/components/customDrawer"
-import { SettingsProvider } from '@/contexts/SettingsContext';
+import { AppProvider } from "@/providers/AppProvider";
 
 export default function DrawerLayout() {
 
@@ -20,7 +20,7 @@ export default function DrawerLayout() {
     // }
 
     return (
-        <SettingsProvider>
+        <AppProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>
                 <Drawer drawerContent={CustomDrawer} screenOptions={{ 
                         headerShown: false, 
@@ -94,6 +94,6 @@ export default function DrawerLayout() {
 
                 </Drawer>
             </GestureHandlerRootView>
-        </SettingsProvider>
+        </AppProvider>
     );
 }
