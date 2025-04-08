@@ -9,7 +9,8 @@ type ThemeColors = {
     title: string;
     primary: string;
     produtoContainer: string;
-    border: string;
+    borderCard: string;
+    profileCard: string;
     // adicione outras cores conforme necessário
 };
 
@@ -35,7 +36,8 @@ const lightColors: ThemeColors = {
     text: '#000000',
     primary: '#6200ee',
     produtoContainer: '#F7FAF0',
-    border: '#e0e0e0',
+    borderCard: '#4D7E1B',
+    profileCard: "#ffffff"
 };
 
 const darkColors: ThemeColors = {
@@ -46,7 +48,8 @@ const darkColors: ThemeColors = {
     text: '#ffffff',
     primary: '#bb86fc',
     produtoContainer: '#292828',
-    border: '#333333',
+    borderCard: '#ffffff',
+    profileCard: "#4D7E1B"
 };
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {

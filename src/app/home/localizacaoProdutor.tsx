@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Header from "@/components/header";
 import { requestForegroundPermissionsAsync, getCurrentPositionAsync, LocationObject } from "expo-location";
 import Button from "@/components/button";
+import { useTema } from "@/contexts/ThemeContext";
 
 const { height, width } = Dimensions.get('window')
 
@@ -15,6 +16,8 @@ export default function LocalizacaoProdutor() {
     const [location, setLocation] = useState<LocationObject | null >(null)
     
     const insets = useSafeAreaInsets();
+
+    const { colors } = useTema()
 
     async function requestLocationPermissions() {
         const { granted } = await requestForegroundPermissionsAsync();
@@ -31,7 +34,7 @@ export default function LocalizacaoProdutor() {
     }, [])
     
     return (
-        <View style={[styles.container, { paddingBottom: insets.bottom+25 }]}>
+        <View style={[styles.container, { paddingBottom: insets.bottom+25, backgroundColor: colors.background}]}>
             
             <Header showFavoriteicon={true} showGoBack={true} />
 
@@ -59,8 +62,8 @@ export default function LocalizacaoProdutor() {
             </View>
 
             <View style={styles.descricao}>
-                <Entypo name="location" size={16} color="#4D7E1B" />
-                <Text style={{ marginLeft: width * 0.02, fontWeight: 'bold' }}>Localização do produtor</Text>
+                <Entypo name="location" size={16} color={colors.title} />
+                <Text style={{ marginLeft: width * 0.02, fontWeight: 'bold', color: colors.text}}>Localização do produtor</Text>
             </View>
 
             <View style={styles.informacoes}>

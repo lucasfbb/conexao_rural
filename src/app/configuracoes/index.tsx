@@ -6,21 +6,21 @@ import { useSettings } from '@/contexts/SettingsContext';
 import { useTema } from '@/contexts/ThemeContext';
 
 export default function Configuracoes() {
-  const { isNightMode, toggleNightMode } = useTema();
+  const { colors, isNightMode, toggleNightMode } = useTema();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
         <Header />
         <View style={{ padding:20 }}>
-            <Text style={styles.title}>Configurações Gerais</Text>
+            <Text style={[styles.title, { color: colors.title }]}>Configurações Gerais</Text>
 
             <View style={styles.option}>
-                <Text style={styles.label}>Modo Noturno</Text>
+                <Text style={[styles.label, { color: colors.text }]}>Modo Noturno</Text>
                 <Switch value={isNightMode} onValueChange={toggleNightMode} />
             </View>
 
             <View style={styles.option}>
-                <Text style={styles.label}>Notificações</Text>
+                <Text style={[styles.label, { color: colors.text }]}>Notificações</Text>
                 <Switch value={isNightMode} onValueChange={toggleNightMode} />
             </View>
         </View>

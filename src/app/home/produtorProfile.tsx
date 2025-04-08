@@ -5,6 +5,7 @@ import { AntDesign, Feather, MaterialIcons } from "@expo/vector-icons";
 
 import Header from "@/components/header";
 import ModalProduto from "@/components/modais/modalProduto";
+import { useTema } from "@/contexts/ThemeContext";
 
 const { width, height } = Dimensions.get("window");
 
@@ -13,6 +14,8 @@ export default function ProdutorScreen() {
     const params = useLocalSearchParams();
 
     const [modalProdutoVisivel, setModalProdutoVisivel] = useState(false);
+
+    const { colors } = useTema()
 
     const [produtoSelecionado, setProdutoSelecionado] = useState<{
         nome: string;
@@ -45,7 +48,7 @@ export default function ProdutorScreen() {
     return (
 
 
-        <ScrollView style={styles.container}> 
+        <ScrollView style={[styles.container, { backgroundColor: colors.background }]}> 
             
             <Header showFavoriteicon={true} showGoBack={true} />
 
@@ -72,10 +75,10 @@ export default function ProdutorScreen() {
             {/* 🔹 Informações do Produtor */}
             <View style={styles.produtorInfo}>
                 <Image source={require("../../../assets/images/perfil_agricultor.png")} style={styles.logo} />
-                <Text style={styles.produtorNome}>{params?.nome || "Nome não disponível"}</Text>
+                <Text style={[styles.produtorNome, { color: colors.text }]}>{params?.nome || "Nome não disponível"}</Text>
                 <TouchableOpacity style={styles.localizacao} onPress={() => router.push('/home/localizacaoProdutor')}>
-                    <Feather name="map-pin" size={16} color="black" />
-                    <Text style={styles.localizacaoText}> Localização</Text>
+                    <Feather name="map-pin" size={16} color={colors.text} />
+                    <Text style={[styles.localizacaoText, { color: colors.text }]}> Localização</Text>
                 </TouchableOpacity>
                 <View style={styles.produtorDetalhes}>
                     <Text style={styles.avaliacao}><MaterialIcons name="star" size={16} color="gold" /> 4.7</Text>
@@ -85,13 +88,13 @@ export default function ProdutorScreen() {
             </View>
 
             {/* 🔹 Seção Promoções */}
-            <Text style={styles.sectionTitle}>Promoções</Text>
+            <Text style={[styles.sectionTitle, { color: colors.title }]}>Promoções</Text>
             <View style={{ paddingLeft: 15, paddingRight: 15 }}>
                 <FlatList
                     data={produtosPromocao}
                     renderItem={({ item }) => (
                         <TouchableOpacity
-                            style={styles.promoCard}
+                            style={[styles.promoCard, {  }]}
                             onPress={() => {
                                 const imagem = imagens[item.foto]; // pegar imagem baseada na chave
                                 setProdutoSelecionado({
@@ -104,8 +107,8 @@ export default function ProdutorScreen() {
                         >
                             <Image source={imagens[item.foto]} style={styles.produtoImagem} />
                             <View>
-                                <Text style={styles.produtoNome}>{item.nome}</Text>
-                                <Text style={styles.produtoPreco}>{item.preco}</Text>
+                                <Text style={[styles.produtoNome, { color: colors.text }]}>{item.nome}</Text>
+                                <Text style={[styles.produtoPreco]}>{item.preco}</Text>
                             </View>
                         </TouchableOpacity>
                     )}
@@ -138,7 +141,7 @@ export default function ProdutorScreen() {
                         >
                             <Image source={imagens[item.foto]} style={styles.produtoImagem} />
                             <View style={styles.produtoInfo}>
-                                <Text style={styles.produtoNome}>{item.nome}</Text>
+                                <Text style={[styles.produtoNome, { color: colors.text }]}>{item.nome}</Text>
                                 <Text style={styles.produtoDescricao}>{item.descricao}</Text>
                                 <Text style={styles.produtoPreco}>{item.preco}</Text>
                             </View>

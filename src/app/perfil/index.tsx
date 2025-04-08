@@ -95,7 +95,7 @@ export default function PerfilHome() {
             <ScrollView contentContainerStyle={{  padding: 20 }} showsVerticalScrollIndicator={true}>
                 
                 {/* 🔹 Perfil do Cliente */}
-                <View style={styles.profile}>
+                <View style={[styles.profile, { backgroundColor: colors.profileCard, borderColor: colors.borderCard }]}>
                     <View style={styles.profileContent}>
                         <View style={styles.profileInfo}>
                             <Text style={[styles.informacao, { color: colors.text }]}>{cliente.categoria}</Text>
@@ -168,7 +168,7 @@ export default function PerfilHome() {
                 <Text style={[styles.sectionTitle, { color: colors.text }]}>Produtos favoritos</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
                     {produtos.map((produto, index) => (
-                        <TouchableOpacity key={index} style={styles.productItem}>
+                        <TouchableOpacity key={index} style={[styles.productItem, { backgroundColor: colors.profileCard, borderColor: colors.borderCard }]}>
                             <Text style={[styles.productText, { color: colors.text }]}>{produto}</Text>
                         </TouchableOpacity>
                     ))}
@@ -178,7 +178,7 @@ export default function PerfilHome() {
                 <Text style={[styles.sectionTitle, { marginBottom: height * 0.005, color: colors.text }]}>Últimos pedidos</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
                     {ultimosPedidos.map((produto, index) => (
-                        <TouchableOpacity key={index} style={styles.productItem}>
+                        <TouchableOpacity key={index} style={[styles.productItem, { backgroundColor: colors.profileCard, borderColor: colors.borderCard }]}>
                             <Text style={[styles.productText, { color: colors.text }]}>{produto}</Text>
                         </TouchableOpacity>
                     ))}
@@ -188,7 +188,7 @@ export default function PerfilHome() {
                 <Text style={[styles.sectionTitle, { marginBottom: height * 0.005, color: colors.text }]}>Agricultores favoritos</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
                     {agricultoresFavoritos.map((produto, index) => (
-                        <TouchableOpacity key={index} style={styles.productItem}>
+                        <TouchableOpacity key={index} style={[styles.productItem, { backgroundColor: colors.profileCard, borderColor: colors.borderCard }]}>
                             <Text style={[styles.productText, { color: colors.text }]}>{produto}</Text>
                         </TouchableOpacity>
                     ))}
@@ -205,7 +205,6 @@ const styles = StyleSheet.create({
     profile: {
         alignItems: "center", 
         marginVertical: 15, 
-        borderColor: '#4D7E1B', 
         borderWidth: 1, 
         justifyContent: "center", 
         borderRadius: 10,

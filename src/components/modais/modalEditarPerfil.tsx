@@ -9,6 +9,7 @@ import {
   Dimensions,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { useTema } from "@/contexts/ThemeContext";
 
 const { width } = Dimensions.get("window");
 
@@ -39,6 +40,8 @@ export default function ModalEditarPerfil({ visible, onClose, onSave, dadosInici
   const [telefone1, setTelefone1] = useState(dadosIniciais.primeiroTelefone);
   const [telefone2, setTelefone2] = useState(dadosIniciais.segundoTelefone);
 
+  const { colors } = useTema()
+
   const salvar = () => {
     onSave({
       nome: nome,
@@ -53,38 +56,38 @@ export default function ModalEditarPerfil({ visible, onClose, onSave, dadosInici
   return (
     <Modal visible={visible} animationType="fade" transparent>
       <View style={styles.modalBackground}>
-        <View style={styles.modalContainer}>
+        <View style={[styles.modalContainer, { backgroundColor: colors.background }]}>
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Feather name="x" size={24} color="#4D7E1B" />
+            <Feather name="x" size={24} color={colors.title} />
           </TouchableOpacity>
 
           <TextInput
             placeholder="Nome"
             value={nome}
             onChangeText={setNome}
-            style={styles.input}
-            placeholderTextColor="#4D7E1B"
+            style={[styles.input, { color: colors.title }]}
+            placeholderTextColor={colors.title}
           />
           <TextInput
             placeholder="E-mail"
             value={email}
             onChangeText={setEmail}
-            style={styles.input}
-            placeholderTextColor="#4D7E1B"
+            style={[styles.input, { color: colors.title }]}
+            placeholderTextColor={colors.title}
           />
           <TextInput
             placeholder="Telefone 1"
             value={telefone1}
             onChangeText={setTelefone1}
-            style={styles.input}
-            placeholderTextColor="#4D7E1B"
+            style={[styles.input, { color: colors.title }]}
+            placeholderTextColor={colors.title}
           />
           <TextInput
             placeholder="Telefone 2"
             value={telefone2}
             onChangeText={setTelefone2}
-            style={styles.input}
-            placeholderTextColor="#4D7E1B"
+            style={[styles.input, { color: colors.title }]}
+            placeholderTextColor={colors.title}
           />
 
           <TouchableOpacity style={styles.saveButton} onPress={salvar}>

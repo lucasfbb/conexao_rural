@@ -16,7 +16,7 @@ export default function Card({ title, subtitle, details, isPayment }: CardProps)
   const { colors } = useTema()
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: colors.profileCard, borderColor: colors.borderCard }]}>
       {/* Ícone de edição */}
       <TouchableOpacity style={styles.editIcon}>
         <AntDesign name="edit" size={10} color="green" />
