@@ -4,9 +4,11 @@ import Header from '@/components/header';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSettings } from '@/contexts/SettingsContext';
 import { useTema } from '@/contexts/ThemeContext';
+import { useNotificacoes } from '@/contexts/NotificationsContext';
 
 export default function Configuracoes() {
   const { colors, isNightMode, toggleNightMode } = useTema();
+  const { notificacoesAtivas, toggleNotificacoes } = useNotificacoes();
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -21,7 +23,7 @@ export default function Configuracoes() {
 
             <View style={styles.option}>
                 <Text style={[styles.label, { color: colors.text }]}>Notificações</Text>
-                <Switch value={isNightMode} onValueChange={toggleNightMode} />
+                <Switch value={notificacoesAtivas} onValueChange={toggleNotificacoes} />
             </View>
         </View>
     </View>

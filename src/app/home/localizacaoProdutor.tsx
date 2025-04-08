@@ -63,7 +63,7 @@ export default function LocalizacaoProdutor() {
 
             <View style={styles.descricao}>
                 <Entypo name="location" size={16} color={colors.title} />
-                <Text style={{ marginLeft: width * 0.02, fontWeight: 'bold', color: colors.text}}>Localização do produtor</Text>
+                <Text style={{ marginLeft: width * 0.02, fontWeight: 'bold', color: colors.text }}>Localização do produtor</Text>
             </View>
 
             <View style={styles.informacoes}>

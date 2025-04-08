@@ -1,12 +1,13 @@
 import { SettingsProvider } from "@/contexts/SettingsContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { NotificationsProvider } from "@/contexts/NotificationsContext"
 
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   return (
-    // <SettingsProvider>
+    <NotificationsProvider>
       <ThemeProvider>
         {children}
       </ThemeProvider>
-    // </SettingsProvider>
+    </NotificationsProvider>
   );
 };
