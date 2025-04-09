@@ -8,6 +8,7 @@ import { router } from 'expo-router'
 
 import Header from '@/components/header'
 import { useTema } from '@/contexts/ThemeContext';
+import ModalEditarPerfil from '@/components/modais/modalEditarPerfil';
 
 export default function Home(){
     const { width, height } = useWindowDimensions();
@@ -61,71 +62,81 @@ export default function Home(){
     ];
 
     return (
-            <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-                {/* 🔹 Header Fixo no Topo */}
-                <Header />
-    
-                {/* 🔹 Conteúdo separado do Header */}
-                <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+            <>  
 
-                    {/*  Barra de Pesquisa e Localização */}
-                    <View style={styles.searchContainer}>
-                        <Feather name="search" size={20} color={"#4D7E1B"} style={styles.icon} />
-                        <TextInput style={[styles.searchInput, { color: colors.text, borderBottomColor: colors.text }]} placeholder='O que você procura hoje ?' placeholderTextColor={colors.text}/>
-                        <TouchableOpacity style={[styles.locationButton, { marginTop: height * 0.01 }]}>
-                            <Ionicons name="location-outline" size={20} color={"#4D7E1B"} />
-                            <Text style={[styles.locationText, { color: colors.text }]}>Minha Localização</Text>
-                        </TouchableOpacity>
-                    </View>
+                <SafeAreaView
+                    edges={["top"]}
+                    style={{ backgroundColor: '#4D7E1B' }} 
+                />
 
-                    {/*  Carrossel de Avisos/Promoções */}
-                    <View style={styles.carouselContainer}>
-                        <Carousel
-                            width={width * 0.85} // Largura dos itens
-                            height={height * 0.23} // Altura dos itens
-                            data={data}
-                            scrollAnimationDuration={500} // Duração da animação
-                            loop
-                            renderItem={({ item }) => (
-                                <Image
-                                    source={item}
-                                    style={{
-                                        width: "100%",
-                                        height: "100%",
-                                        borderRadius: 10,
-                                    }}
-                                    resizeMode="cover"
+                <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["left", "right" ]}>
+                    <View style={{ flex: 1 }}>
+                        {/* 🔹 Header Fixo no Topo */}
+                        <Header />
+
+            
+                        {/* 🔹 Conteúdo separado do Header */}
+                        <ScrollView contentContainerStyle={{  padding: 20 }} showsVerticalScrollIndicator={false} bounces={false} >
+
+                            {/*  Barra de Pesquisa e Localização */}
+                            <View style={styles.searchContainer}>
+                                <Feather name="search" size={20} color={"#4D7E1B"} style={styles.icon} />
+                                <TextInput style={[styles.searchInput, { color: colors.text, borderBottomColor: colors.text }]} placeholder='O que você procura hoje ?' placeholderTextColor={colors.text}/>
+                                <TouchableOpacity style={[styles.locationButton, { marginTop: height * 0.01 }]}>
+                                    <Ionicons name="location-outline" size={20} color={"#4D7E1B"} />
+                                    <Text style={[styles.locationText, { color: colors.text }]}>Minha Localização</Text>
+                                </TouchableOpacity>
+                            </View>
+
+                            {/*  Carrossel de Avisos/Promoções */}
+                            <View style={styles.carouselContainer}>
+                                <Carousel
+                                    width={width * 0.85} // Largura dos itens
+                                    height={height * 0.23} // Altura dos itens
+                                    data={data}
+                                    scrollAnimationDuration={500} // Duração da animação
+                                    loop
+                                    renderItem={({ item }) => (
+                                        <Image
+                                            source={item}
+                                            style={{
+                                                width: "100%",
+                                                height: "100%",
+                                                borderRadius: 10,
+                                            }}
+                                            resizeMode="cover"
+                                        />
+                                    )}
                                 />
-                            )}
-                        />
+                            </View>
+
+                            {/*  Produtos Sazonais */}
+                            <Text style={[styles.sectionTitle, { marginBottom: height * 0.005, color: colors.title }]}>Produtos sazonais</Text>
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
+                                {produtos.map((produto, index) => (
+                                    <TouchableOpacity key={index} style={styles.productItem}>
+                                        <Text style={[styles.productText, { color: colors.text }]}>{produto}</Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </ScrollView>
+
+                            {/*  Agricultores por Perto */}
+                            <Text style={[styles.sectionTitle, { textAlign: 'center', marginBottom: height * 0.01, color: colors.title }]}>Agricultores por perto</Text>
+                                <FlatList
+                                    data={agricultores}
+                                    renderItem={renderAgricultor}
+                                    keyExtractor={(item, index) => index.toString()}
+                                    scrollEnabled={false} // Para não conflitar com ScrollView
+                                />
+                        </ScrollView>
                     </View>
-
-                    {/*  Produtos Sazonais */}
-                    <Text style={[styles.sectionTitle, { marginBottom: height * 0.005, color: colors.title }]}>Produtos sazonais</Text>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
-                        {produtos.map((produto, index) => (
-                            <TouchableOpacity key={index} style={styles.productItem}>
-                                <Text style={[styles.productText, { color: colors.text }]}>{produto}</Text>
-                            </TouchableOpacity>
-                        ))}
-                    </ScrollView>
-
-                    {/*  Agricultores por Perto */}
-                    <Text style={[styles.sectionTitle, { textAlign: 'center', marginBottom: height * 0.01, color: colors.title }]}>Agricultores por perto</Text>
-                        <FlatList
-                            data={agricultores}
-                            renderItem={renderAgricultor}
-                            keyExtractor={(item, index) => index.toString()}
-                            scrollEnabled={false} // Para não conflitar com ScrollView
-                        />
-                </ScrollView>
-            </ScrollView>
+                </SafeAreaView>
+            </>
         );
 }
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: 'white' },
-    content: { flex: 1, padding: 15 },
     title: { fontSize: 24,fontWeight: 'bold',marginBottom: 20 },
     searchContainer: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
     searchInput: { flex: 1, borderBottomWidth: 1, padding: 8, marginRight: 10 },

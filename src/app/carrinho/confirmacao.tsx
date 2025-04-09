@@ -4,6 +4,7 @@ import Header from '@/components/header';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTema } from '@/contexts/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get("window");
 
@@ -31,61 +32,69 @@ export default function Confirmacao() {
   const totalFinal = total + frete;
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Header showGoBack />
-      <View style={{ padding:25 }}>
-      <Text style={[styles.titulo, { color: colors.title }]}>Carrinho</Text>
+      <>
 
-      {/* Endereço */}
-      <Text style={[styles.label, { color: colors.title }]}>Endereço entrega</Text>
-      <View style={[styles.card, { backgroundColor: colors.produtoContainer }]}>
-        <View style={styles.row}>
-          <Feather name="map-pin" size={20} color="#4D7E1B" />
-          <View style={{ marginLeft: 10 }}>
-            <Text style={styles.texto}>{endereco.local}</Text>
-            <Text style={styles.subtexto}>{endereco.rua}</Text>
-            <Text style={styles.subtexto}>{endereco.cidade}</Text>
-            <Text style={styles.subtexto}>{endereco.complemento}</Text>
+        <SafeAreaView
+            edges={["top"]}
+            style={{ backgroundColor: '#4D7E1B' }} 
+        />
+
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
+          <Header showGoBack />
+          <View style={{ padding:25 }}>
+          <Text style={[styles.titulo, { color: colors.title }]}>Carrinho</Text>
+
+          {/* Endereço */}
+          <Text style={[styles.label, { color: colors.title }]}>Endereço entrega</Text>
+          <View style={[styles.card, { backgroundColor: colors.produtoContainer }]}>
+            <View style={styles.row}>
+              <Feather name="map-pin" size={20} color="#4D7E1B" />
+              <View style={{ marginLeft: 10 }}>
+                <Text style={styles.texto}>{endereco.local}</Text>
+                <Text style={styles.subtexto}>{endereco.rua}</Text>
+                <Text style={styles.subtexto}>{endereco.cidade}</Text>
+                <Text style={styles.subtexto}>{endereco.complemento}</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Data */}
+          <Text style={[styles.label, { color: colors.title }]}>Data de entrega</Text>
+          <View style={[styles.card, { backgroundColor: colors.produtoContainer }]}>
+            <View style={styles.row}>
+              <MaterialIcons name="calendar-today" size={20} color="#4D7E1B" />
+              <View style={{ marginLeft: 10 }}>
+                <Text style={styles.texto}>{dataEntrega}</Text>
+                <Text style={styles.subtexto}>Frete: R$ {frete.toFixed(2)}</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Pagamento */}
+          <Text style={[styles.label, { color: colors.title }]}>Forma de pagamento</Text>
+          <View style={[styles.card, { backgroundColor: colors.produtoContainer }]}>
+            <View style={styles.row}>
+              <Feather name="credit-card" size={20} color="#4D7E1B" />
+              <View style={{ marginLeft: 10 }}>
+                <Text style={styles.texto}>Meu cartão - {pagamento.tipo}</Text>
+                <Text style={styles.subtexto}>●●●● {pagamento.final}</Text>
+                <TouchableOpacity><Text style={styles.trocar}>Trocar</Text></TouchableOpacity>
+              </View>
+            </View>
+          </View>
+
+          {/* Total */}
+          <View style={styles.totalContainer}>
+            <Text style={styles.total}>Total com entrega</Text>
+            <Text style={styles.totalValor}>R$ {totalFinal.toFixed(2)}</Text>
+          </View>
+
+          <TouchableOpacity style={styles.botao} onPress={() => router.push('/carrinho/finalizacao')}>
+            <Text style={styles.botaoTexto}>Confirmar Pedido</Text>
+          </TouchableOpacity>
           </View>
         </View>
-      </View>
-
-      {/* Data */}
-      <Text style={[styles.label, { color: colors.title }]}>Data de entrega</Text>
-      <View style={[styles.card, { backgroundColor: colors.produtoContainer }]}>
-        <View style={styles.row}>
-          <MaterialIcons name="calendar-today" size={20} color="#4D7E1B" />
-          <View style={{ marginLeft: 10 }}>
-            <Text style={styles.texto}>{dataEntrega}</Text>
-            <Text style={styles.subtexto}>Frete: R$ {frete.toFixed(2)}</Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Pagamento */}
-      <Text style={[styles.label, { color: colors.title }]}>Forma de pagamento</Text>
-      <View style={[styles.card, { backgroundColor: colors.produtoContainer }]}>
-        <View style={styles.row}>
-          <Feather name="credit-card" size={20} color="#4D7E1B" />
-          <View style={{ marginLeft: 10 }}>
-            <Text style={styles.texto}>Meu cartão - {pagamento.tipo}</Text>
-            <Text style={styles.subtexto}>●●●● {pagamento.final}</Text>
-            <TouchableOpacity><Text style={styles.trocar}>Trocar</Text></TouchableOpacity>
-          </View>
-        </View>
-      </View>
-
-      {/* Total */}
-      <View style={styles.totalContainer}>
-        <Text style={styles.total}>Total com entrega</Text>
-        <Text style={styles.totalValor}>R$ {totalFinal.toFixed(2)}</Text>
-      </View>
-
-      <TouchableOpacity style={styles.botao} onPress={() => router.push('/carrinho/finalizacao')}>
-        <Text style={styles.botaoTexto}>Confirmar Pedido</Text>
-      </TouchableOpacity>
-      </View>
-    </View>
+      </>
   );
 }
 

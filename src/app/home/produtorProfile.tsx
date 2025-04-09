@@ -6,6 +6,7 @@ import { AntDesign, Feather, MaterialIcons } from "@expo/vector-icons";
 import Header from "@/components/header";
 import ModalProduto from "@/components/modais/modalProduto";
 import { useTema } from "@/contexts/ThemeContext";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width, height } = Dimensions.get("window");
 
@@ -46,112 +47,121 @@ export default function ProdutorScreen() {
     ];
     
     return (
-
-
-        <ScrollView style={[styles.container, { backgroundColor: colors.background }]}> 
+        <>
             
-            <Header showFavoriteicon={true} showGoBack={true} />
+            <SafeAreaView
+                edges={["top"]}
+                style={{ backgroundColor: '#4D7E1B' }} 
+            />
 
-            {produtoSelecionado && (
-                <ModalProduto
-                    visible={modalProdutoVisivel}
-                    onClose={() => {
-                    setModalProdutoVisivel(false);
-                    setProdutoSelecionado(null);
-                    }}
-                    produto={produtoSelecionado}
-                    onAddToCart={(qtd) => {
-                    console.log(`Adicionar ${qtd} unidade(s) ao carrinho`);
-                    setModalProdutoVisivel(false);
-                    setProdutoSelecionado(null);
-                    }}
-                />
-            )}
+            <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["left", "right" ]}>
+                
+                <Header showFavoriteicon={true} showGoBack={true} />
+                
+                <ScrollView style={[styles.container, { backgroundColor: colors.background }]} bounces={false}> 
 
-            {/* 🔹 Banner */}
-          
-            <Image source={require("../../../assets/images/banner_produtor.png")}  style={styles.banner}/>
-    
-            {/* 🔹 Informações do Produtor */}
-            <View style={styles.produtorInfo}>
-                <Image source={require("../../../assets/images/perfil_agricultor.png")} style={styles.logo} />
-                <Text style={[styles.produtorNome, { color: colors.text }]}>{params?.nome || "Nome não disponível"}</Text>
-                <TouchableOpacity style={styles.localizacao} onPress={() => router.push('/home/localizacaoProdutor')}>
-                    <Feather name="map-pin" size={16} color={colors.text} />
-                    <Text style={[styles.localizacaoText, { color: colors.text }]}> Localização</Text>
-                </TouchableOpacity>
-                <View style={styles.produtorDetalhes}>
-                    <Text style={styles.avaliacao}><MaterialIcons name="star" size={16} color="gold" /> 4.7</Text>
-                    <Text style={styles.categoria}>- Legumes -</Text>
-                    <Text style={styles.distancia}>10km</Text>
-                </View>
-            </View>
-
-            {/* 🔹 Seção Promoções */}
-            <Text style={[styles.sectionTitle, { color: colors.title }]}>Promoções</Text>
-            <View style={{ paddingLeft: 15, paddingRight: 15 }}>
-                <FlatList
-                    data={produtosPromocao}
-                    renderItem={({ item }) => (
-                        <TouchableOpacity
-                            style={[styles.promoCard, {  }]}
-                            onPress={() => {
-                                const imagem = imagens[item.foto]; // pegar imagem baseada na chave
-                                setProdutoSelecionado({
-                                nome: item.nome,
-                                preco: item.preco,
-                                imagem,
-                                });
-                                setModalProdutoVisivel(true);
+                    {produtoSelecionado && (
+                        <ModalProduto
+                            visible={modalProdutoVisivel}
+                            onClose={() => {
+                            setModalProdutoVisivel(false);
+                            setProdutoSelecionado(null);
                             }}
-                        >
-                            <Image source={imagens[item.foto]} style={styles.produtoImagem} />
-                            <View>
-                                <Text style={[styles.produtoNome, { color: colors.text }]}>{item.nome}</Text>
-                                <Text style={[styles.produtoPreco]}>{item.preco}</Text>
-                            </View>
-                        </TouchableOpacity>
+                            produto={produtoSelecionado}
+                            onAddToCart={(qtd) => {
+                            console.log(`Adicionar ${qtd} unidade(s) ao carrinho`);
+                            setModalProdutoVisivel(false);
+                            setProdutoSelecionado(null);
+                            }}
+                        />
                     )}
-                    keyExtractor={(item) => item.id}
-                    numColumns={2}
-                    columnWrapperStyle={{ justifyContent: "space-between" }}
-                    scrollEnabled={false} // 🔹 Desabilita scroll da FlatList
-                />
-            </View>
 
-            {/* 🔹 Seção Produtos Principais */}
-            <Text style={styles.sectionTitle}>Principais</Text>
-            <View style={{ paddingLeft: 15, paddingRight: 15 }}>
-                <FlatList
-                    data={produtosPrincipais}
-                    renderItem={({ item }) => (
-                        <TouchableOpacity
-                        style={styles.principalCard}
-                        onPress={() => {
-                            // console.log("imagem selecionada:", imagens[item.foto]);
-                            const imagem = imagens[item.foto]; // pegar imagem baseada na chave
-                            setProdutoSelecionado({
-                            nome: item.nome,
-                            descricao: item.descricao,
-                            preco: item.preco,
-                            imagem,
-                            });
-                            setModalProdutoVisivel(true);
-                        }}
-                        >
-                            <Image source={imagens[item.foto]} style={styles.produtoImagem} />
-                            <View style={styles.produtoInfo}>
-                                <Text style={[styles.produtoNome, { color: colors.text }]}>{item.nome}</Text>
-                                <Text style={styles.produtoDescricao}>{item.descricao}</Text>
-                                <Text style={styles.produtoPreco}>{item.preco}</Text>
-                            </View>
+                    {/* 🔹 Banner */}
+                
+                    <Image source={require("../../../assets/images/banner_produtor.png")}  style={styles.banner}/>
+            
+                    {/* 🔹 Informações do Produtor */}
+                    <View style={styles.produtorInfo}>
+                        <Image source={require("../../../assets/images/perfil_agricultor.png")} style={styles.logo} />
+                        <Text style={[styles.produtorNome, { color: colors.text }]}>{params?.nome || "Nome não disponível"}</Text>
+                        <TouchableOpacity style={styles.localizacao} onPress={() => router.push('/home/localizacaoProdutor')}>
+                            <Feather name="map-pin" size={16} color={colors.text} />
+                            <Text style={[styles.localizacaoText, { color: colors.text }]}> Localização</Text>
                         </TouchableOpacity>
-                    )}
-                    keyExtractor={(item) => item.id}
-                    scrollEnabled={false} // 🔹 Desabilita scroll da FlatList
-                />
-            </View>
-        </ScrollView>
+                        <View style={styles.produtorDetalhes}>
+                            <Text style={styles.avaliacao}><MaterialIcons name="star" size={16} color="gold" /> 4.7</Text>
+                            <Text style={styles.categoria}>- Legumes -</Text>
+                            <Text style={styles.distancia}>10km</Text>
+                        </View>
+                    </View>
+
+                    {/* 🔹 Seção Promoções */}
+                    <Text style={[styles.sectionTitle, { color: colors.title }]}>Promoções</Text>
+                    <View style={{ paddingLeft: 15, paddingRight: 15 }}>
+                        <FlatList
+                            data={produtosPromocao}
+                            renderItem={({ item }) => (
+                                <TouchableOpacity
+                                    style={[styles.promoCard, {  }]}
+                                    onPress={() => {
+                                        const imagem = imagens[item.foto]; // pegar imagem baseada na chave
+                                        setProdutoSelecionado({
+                                        nome: item.nome,
+                                        preco: item.preco,
+                                        imagem,
+                                        });
+                                        setModalProdutoVisivel(true);
+                                    }}
+                                >
+                                    <Image source={imagens[item.foto]} style={styles.produtoImagem} />
+                                    <View>
+                                        <Text style={[styles.produtoNome, { color: colors.text }]}>{item.nome}</Text>
+                                        <Text style={[styles.produtoPreco]}>{item.preco}</Text>
+                                    </View>
+                                </TouchableOpacity>
+                            )}
+                            keyExtractor={(item) => item.id}
+                            numColumns={2}
+                            columnWrapperStyle={{ justifyContent: "space-between" }}
+                            scrollEnabled={false} // 🔹 Desabilita scroll da FlatList
+                        />
+                    </View>
+
+                    {/* 🔹 Seção Produtos Principais */}
+                    <Text style={styles.sectionTitle}>Principais</Text>
+                    <View style={{ paddingLeft: 15, paddingRight: 15 }}>
+                        <FlatList
+                            data={produtosPrincipais}
+                            renderItem={({ item }) => (
+                                <TouchableOpacity
+                                style={styles.principalCard}
+                                onPress={() => {
+                                    // console.log("imagem selecionada:", imagens[item.foto]);
+                                    const imagem = imagens[item.foto]; // pegar imagem baseada na chave
+                                    setProdutoSelecionado({
+                                    nome: item.nome,
+                                    descricao: item.descricao,
+                                    preco: item.preco,
+                                    imagem,
+                                    });
+                                    setModalProdutoVisivel(true);
+                                }}
+                                >
+                                    <Image source={imagens[item.foto]} style={styles.produtoImagem} />
+                                    <View style={styles.produtoInfo}>
+                                        <Text style={[styles.produtoNome, { color: colors.text }]}>{item.nome}</Text>
+                                        <Text style={styles.produtoDescricao}>{item.descricao}</Text>
+                                        <Text style={styles.produtoPreco}>{item.preco}</Text>
+                                    </View>
+                                </TouchableOpacity>
+                            )}
+                            keyExtractor={(item) => item.id}
+                            scrollEnabled={false} // 🔹 Desabilita scroll da FlatList
+                        />
+                    </View>
+                </ScrollView>
+            </SafeAreaView>
+        </>
     );
 }
 

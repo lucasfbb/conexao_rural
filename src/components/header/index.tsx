@@ -15,7 +15,7 @@ export default function Header({ showFavoriteicon = false, showGoBack = false }:
     const router = useRouter();
     
     return (
-        <SafeAreaView style={styles.safeContainer} edges={["top", "left", "right"]}>
+        // <SafeAreaView style={styles.safeContainer} edges={["top", "left", "right"]}>
             <View style={styles.container}>
 
                 {/* Drawer ou botao de voltar */}
@@ -68,6 +68,6 @@ export default function Header({ showFavoriteicon = false, showGoBack = false }:
 
                 
             </View>
-        </SafeAreaView>
+        // </SafeAreaView>
     );
 }

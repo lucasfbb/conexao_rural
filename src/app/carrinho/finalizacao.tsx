@@ -1,7 +1,8 @@
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ScrollView } from 'react-native';
 import { Feather, MaterialIcons } from '@expo/vector-icons';
 import Header from '@/components/header';
 import { useTema } from '@/contexts/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get("window");
 
@@ -22,64 +23,78 @@ export default function Finalizacao() {
   const total = subtotal + frete;
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Header showGoBack />
+      <>
 
-      <View style={{ padding: 25 }}>
-      
-        <Text style={[styles.title, { color: colors.title }]}>Finalização</Text>
+        <SafeAreaView
+            edges={["top"]}
+            style={{ backgroundColor: '#4D7E1B' }} 
+        />
 
-        {/* Produtor */}
-        <View style={styles.produtorContainer}>
-          <View style={styles.logo} />
-          <View>
-            <Text style={styles.produtorNome}>{produtor.nome}</Text>
-            <Text style={styles.produtorVoltar}>{produtor.subtitulo}</Text>
-          </View>
-        </View>
+        <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["left", "right"]}>
+          <View style={{ flex: 1 }}>
+            <Header showGoBack />
 
-        {/* Resumo */}
-        <Text style={[styles.sectionTitle, { color: colors.title }]}>Resumo</Text>
-        <View style={styles.resumo}>
-          <View style={styles.linha}>
-            <Text style={styles.label}>Subtotal</Text>
-            <Text style={styles.valor}>R$ {subtotal.toFixed(2)}</Text>
-          </View>
-          <View style={styles.linha}>
-            <Text style={styles.label}>Frete</Text>
-            <Text style={styles.valor}>R$ {frete.toFixed(2)}</Text>
-          </View>
-          <View style={styles.linha}>
-            <Text style={[styles.label, { fontWeight: 'bold' }]}>Total</Text>
-            <Text style={[styles.valor, { fontWeight: 'bold' }]}>R$ {total.toFixed(2)}</Text>
-          </View>
-        </View>
+            <ScrollView contentContainerStyle={{  padding: 25 }} showsVerticalScrollIndicator={false} bounces={false} >
+            
+                <Text style={[styles.title, { color: colors.title }]}>Finalização</Text>
 
-        {/* Informações adicionais */}
-        <View style={styles.infosContainer}>
-          <View style={styles.infoItem}>
-            <Feather name="map-pin" size={18} color="#4D7E1B" />
-            <Text style={styles.infoText}>{endereco}</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Feather name="credit-card" size={18} color="#4D7E1B" />
-            <Text style={styles.infoText}>{pagamento}</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <MaterialIcons name="calendar-today" size={18} color="#4D7E1B" />
-            <Text style={styles.infoText}>{data}</Text>
-          </View>
-        </View>
+                {/* Produtor */}
+                <View style={styles.produtorContainer}>
+                  <View style={styles.logo} />
+                  <View>
+                    <Text style={styles.produtorNome}>{produtor.nome}</Text>
+                    <Text style={styles.produtorVoltar}>{produtor.subtitulo}</Text>
+                  </View>
+                </View>
 
-        {/* Rodapé */}
-        <View style={styles.footer}>
-          <Text style={styles.total}>Total com entrega R$ {total.toFixed(2)}</Text>
-          <TouchableOpacity style={styles.btnFinalizar}>
-            <Text style={styles.btnTexto}>Finalizar Pedido</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
+                {/* Resumo */}
+                <Text style={[styles.sectionTitle, { color: colors.title }]}>Resumo</Text>
+                <View style={styles.resumo}>
+                  <View style={styles.linha}>
+                    <Text style={styles.label}>Subtotal</Text>
+                    <Text style={styles.valor}>R$ {subtotal.toFixed(2)}</Text>
+                  </View>
+                  <View style={styles.linha}>
+                    <Text style={styles.label}>Frete</Text>
+                    <Text style={styles.valor}>R$ {frete.toFixed(2)}</Text>
+                  </View>
+                  <View style={styles.linha}>
+                    <Text style={[styles.label, { fontWeight: 'bold' }]}>Total</Text>
+                    <Text style={[styles.valor, { fontWeight: 'bold' }]}>R$ {total.toFixed(2)}</Text>
+                  </View>
+                </View>
+
+                {/* Informações adicionais */}
+                <View style={styles.infosContainer}>
+                  <View style={styles.infoItem}>
+                    <Feather name="map-pin" size={18} color="#4D7E1B" />
+                    <Text style={styles.infoText}>{endereco}</Text>
+                  </View>
+                  <View style={styles.infoItem}>
+                    <Feather name="credit-card" size={18} color="#4D7E1B" />
+                    <Text style={styles.infoText}>{pagamento}</Text>
+                  </View>
+                  <View style={styles.infoItem}>
+                    <MaterialIcons name="calendar-today" size={18} color="#4D7E1B" />
+                    <Text style={styles.infoText}>{data}</Text>
+                  </View>
+                </View>
+
+                
+            </ScrollView>
+
+            {/* Rodapé */}
+            <SafeAreaView style={styles.footer} edges={["bottom"]}>
+              <Text style={styles.total}>Total com entrega R$ {total.toFixed(2)}</Text>
+              <TouchableOpacity style={styles.btnFinalizar}>
+                <Text style={styles.btnTexto}>Finalizar Pedido</Text>
+              </TouchableOpacity>
+            </SafeAreaView>
+
+          </View>
+
+        </SafeAreaView>
+      </>
   );
 }
 

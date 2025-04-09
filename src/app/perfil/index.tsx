@@ -4,6 +4,7 @@ import Header from '@/components/header'
 import Card from "@/components/card"; 
 import { AntDesign, Feather } from '@expo/vector-icons'
 import { useState } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import ModalEndereco from '@/components/modais/modalEndereco'
 import ModalPagamento from '@/components/modais/modalPagamento'
@@ -67,135 +68,145 @@ export default function PerfilHome() {
     );
 
     return (
-        <View style={[styles.container, { backgroundColor: colors.background }] }>
-            <Header />
-
-            {/* 🔹 Modal de Endereço */}
-            <ModalEndereco
-                visible={modalEnderecoVisible}
-                onClose={() => setModalEnderecoVisible(false)}
-                onSave={handleSaveEndereco}
+        <>
+            <SafeAreaView
+                edges={["top"]}
+                style={{ backgroundColor: '#4D7E1B' }} 
             />
 
-            {/* 🔹 Modal de Pagamento */}
-            <ModalPagamento
-                visible={modalPagamentoVisible}
-                onClose={() => setModalPagamentoVisible(false)}
-                onSave={handleSavePagamento}
-            />
-            
-            {/* 🔹 Modal de Editar perfil do usuuário */}
-            <ModalEditarPerfil
-                visible={modalEditarPerfilVisible}
-                onClose={() => setModalEditarPerfilVisible(false)}
-                onSave={handleSavePerfil}
-                dadosIniciais={cliente}
-            />
+            <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["left", "right"]}>
+                <View style={{ flex: 1 }}>
 
-            <ScrollView contentContainerStyle={{  padding: 20 }} showsVerticalScrollIndicator={true}>
-                
-                {/* 🔹 Perfil do Cliente */}
-                <View style={[styles.profile, { backgroundColor: colors.profileCard, borderColor: colors.borderCard }]}>
-                    <View style={styles.profileContent}>
-                        <View style={styles.profileInfo}>
-                            <Text style={[styles.informacao, { color: colors.text }]}>{cliente.categoria}</Text>
-                            <Text style={[styles.label, { color: colors.text }]}>Categoria</Text>
-                            
-                            { isNightMode ? 
-                                <Image 
-                                    source={require("../../../assets/images/perfil-de-usuario-branco.png")}
-                                    style={styles.profileImage}
-                                />
-                            :
-                                <Image 
-                                    source={require("../../../assets/images/perfil-de-usuario.png")}
-                                    style={styles.profileImage}
-                                />
+                    <Header />
+
+                    {/* 🔹 Modal de Endereço */}
+                    <ModalEndereco
+                        visible={modalEnderecoVisible}
+                        onClose={() => setModalEnderecoVisible(false)}
+                        onSave={handleSaveEndereco}
+                    />
+
+                    {/* 🔹 Modal de Pagamento */}
+                    <ModalPagamento
+                        visible={modalPagamentoVisible}
+                        onClose={() => setModalPagamentoVisible(false)}
+                        onSave={handleSavePagamento}
+                    />
+                    
+                    {/* 🔹 Modal de Editar perfil do usuuário */}
+                    <ModalEditarPerfil
+                        visible={modalEditarPerfilVisible}
+                        onClose={() => setModalEditarPerfilVisible(false)}
+                        onSave={handleSavePerfil}
+                        dadosIniciais={cliente}
+                    />
+
+                    <ScrollView contentContainerStyle={{  padding: 20, backgroundColor: colors.background }} showsVerticalScrollIndicator={true} bounces={false} >
+                        
+                        {/* 🔹 Perfil do Cliente */}
+                        <View style={[styles.profile, { backgroundColor: colors.profileCard, borderColor: colors.borderCard }]}>
+                            <View style={styles.profileContent}>
+                                <View style={styles.profileInfo}>
+                                    <Text style={[styles.informacao, { color: colors.text }]}>{cliente.categoria}</Text>
+                                    <Text style={[styles.label, { color: colors.text }]}>Categoria</Text>
+                                    
+                                    { isNightMode ? 
+                                        <Image 
+                                            source={require("../../../assets/images/perfil-de-usuario-branco.png")}
+                                            style={styles.profileImage}
+                                        />
+                                    :
+                                        <Image 
+                                            source={require("../../../assets/images/perfil-de-usuario.png")}
+                                            style={styles.profileImage}
+                                        />
+                                    }
+                                    
+                                </View>
+                                <View>
+                                    <Text style={[styles.informacao, { color: colors.text }]}>{cliente.nome}</Text>
+                                    <Text style={[styles.label, { color: colors.text }]}>Nome Completo</Text>
+                                    <Text style={[styles.informacao, { color: colors.text }]}>{cliente.email}</Text>
+                                    <Text style={[styles.label, { color: colors.text }]}>E-mail de contato</Text>
+                                    <Text style={[styles.informacao, { color: colors.text }]}>{cliente.primeiroTelefone}</Text>
+                                    <Text style={[styles.label, { color: colors.text }]}>Primeiro Telefone</Text>
+                                    <Text style={[styles.informacao, { color: colors.text }]}>{cliente.segundoTelefone}</Text>
+                                    <Text style={[styles.label, { color: colors.text }]}>Segundo telefone</Text>
+                                </View>
+                                <TouchableOpacity style={styles.editIcon} onPress={() => setModalEditarPerfilVisible(true)}>
+                                    <AntDesign name="edit" size={16} color={'black'} />
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+
+                        {/* 🔹 Endereços */}
+                        <Text style={[styles.sectionTitle, { color: colors.text }]}>Endereços</Text>
+                        <FlatList
+                            data={enderecos} 
+                            renderItem={({ item }) =>
+                                item.addNew ? (
+                                    <TouchableOpacity style={styles.addCard} onPress={() => setModalEnderecoVisible(true)}>
+                                        <Feather name="plus" size={30} color="green" />
+                                    </TouchableOpacity>
+                                ) : (renderItem({ item }))
                             }
-                            
-                        </View>
-                        <View>
-                            <Text style={[styles.informacao, { color: colors.text }]}>{cliente.nome}</Text>
-                            <Text style={[styles.label, { color: colors.text }]}>Nome Completo</Text>
-                            <Text style={[styles.informacao, { color: colors.text }]}>{cliente.email}</Text>
-                            <Text style={[styles.label, { color: colors.text }]}>E-mail de contato</Text>
-                            <Text style={[styles.informacao, { color: colors.text }]}>{cliente.primeiroTelefone}</Text>
-                            <Text style={[styles.label, { color: colors.text }]}>Primeiro Telefone</Text>
-                            <Text style={[styles.informacao, { color: colors.text }]}>{cliente.segundoTelefone}</Text>
-                            <Text style={[styles.label, { color: colors.text }]}>Segundo telefone</Text>
-                        </View>
-                        <TouchableOpacity style={styles.editIcon} onPress={() => setModalEditarPerfilVisible(true)}>
-                            <AntDesign name="edit" size={16} color={'black'} />
-                        </TouchableOpacity>
-                    </View>
+                            keyExtractor={(item, index) => index.toString()}
+                            numColumns={3}
+                            scrollEnabled={false}
+                            columnWrapperStyle={{ justifyContent: "space-between" }}
+                        />
+
+                        {/* 🔹 Pagamentos */}
+                        <Text style={[styles.sectionTitle, { color: colors.text }]}>Pagamentos</Text>
+                        <FlatList
+                            data={pagamentos} 
+                            renderItem={({ item }) =>
+                                item.addNew ? (
+                                    <TouchableOpacity style={styles.addCard} onPress={() => setModalPagamentoVisible(true)}>
+                                        <Feather name="plus" size={30} color="green" />
+                                    </TouchableOpacity>
+                                ) : (renderItem({ item }))
+                            }
+                            keyExtractor={(item, index) => index.toString()}
+                            numColumns={3}
+                            scrollEnabled={false}
+                            columnWrapperStyle={{ justifyContent: "space-between" }}
+                        />
+
+                        {/* 🔹 Produtos Favoritos */}
+                        <Text style={[styles.sectionTitle, { color: colors.text }]}>Produtos favoritos</Text>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
+                            {produtos.map((produto, index) => (
+                                <TouchableOpacity key={index} style={[styles.productItem, { backgroundColor: colors.profileCard, borderColor: colors.borderCard }]}>
+                                    <Text style={[styles.productText, { color: colors.text }]}>{produto}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+                        
+                        {/* 🔹 Últimos pedidos */}
+                        <Text style={[styles.sectionTitle, { marginBottom: height * 0.005, color: colors.text }]}>Últimos pedidos</Text>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
+                            {ultimosPedidos.map((produto, index) => (
+                                <TouchableOpacity key={index} style={[styles.productItem, { backgroundColor: colors.profileCard, borderColor: colors.borderCard }]}>
+                                    <Text style={[styles.productText, { color: colors.text }]}>{produto}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+                        
+                        {/* 🔹 Agricultores favoritos */}
+                        <Text style={[styles.sectionTitle, { marginBottom: height * 0.005, color: colors.text }]}>Agricultores favoritos</Text>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
+                            {agricultoresFavoritos.map((produto, index) => (
+                                <TouchableOpacity key={index} style={[styles.productItem, { backgroundColor: colors.profileCard, borderColor: colors.borderCard }]}>
+                                    <Text style={[styles.productText, { color: colors.text }]}>{produto}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+
+                    </ScrollView>
                 </View>
-
-                {/* 🔹 Endereços */}
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>Endereços</Text>
-                <FlatList
-                    data={enderecos} 
-                    renderItem={({ item }) =>
-                        item.addNew ? (
-                            <TouchableOpacity style={styles.addCard} onPress={() => setModalEnderecoVisible(true)}>
-                                <Feather name="plus" size={30} color="green" />
-                            </TouchableOpacity>
-                        ) : (renderItem({ item }))
-                    }
-                    keyExtractor={(item, index) => index.toString()}
-                    numColumns={3}
-                    scrollEnabled={false}
-                    columnWrapperStyle={{ justifyContent: "space-between" }}
-                />
-
-                {/* 🔹 Pagamentos */}
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>Pagamentos</Text>
-                <FlatList
-                    data={pagamentos} 
-                    renderItem={({ item }) =>
-                        item.addNew ? (
-                            <TouchableOpacity style={styles.addCard} onPress={() => setModalPagamentoVisible(true)}>
-                                <Feather name="plus" size={30} color="green" />
-                            </TouchableOpacity>
-                        ) : (renderItem({ item }))
-                    }
-                    keyExtractor={(item, index) => index.toString()}
-                    numColumns={3}
-                    scrollEnabled={false}
-                    columnWrapperStyle={{ justifyContent: "space-between" }}
-                />
-
-                {/* 🔹 Produtos Favoritos */}
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>Produtos favoritos</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
-                    {produtos.map((produto, index) => (
-                        <TouchableOpacity key={index} style={[styles.productItem, { backgroundColor: colors.profileCard, borderColor: colors.borderCard }]}>
-                            <Text style={[styles.productText, { color: colors.text }]}>{produto}</Text>
-                        </TouchableOpacity>
-                    ))}
-                </ScrollView>
-                
-                {/* 🔹 Últimos pedidos */}
-                <Text style={[styles.sectionTitle, { marginBottom: height * 0.005, color: colors.text }]}>Últimos pedidos</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
-                    {ultimosPedidos.map((produto, index) => (
-                        <TouchableOpacity key={index} style={[styles.productItem, { backgroundColor: colors.profileCard, borderColor: colors.borderCard }]}>
-                            <Text style={[styles.productText, { color: colors.text }]}>{produto}</Text>
-                        </TouchableOpacity>
-                    ))}
-                </ScrollView>
-                
-                {/* 🔹 Agricultores favoritos */}
-                <Text style={[styles.sectionTitle, { marginBottom: height * 0.005, color: colors.text }]}>Agricultores favoritos</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
-                    {agricultoresFavoritos.map((produto, index) => (
-                        <TouchableOpacity key={index} style={[styles.productItem, { backgroundColor: colors.profileCard, borderColor: colors.borderCard }]}>
-                            <Text style={[styles.productText, { color: colors.text }]}>{produto}</Text>
-                        </TouchableOpacity>
-                    ))}
-                </ScrollView>
-
-            </ScrollView>
-        </View>
+            </SafeAreaView>
+        </>
     );
 }
 
