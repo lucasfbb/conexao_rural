@@ -12,12 +12,10 @@ export default function DrawerLayout() {
 
     const pathname = usePathname(); // Obtém a rota atual
 
-    // console.log(pathname)
-
-    // Se a rota for "/login", não exibe o Drawer
-    // if (pathname === "/") {
-    //     return <Slot />;
-    // }
+    const usuario = {
+        nome: "João",
+        tipo: "produtor", // ou "cliente"
+    };
 
     return (
         <AppProvider>
@@ -73,6 +71,27 @@ export default function DrawerLayout() {
                             drawerIcon: ({ color }) => <Feather name="settings" size={20} color={'white'} />,
                         }} 
                     />
+
+                    {usuario.tipo === "produtor" ? 
+                        <Drawer.Screen 
+                            name="areaProdutor"
+                            options={{ 
+                            drawerLabel: "Área do Produtor",
+                            drawerLabelStyle: { color: "white" },
+                            drawerIcon: ({ color }) => <Feather name="package" size={20} color={'white'} />,
+                            }} 
+                        /> :
+
+                        <Drawer.Screen 
+                            name="areaProdutor" 
+                            options={{ 
+                                drawerLabel: () => null, // 🔹 Oculta do menu
+                                title: "", // 🔹 Remove o título do header
+                                drawerItemStyle: { height: 0 } // 🔹 Evita espaço vazio no Drawer
+                            }} 
+                    />
+
+                    }
 
                     <Drawer.Screen 
                         name="login" 

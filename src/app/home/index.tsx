@@ -69,10 +69,12 @@ export default function Home(){
                     style={{ backgroundColor: '#4D7E1B' }} 
                 />
 
-                <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["left", "right" ]}>
-                    <View style={{ flex: 1 }}>
+                <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["left", "right", 'bottom']}>
+                    <View style={{ flex: 1}}>
                         {/* 🔹 Header Fixo no Topo */}
-                        <Header />
+                        <View style={{ backgroundColor: "#4D7E1B" }}>
+                            <Header />
+                        </View>
 
             
                         {/* 🔹 Conteúdo separado do Header */}
