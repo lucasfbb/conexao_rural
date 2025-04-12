@@ -11,4 +11,4 @@ class UsuarioCreate(UsuarioBase):
 class UsuarioResponse(UsuarioBase):
     cpf_cnpj: str
     class Config:
-        orm_mode = True
+        from_attributes = True

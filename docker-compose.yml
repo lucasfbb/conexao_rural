@@ -1,0 +1,55 @@
+name: conexao_rural
+services:
+  db:
+    image: postgres:15
+    container_name: postgres_fastapi
+    restart: always
+    environment:
+      POSTGRES_USER: meuusuario
+      POSTGRES_PASSWORD: minhasenha
+      POSTGRES_DB: meubanco
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - conexao_rural_network
+  server:
+    image: server-backend
+    container_name: server-backend
+    build: 
+      context: .
+      dockerfile: dockerfile
+    restart: on-failure
+    depends_on:
+      - db
+    networks:
+      - conexao_rural_network
+    # Botei 5000 por hora mas tem q decidir ainda
+    ports:
+      - 5000:5000
+    volumes:
+      - ./backend:/App
+    # deploy:
+      # resources:
+      # não usar esses limites de recurso no deployment final,
+      # se esse é o deployment final e a aplicação estiver travando
+      # remova os limites de recurso
+        # limits:
+        #   cpus: '1.5'
+        #   memory: 1G
+        # reservations:
+        #   cpus: '1'
+        #   memory: 250M
+  adminer:
+    image: adminer
+    container_name: adminer_fastapi
+    restart: always
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres_data:
+
+networks:
+  conexao_rural_network:
