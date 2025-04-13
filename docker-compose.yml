@@ -47,6 +47,8 @@ services:
     restart: always
     ports:
       - "8080:8080"
+    networks:
+      - conexao_rural_network
 
 volumes:
   postgres_data:

@@ -9,7 +9,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY /backend /App
 
 # Expose the port the app runs on
-EXPOSE 8001
+EXPOSE 5000
 
 # Command to run the FastAPI application with uvicorn supervision for hot reloading
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001", "--reload", "--reload-exclude", "'/App/__pycache__/'"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5000", "--reload", "--reload-exclude", "'/App/__pycache__/'"]

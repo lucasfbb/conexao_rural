@@ -5,8 +5,18 @@ class UsuarioBase(BaseModel):
     nome: str
     e_vendedor: bool = False
 
-class UsuarioCreate(UsuarioBase):
+class UsuarioLogin(BaseModel):
+    email: str
     senha: str
+
+class UsuarioCreate(UsuarioBase):
+    nome: str
+    email: str
+    senha: str
+    cpf_cnpj: str
+    e_vendedor: bool
+    avaliacao: str
+    foto_perfil: str
 
 class UsuarioResponse(UsuarioBase):
     cpf_cnpj: str
