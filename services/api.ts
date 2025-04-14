@@ -1,26 +1,34 @@
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Alert } from "react-native";
+import { router } from "expo-router";
 
-// quando decidir onde vai ficar o back, preencher aqui
+// 🔹 Substitua pelo IP local ou URL da API
+const baseURL = "http://10.0.2.2:5000/";
 
-export const api = axios.create({
-  baseURL: "http://XXX.yy.aaa.weww:8000/api", // IP local ou hospedagem
+export const api = axios.create({ baseURL });
+
+// Interceptador para adicionar o token automaticamente
+api.interceptors.request.use(async (config) => {
+  const token = await AsyncStorage.getItem("token");
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
 });
 
+// Interceptador para lidar com erros de token
+api.interceptors.response.use(
+  response => response,
+  async error => {
+    if (error.response?.status === 401) {
+      await AsyncStorage.removeItem("token");
+      Alert.alert("Sessão expirada", "Faça login novamente");
+      router.replace("/login");
+    }
 
-// exemplo de chamada
-
-// import { api } from "../services/api";
-
-// async function cadastrarUsuario() {
-//   try {
-//     const response = await api.post("/usuarios", {
-//       email: "exemplo@email.com",
-//       nome: "João",
-//       senha: "123456",
-//       e_vendedor: true
-//     });
-//     console.log("Usuário cadastrado:", response.data);
-//   } catch (error) {
-//     console.error("Erro ao cadastrar:", error);
-//   }
-// }
+    return Promise.reject(error);
+  }
+);

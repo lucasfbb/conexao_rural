@@ -1,17 +1,42 @@
+import axios from "axios";
+import { Alert } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useWindowDimensions } from "react-native";
 import { View, Image, Text, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView } from "react-native";
 import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useState } from "react";
+import { api } from "../../../services/api";
 
 import Button from "@/components/button";
 import Input from "@/components/input";
 
 export default function LoginPage() {
     const { width, height } = useWindowDimensions(); // 🔹 Obtém dimensões da tela
-    
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+
+    const handleLogin = async () => {
+        try {
+            if (!email || !password) {
+                return Alert.alert("Atenção", "Preencha todos os campos!");
+            }
+
+            const response = await api.post("/auth/login", {
+                email,
+                senha: password
+            });
+        
+            const token = response.data.access_token;
+        
+            // Salve o token no AsyncStorage
+            await AsyncStorage.setItem("token", token);
+        
+            router.push("/home");
+        } catch (err) {
+            Alert.alert("Erro", "Usuário ou senha incorretos");
+        }
+    };
 
     return (
         <View style={styles.container}>
@@ -49,7 +74,7 @@ export default function LoginPage() {
                     <Text style={[styles.forgotPassword, { fontSize: width * 0.04 }]}>Esqueceu a senha?</Text>
                 </TouchableOpacity>
 
-                <Button title="Entrar" style={[styles.signInButton, { width: width * 0.6 }]} textStyle={[styles.signInText, { fontSize: width * 0.045 }]} onPress={() => router.push('/home')} />
+                <Button title="Entrar" style={[styles.signInButton, { width: width * 0.6 }]} textStyle={[styles.signInText, { fontSize: width * 0.045 }]} onPress={handleLogin} />
             </View>
         </View>
     );
