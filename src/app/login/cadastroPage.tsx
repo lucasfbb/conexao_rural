@@ -89,7 +89,7 @@ export default function CadastroPage() {
                         title="Cadastrar" 
                         style={[styles.signInButton, { width: width * 0.35, height: height * 0.055, marginTop: height * 0.02}]} 
                         textStyle={[styles.signInText, { fontSize: fontSizeResponsive }]} 
-                        onPress={() => router.push('/configuracoes')} 
+                        onPress={() => router.push('/login/loginPage')} 
                     />
                 </View>
             </KeyboardAwareScrollView>

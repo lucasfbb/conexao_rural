@@ -21,6 +21,9 @@ export default function LoginPage() {
             if (!email || !password) {
                 return Alert.alert("Atenção", "Preencha todos os campos!");
             }
+            
+            console.log(email)
+            console.log(password)
 
             const response = await api.post("/auth/login", {
                 email,

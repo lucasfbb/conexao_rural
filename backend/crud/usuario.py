@@ -13,8 +13,8 @@ def criar_usuario(db: Session, usuario: UsuarioCreate):
         senha=hashed_password,
         nome=usuario.nome,
         e_vendedor=usuario.e_vendedor,
-        avaliacao=usuario.avaliacao,
-        foto_perfil=usuario.foto_perfil
+        # avaliacao=usuario.avaliacao,f
+        # foto_perfil=usuario.foto_perfil
     )
     db.add(novo_usuario)
     db.commit()
