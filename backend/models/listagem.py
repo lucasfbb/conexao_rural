@@ -12,3 +12,4 @@ class Listagem(Base):
     produtor_cpf = Column(String, ForeignKey('produtores.cpf_cnpj'))
 
     produtor = relationship("Produtor", back_populates="listagens")
+    produto = relationship("Produto", back_populates="listagens")

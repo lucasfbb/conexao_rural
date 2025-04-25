@@ -1,6 +1,7 @@
 from sqlalchemy import Column, String, ForeignKey
 from sqlalchemy.orm import relationship
 from database import Base
+from models.usuario import usuarios_produtores_favoritos
 
 class Produtor(Base):
     __tablename__ = 'produtores'
@@ -10,3 +11,9 @@ class Produtor(Base):
     categoria = Column(String)
 
     listagens = relationship("Listagem", back_populates="produtor")
+
+    usuarios_favoritaram = relationship(
+        "Usuario",
+        secondary=usuarios_produtores_favoritos,
+        back_populates="produtores_favoritos"
+    )
