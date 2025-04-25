@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useWindowDimensions } from "react-native";
 import { View, Image, Text, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView } from "react-native";
 import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from '@expo/vector-icons';
 import { router } from "expo-router";
 import { useState } from "react";
 import { api } from "../../../services/api";
@@ -15,6 +16,7 @@ export default function LoginPage() {
     const { width, height } = useWindowDimensions(); // 🔹 Obtém dimensões da tela
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [mostrarSenha, setMostrarSenha] = useState(false);
 
     const handleLogin = async () => {
         try {
@@ -71,7 +73,7 @@ export default function LoginPage() {
             {/* 🔹 Inputs e Botão */}
             <View style={styles.bottomContainer}>
                 <Input placeholder="Digite seu e-mail" containerStyle={[styles.inputContainer, { width: width * 0.75 }]} onChangeText={setEmail} />
-                <Input placeholder="Digite sua senha" containerStyle={[styles.inputContainer, { width: width * 0.75 }]} secureTextEntry onChangeText={setPassword}/>
+                <Input placeholder="Digite sua senha" containerStyle={[styles.inputContainer, { width: width * 0.75 }]} onChangeText={setPassword} isPassword />
 
                 <TouchableOpacity onPress={() => router.push('/login/forgotPassword')}>
                     <Text style={[styles.forgotPassword, { fontSize: width * 0.04 }]}>Esqueceu a senha?</Text>
