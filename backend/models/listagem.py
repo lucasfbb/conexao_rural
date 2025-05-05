@@ -6,7 +6,7 @@ class Listagem(Base):
     __tablename__ = 'listagens'
 
     id = Column(String, primary_key=True, index=True)
-    produto = Column(String)
+    produto_id = Column(String, ForeignKey('produtos.id'))
     preco = Column(Integer)
     estoque = Column(Integer)
     produtor_cpf = Column(String, ForeignKey('produtores.cpf_cnpj'))

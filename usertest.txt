@@ -1,0 +1,4 @@
+{
+  "email": "joao@example.com",
+  "senha": "minhasenha123"
+}
