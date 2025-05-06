@@ -24,8 +24,8 @@ export default function LoginPage() {
                 return Alert.alert("Atenção", "Preencha todos os campos!");
             }
             
-            console.log(email)
-            console.log(password)
+            // console.log(email)
+            // console.log(password)
 
             const response = await api.post("/auth/login", {
                 email,
