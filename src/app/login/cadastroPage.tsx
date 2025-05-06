@@ -114,7 +114,7 @@ export default function CadastroPage() {
                     <Input placeholder="Digite seu nome completo*" onChangeText={setNome} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
                     <Input placeholder="Digite seu e-mail*" onChangeText={setEmail} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
                     <Input placeholder="Digite seu CPF*" onChangeText={setCpf} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive}} />
-                    
+                    {/* TODO: trocar para radio buttons */}
                     <Select 
                         options={["Categoria 1", "Categoria 2", "Categoria 3"]} 
                         placeholder="Selecione uma categoria"

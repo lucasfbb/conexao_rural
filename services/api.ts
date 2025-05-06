@@ -4,8 +4,7 @@ import { Alert } from "react-native";
 import { router } from "expo-router";
 
 // 🔹 Substitua pelo IP local ou URL da API
-const baseURL = "http://10.0.2.2:5000/";
-// const baseURL = "http://172.24.96.1:5000/";
+const baseURL = "http://seu.IP.aqui:5000/";
 
 export const api = axios.create({ baseURL });
 
