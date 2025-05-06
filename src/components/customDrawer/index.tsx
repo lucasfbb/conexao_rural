@@ -4,7 +4,19 @@ import { View, Text, Button, Image, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialIcons} from "@expo/vector-icons";
 
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+
 export default function CustomDrawer(props: any) {
+
+    const handleLogout = async () => {
+        try {
+            await AsyncStorage.removeItem("token"); // Remove o token salvo
+            router.replace("/"); // Redireciona para a página inicial ou login
+        } catch (error) {
+            console.error("Erro ao fazer logout:", error);
+        }
+    };
 
     const { top, bottom } = useSafeAreaInsets()
 
@@ -34,19 +46,20 @@ export default function CustomDrawer(props: any) {
                 {/* <DrawerItem label={"Logout"} onPress={() => router.back()}/> */}
             </DrawerContentScrollView>
 
-            <View style={{
-                padding: 20,
-                paddingLeft: 25,
-                paddingBottom: 30 + bottom,
-                flexDirection: "row",  // Alinha os itens na horizontal
-                alignItems: "center",   // Alinha verticalmente o ícone e o texto
-                gap: 8,  // Espaço entre o ícone e o texto
-            }}>
-
+            <TouchableOpacity
+                onPress={handleLogout}
+                style={{
+                    padding: 20,
+                    paddingLeft: 25,
+                    paddingBottom: 30 + bottom,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 8,
+                }}
+            >
                 <MaterialIcons name="logout" size={20} color={'white'} />
-                <Text style={{ color:'white' }} >Sair</Text>
-
-            </View>
+                <Text style={{ color:'white' }}>Sair</Text>
+            </TouchableOpacity>
         </View>
         )
 }

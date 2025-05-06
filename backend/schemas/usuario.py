@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel, EmailStr
 
 class UsuarioBase(BaseModel):
@@ -15,8 +16,10 @@ class UsuarioCreate(UsuarioBase):
     senha: str
     cpf_cnpj: str
     e_vendedor: bool
-    avaliacao: str
-    foto_perfil: str
+    telefone_1: str
+    telefone_2: Optional[str] = None
+    # avaliacao: str
+    # foto_perfil: str
 
 class UsuarioResponse(UsuarioBase):
     cpf_cnpj: str

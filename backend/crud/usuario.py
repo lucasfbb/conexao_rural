@@ -13,7 +13,9 @@ def criar_usuario(db: Session, usuario: UsuarioCreate):
         senha=hashed_password,
         nome=usuario.nome,
         e_vendedor=usuario.e_vendedor,
-        # avaliacao=usuario.avaliacao,f
+        telefone_1=usuario.telefone_1,
+        telefone_2=usuario.telefone_2,
+        # avaliacao=usuario.avaliacao,
         # foto_perfil=usuario.foto_perfil
     )
     db.add(novo_usuario)

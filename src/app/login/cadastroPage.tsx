@@ -1,17 +1,28 @@
-import { Keyboard, useWindowDimensions } from "react-native";
+import { Alert, Keyboard, useWindowDimensions } from "react-native";
 import { View, Image, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView } from "react-native";
 import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { router } from "expo-router";
-
 import Button from "@/components/button";
 import Input from "@/components/input";
 import Select from "@/components/select";
 import { useEffect, useState } from "react";
+import { api } from "../../../services/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 
 export default function CadastroPage() {
     const { width, height } = useWindowDimensions(); // 🔹 Obtém a largura e altura da tela
     const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
+    const [nome, setNome] = useState("");
+    const [email, setEmail] = useState("");
+    const [cpf, setCpf] = useState("");
+    const [telefone1, setTelefone1] = useState("");
+    const [telefone2, setTelefone2] = useState("");
+    const [categoria, setCategoria] = useState("");
+    const [senha, setSenha] = useState("");
+    const [confirmacaoSenha, setConfirmacaoSenha] = useState("");
 
     let fontSizeResponsive = height * 0.02
 
@@ -29,6 +40,36 @@ export default function CadastroPage() {
                 keyboardDidHideListener.remove();
             };
         }, []);
+
+        const handleCadastro = async () => {
+            if (senha !== confirmacaoSenha) {
+                alert("As senhas não coincidem. Por favor, verifique.");
+                return;
+            }
+            
+            if (!nome || !email || !cpf || !telefone1  || !senha) {
+                alert("Preencha todos os campos obrigatórios!");
+                return;
+            }
+
+            try {
+                
+                const response = await api.post("/usuarios/cadastrar_user", {
+                    cpf_cnpj: cpf,
+                    email: email,
+                    nome: nome,
+                    telefone_1: telefone1,
+                    telefone_2: telefone2 || null, // opcional
+                    e_vendedor: false, // por enquanto
+                    senha: senha,
+                });
+            
+                router.push("/login/loginPage");  
+            } catch (err) {
+                Alert.alert("Erro", "Erro ao cadastrar usuário. Tente novamente.");
+                console.error(err);
+            }
+        };
 
         return (
             
@@ -70,26 +111,26 @@ export default function CadastroPage() {
 
                 {/* 🔹 Inputs e Botão */}
                 <View style={styles.bottomContainer}>
-                    <Input placeholder="Digite seu nome completo*" containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
-                    <Input placeholder="Digite seu e-mail*" containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
-                    <Input placeholder="Digite seu CPF*" containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive}} />
+                    <Input placeholder="Digite seu nome completo*" onChangeText={setNome} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
+                    <Input placeholder="Digite seu e-mail*" onChangeText={setEmail} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
+                    <Input placeholder="Digite seu CPF*" onChangeText={setCpf} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive}} />
                     
                     <Select 
                         options={["Categoria 1", "Categoria 2", "Categoria 3"]} 
-                        placeholder="Selecione uma categoria" 
-                        onSelect={(value) => console.log("Selecionado:", value)}
+                        placeholder="Selecione uma categoria"
+                        onSelect={(value) => setCategoria(value)}
                     />
 
-                    <Input placeholder="Digite seu primeiro telefone*" containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
-                    <Input placeholder="Digite seu segundo telefone" containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
-                    <Input placeholder="Digite sua senha*" containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} secureTextEntry />
-                    <Input placeholder="Confirme sua senha*" containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} secureTextEntry />
+                    <Input placeholder="Digite seu primeiro telefone*" onChangeText={setTelefone1} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
+                    <Input placeholder="Digite seu segundo telefone" onChangeText={setTelefone2} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
+                    <Input placeholder="Digite sua senha*" value={senha} onChangeText={setSenha} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} secureTextEntry />
+                    <Input placeholder="Confirme sua senha*" value={confirmacaoSenha} onChangeText={setConfirmacaoSenha} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} secureTextEntry />
 
                     <Button 
                         title="Cadastrar" 
                         style={[styles.signInButton, { width: width * 0.35, height: height * 0.055, marginTop: height * 0.02}]} 
                         textStyle={[styles.signInText, { fontSize: fontSizeResponsive }]} 
-                        onPress={() => router.push('/login/loginPage')} 
+                        onPress={handleCadastro}
                     />
                 </View>
             </KeyboardAwareScrollView>

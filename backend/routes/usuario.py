@@ -6,6 +6,6 @@ from database import get_db
 
 router = APIRouter()
 
-@router.post("/usuarios", response_model=UsuarioResponse)
+@router.post("/cadastrar_user", response_model=UsuarioResponse)
 def criar(usuario: UsuarioCreate, db: Session = Depends(get_db)):
     return criar_usuario(db, usuario)
