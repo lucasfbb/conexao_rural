@@ -56,7 +56,7 @@ export default function ModalEditarPerfil({ visible, onClose, onSave, dadosInici
   return (
     <Modal visible={visible} animationType="fade" transparent>
       <View style={styles.modalBackground}>
-        <View style={[styles.modalContainer, { backgroundColor: colors.background }]}>
+        <View style={[styles.modalContainer, { backgroundColor: colors.modalBackground }]}>
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <Feather name="x" size={24} color={colors.title} />
           </TouchableOpacity>

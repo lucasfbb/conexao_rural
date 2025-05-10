@@ -6,6 +6,7 @@ import { router } from "expo-router";
 import Button from "@/components/button";
 import Input from "@/components/input";
 import Select from "@/components/select";
+import Checkbox from "@/components/checkbox";
 import { useEffect, useState } from "react";
 import { api } from "../../../services/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -104,7 +105,7 @@ export default function CadastroPage() {
                 <View style={[styles.textContainer, { paddingHorizontal: width * 0.08 }]}>
                     <Text style={[styles.titleText, { fontSize: width * 0.07, marginBottom: height * 0.01}]}>Cadastro</Text> 
                     <Text style={[styles.descriptionText, { fontSize: width * 0.04 }]}>
-                    Lorem ipsum is simply dummy text of the printing and typesetting industry.
+                    Faça seu cadastro e tenha acesso ao aplicativo de entrega de produtos de agrícolas!
                     </Text>
                 </View>
               
@@ -115,23 +116,24 @@ export default function CadastroPage() {
                     <Input placeholder="Digite seu e-mail*" onChangeText={setEmail} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
                     <Input placeholder="Digite seu CPF*" onChangeText={setCpf} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive}} />
                     {/* TODO: trocar para radio buttons */}
-                    <Select 
-                        options={["Categoria 1", "Categoria 2", "Categoria 3"]} 
-                        placeholder="Selecione uma categoria"
-                        onSelect={(value) => setCategoria(value)}
-                    />
+                    
 
                     <Input placeholder="Digite seu primeiro telefone*" onChangeText={setTelefone1} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
                     <Input placeholder="Digite seu segundo telefone" onChangeText={setTelefone2} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
                     <Input placeholder="Digite sua senha*" value={senha} onChangeText={setSenha} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} secureTextEntry />
                     <Input placeholder="Confirme sua senha*" value={confirmacaoSenha} onChangeText={setConfirmacaoSenha} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} secureTextEntry />
-
+                    
+                    <Checkbox
+                    
+                    />
+                    
                     <Button 
                         title="Cadastrar" 
                         style={[styles.signInButton, { width: width * 0.35, height: height * 0.055, marginTop: height * 0.02}]} 
                         textStyle={[styles.signInText, { fontSize: fontSizeResponsive }]} 
                         onPress={handleCadastro}
                     />
+                    
                 </View>
             </KeyboardAwareScrollView>
             

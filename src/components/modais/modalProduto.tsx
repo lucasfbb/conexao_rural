@@ -9,6 +9,7 @@ import {
   Dimensions,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { useTema } from "@/contexts/ThemeContext";
 
 const { width } = Dimensions.get("window");
 
@@ -31,14 +32,14 @@ export default function ModalProduto({
   onAddToCart,
 }: ModalProdutoProps) {
   const [quantidade, setQuantidade] = useState(1);
-
+  const { colors } = useTema()
   const incrementar = () => setQuantidade(q => q + 1);
   const decrementar = () => setQuantidade(q => (q > 1 ? q - 1 : 1));
 
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.modalOverlay}>
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: colors.modalBackground }]}>
           {/* Botão Fechar */}
           <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
             <Feather name="x" size={24} color="#4D7E1B" />

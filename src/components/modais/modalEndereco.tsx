@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Modal, View, Text, StyleSheet, TextInput, TouchableOpacity, Dimensions } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { useTema } from "@/contexts/ThemeContext";
 
 const { width, height } = Dimensions.get("window");
 
@@ -15,7 +16,7 @@ export default function ModalEndereco({ visible, onClose, onSave }: ModalEnderec
   const [cep, setCep] = useState("");
   const [endereco, setEndereco] = useState("");
   const [complemento, setComplemento] = useState("");
-
+  const { colors } = useTema()
   const salvar = () => {
     onSave({
       title: titulo,
@@ -30,7 +31,7 @@ export default function ModalEndereco({ visible, onClose, onSave }: ModalEnderec
   return (
     <Modal visible={visible} animationType="fade" transparent>
       <View style={styles.modalBackground}>
-        <View style={styles.modalContainer}>
+        <View style={[styles.modalContainer, { backgroundColor: colors.modalBackground }]}>
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <Feather name="x" size={24} color="#4D7E1B" />
           </TouchableOpacity>

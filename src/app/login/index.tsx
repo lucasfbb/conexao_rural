@@ -24,8 +24,7 @@ export default function LoginScreen() {
                 <View style={styles.bottomContainer}>
                     <Text style={styles.title}>Bem-vindo</Text>
                     <Text style={styles.description}>
-                        Lorem ipsum is simply dummy text of the printing and typesetting industry.
-                        Lorem Ipsum has been the industry’s standard dummy text since the 1500s.
+                        Bem vindo ao aplicativo de entrega de produtos agríicolas.
                     </Text>
     
                     {/* Botões */}

@@ -11,6 +11,7 @@ type ThemeColors = {
     produtoContainer: string;
     borderCard: string;
     profileCard: string;
+    modalBackground: string;
     // adicione outras cores conforme necessário
 };
 
@@ -37,7 +38,8 @@ const lightColors: ThemeColors = {
     primary: '#6200ee',
     produtoContainer: '#F7FAF0',
     borderCard: '#4D7E1B',
-    profileCard: "#ffffff"
+    profileCard: "#ffffff",
+    modalBackground: '#ffffff'
 };
 
 const darkColors: ThemeColors = {
@@ -49,7 +51,8 @@ const darkColors: ThemeColors = {
     primary: '#bb86fc',
     produtoContainer: '#292828',
     borderCard: '#ffffff',
-    profileCard: "#4D7E1B"
+    profileCard: "#4D7E1B",
+    modalBackground: '#1b1a1d'
 };
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {

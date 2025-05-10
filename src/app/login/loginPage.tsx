@@ -66,7 +66,7 @@ export default function LoginPage() {
             <View style={[styles.textContainer, { paddingHorizontal: width * 0.08 }]}>
                 <Text style={[styles.titleText, { fontSize: width * 0.07, marginBottom: height * 0.01}]}>Entrar</Text>
                 <Text style={[styles.descriptionText, { fontSize: width * 0.04 }]}>
-                    Lorem ipsum is simply dummy text of the printing and typesetting industry.
+                    Está quase lá! Digite seu e-mail e senha para acessar sua conta.
                 </Text>
             </View>
 

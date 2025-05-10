@@ -9,7 +9,7 @@ import {
   Dimensions,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
-
+import { useTema } from "@/contexts/ThemeContext";
 const { width, height } = Dimensions.get("window");
 
 interface ModalPagamentoProps {
@@ -23,6 +23,8 @@ export default function ModalPagamento({ visible, onClose, onSave }: ModalPagame
   const [titulo, setTitulo] = useState("");
   const [tipo, setTipo] = useState("");
   const [numero, setNumero] = useState("");
+
+  const { colors } = useTema()
 
   const salvar = () => {
     onSave({
@@ -42,7 +44,7 @@ export default function ModalPagamento({ visible, onClose, onSave }: ModalPagame
       transparent
     >
       <View style={styles.modalBackground}>
-        <View style={styles.modalContainer}>
+        <View style={[styles.modalContainer, { backgroundColor: colors.modalBackground }]}>
           {/* Botão Fechar */}
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <Feather name="x" size={24} color="#4D7E1B" />
