@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "conexaoRural",
-    "slug": "conexaoRural",
+    "slug": "conexaorural",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -39,8 +39,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "9642d334-f51e-46b8-b9db-bc80b15af9f8"
+        "projectId": "bafbbf59-29c7-41be-8c4a-9f4dbb7b7078"
       }
-    }
+    },
+    "owner": "conexaorural_tcc"
   }
 }
