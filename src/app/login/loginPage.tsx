@@ -8,6 +8,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from "expo-router";
 import { useState } from "react";
 import { api } from "../../../services/api";
+import { BackHandler } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 
 import Button from "@/components/button";
 import Input from "@/components/input";
@@ -17,6 +20,20 @@ export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [mostrarSenha, setMostrarSenha] = useState(false);
+
+    useFocusEffect(
+        useCallback(() => {
+            const onBackPress = () => {
+            // Aqui você decide o que fazer quando o botão voltar for pressionado
+            // Por exemplo, pode exibir um alerta ou impedir de sair da tela de login
+            return true; // <- true significa "bloquear o voltar"
+            };
+
+            BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+            return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+        }, [])
+    );
 
     const handleLogin = async () => {
         try {

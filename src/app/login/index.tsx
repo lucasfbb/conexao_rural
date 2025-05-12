@@ -24,7 +24,7 @@ export default function LoginScreen() {
                 <View style={styles.bottomContainer}>
                     <Text style={styles.title}>Bem-vindo</Text>
                     <Text style={styles.description}>
-                        Bem vindo ao aplicativo de entrega de produtos agríicolas.
+                        Bem vindo ao aplicativo de entrega de produtos agrícolas.
                     </Text>
     
                     {/* Botões */}
