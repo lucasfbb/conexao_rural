@@ -8,7 +8,10 @@ class Produtor(Base):
 
     cpf_cnpj = Column(String, ForeignKey('usuarios.cpf_cnpj'), primary_key=True)
     banner = Column(String)
+    foto = Column(String)
     categoria = Column(String)
+    endereco = Column(String)
+    nome = Column(String)
 
     listagens = relationship("Listagem", back_populates="produtor")
 

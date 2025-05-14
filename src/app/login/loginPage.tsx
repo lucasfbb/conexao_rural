@@ -2,11 +2,12 @@ import axios from "axios";
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useWindowDimensions } from "react-native";
+import AwesomeAlert from 'react-native-awesome-alerts';
 import { View, Image, Text, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView } from "react-native";
 import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from '@expo/vector-icons';
 import { router } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "../../../services/api";
 import { BackHandler } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -16,21 +17,24 @@ import Button from "@/components/button";
 import Input from "@/components/input";
 
 export default function LoginPage() {
-    const { width, height } = useWindowDimensions(); // 🔹 Obtém dimensões da tela
+    const { width, height } = useWindowDimensions(); // Obtém dimensões da tela
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [mostrarSenha, setMostrarSenha] = useState(false);
+    const [showAlert, setShowAlert] = useState(false);
+    const [alertMessage, setAlertMessage] = useState("");
 
     useFocusEffect(
         useCallback(() => {
+            setEmail("");
+            setPassword("");
+
             const onBackPress = () => {
-            // Aqui você decide o que fazer quando o botão voltar for pressionado
-            // Por exemplo, pode exibir um alerta ou impedir de sair da tela de login
-            return true; // <- true significa "bloquear o voltar"
+                router.replace('/');
+                return true;
             };
 
             BackHandler.addEventListener('hardwareBackPress', onBackPress);
-
             return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
         }, [])
     );
@@ -53,10 +57,15 @@ export default function LoginPage() {
         
             // Salve o token no AsyncStorage
             await AsyncStorage.setItem("token", token);
-        
+
             router.push("/home");
-        } catch (err) {
-            Alert.alert("Erro", "Usuário ou senha incorretos");
+        } catch (err: any) {
+            if (err.response?.status === 401) {
+                setAlertMessage("E-mail ou senha incorretos.");
+                setShowAlert(true);
+            } else {
+                Alert.alert("Erro", "Erro inesperado ao fazer login");
+            }
         }
     };
 
@@ -89,15 +98,28 @@ export default function LoginPage() {
 
             {/* 🔹 Inputs e Botão */}
             <View style={styles.bottomContainer}>
-                <Input placeholder="Digite seu e-mail" containerStyle={[styles.inputContainer, { width: width * 0.75 }]} onChangeText={setEmail} />
-                <Input placeholder="Digite sua senha" containerStyle={[styles.inputContainer, { width: width * 0.75 }]} onChangeText={setPassword} isPassword />
+                <Input placeholder="Digite seu e-mail" containerStyle={[styles.inputContainer, { width: width * 0.75 }]} value={email} onChangeText={setEmail} />
+                <Input placeholder="Digite sua senha" containerStyle={[styles.inputContainer, { width: width * 0.75 }]} value={password} onChangeText={setPassword} isPassword />
 
                 <TouchableOpacity onPress={() => router.push('/login/forgotPassword')}>
                     <Text style={[styles.forgotPassword, { fontSize: width * 0.04 }]}>Esqueceu a senha?</Text>
                 </TouchableOpacity>
 
                 <Button title="Entrar" style={[styles.signInButton, { width: width * 0.6 }]} textStyle={[styles.signInText, { fontSize: width * 0.045 }]} onPress={handleLogin} />
+            
             </View>
+
+            <AwesomeAlert
+                show={showAlert}
+                showProgress={false}
+                title="Erro no login"
+                message={alertMessage}
+                closeOnTouchOutside={true}
+                showConfirmButton={true}
+                confirmText="OK"
+                confirmButtonColor="#f44336"
+                onConfirmPressed={() => setShowAlert(false)}
+            />
         </View>
     );
 }

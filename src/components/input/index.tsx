@@ -20,6 +20,7 @@ export default function Input({ containerStyle, inputStyle, isPassword = false, 
                     placeholderTextColor="rgba(255, 255, 255, 0.6)"
                     secureTextEntry={isPassword && !mostrarSenha}
                     {...props} // permite passar qualquer outra prop do TextInput
+                    value={props.value}
                 />
                 {isPassword && (
                     <TouchableOpacity onPress={() => setMostrarSenha(!mostrarSenha)} style={{ paddingHorizontal: 8 }}>

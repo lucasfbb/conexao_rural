@@ -17,11 +17,11 @@ export default function LocalizacaoProdutor() {
     const [carregando, setCarregando] = useState(true);
 
     const endereco = {
-    cidade: 'Rio de Janeiro',
-    estado: 'Rio de Janeiro',
-    rua_numero: 'Rua Odorico Mendes 43',
-    complemento: 'Bloco H',
-    cep: '992295-000'
+        cidade: 'Rio de Janeiro',
+        estado: 'Rio de Janeiro',
+        rua_numero: 'Rua Odorico Mendes 43',
+        complemento: 'Bloco H',
+        cep: '992295-000'
     }
 
     const { colors } = useTema();
