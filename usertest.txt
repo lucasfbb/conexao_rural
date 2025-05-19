@@ -2,3 +2,5 @@
   "email": "joao@example.com",
   "senha": "minhasenha123"
 }
+
+docker compose exec server python generate_schema.py
