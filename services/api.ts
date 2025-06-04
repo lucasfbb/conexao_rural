@@ -7,6 +7,7 @@ import { router } from "expo-router";
 // const baseURL = "http://192.168.0.17:5000/";
 
 const baseURL = "http://10.0.2.2:5000/";
+// const baseURL = "http://192.168.1.7:5000/";
 
 export const api = axios.create({ baseURL });
 

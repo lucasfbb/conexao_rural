@@ -1,13 +1,27 @@
-import { useEffect, useState } from "react";
-import { View, Image, Text, StyleSheet, Dimensions } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { View, Image, Text, StyleSheet, Dimensions, BackHandler } from "react-native";
 import { RFValue } from "react-native-responsive-fontsize"
 
 import Button from "@/components/button";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 
 const { height } = Dimensions.get("window");
 
 export default function LoginScreen() {
+
+    useFocusEffect(
+        useCallback(() => {
+
+            const onBackPress = () => {
+                // router.replace('/login');
+                return true;
+            };
+
+            BackHandler.addEventListener('hardwareBackPress', onBackPress);
+            return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+        }, [])
+    );
+
     
     return (
             <View style={styles.container}>

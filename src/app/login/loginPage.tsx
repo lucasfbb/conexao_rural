@@ -26,8 +26,6 @@ export default function LoginPage() {
 
     useFocusEffect(
         useCallback(() => {
-            setEmail("");
-            setPassword("");
 
             const onBackPress = () => {
                 router.replace('/');
