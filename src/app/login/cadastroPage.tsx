@@ -1,13 +1,13 @@
-import { Alert, Keyboard, useWindowDimensions } from "react-native";
+import { Alert, BackHandler, Keyboard, useWindowDimensions } from "react-native";
 import { View, Image, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView } from "react-native";
 import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import Button from "@/components/button";
 import Input from "@/components/input";
 import Select from "@/components/select";
 import Checkbox from "@/components/checkbox";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { api } from "../../../services/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -27,50 +27,63 @@ export default function CadastroPage() {
 
     let fontSizeResponsive = height * 0.02
 
-        useEffect(() => {
-            const keyboardDidShowListener = Keyboard.addListener("keyboardDidShow", () => {
-                setIsKeyboardVisible(true);
-            });
+    useFocusEffect(
+        useCallback(() => {
 
-            const keyboardDidHideListener = Keyboard.addListener("keyboardDidHide", () => {
-                setIsKeyboardVisible(false);
-            });
-
-            return () => {
-                keyboardDidShowListener.remove();
-                keyboardDidHideListener.remove();
+            const onBackPress = () => {
+                router.replace('/login');
+                return true;
             };
-        }, []);
 
-        const handleCadastro = async () => {
-            if (senha !== confirmacaoSenha) {
-                alert("As senhas não coincidem. Por favor, verifique.");
-                return;
-            }
-            
-            if (!nome || !email || !cpf || !telefone1  || !senha) {
-                alert("Preencha todos os campos obrigatórios!");
-                return;
-            }
+            BackHandler.addEventListener('hardwareBackPress', onBackPress);
+            return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+        }, [])
+    );
 
-            try {
-                
-                const response = await api.post("/usuarios/cadastrar_user", {
-                    cpf_cnpj: cpf,
-                    email: email,
-                    nome: nome,
-                    telefone_1: telefone1,
-                    telefone_2: telefone2 || null, // opcional
-                    e_vendedor: false, // por enquanto
-                    senha: senha,
-                });
-            
-                router.push("/login/loginPage");  
-            } catch (err) {
-                Alert.alert("Erro", "Erro ao cadastrar usuário. Tente novamente.");
-                console.error(err);
-            }
+    useEffect(() => {
+        const keyboardDidShowListener = Keyboard.addListener("keyboardDidShow", () => {
+            setIsKeyboardVisible(true);
+        });
+
+        const keyboardDidHideListener = Keyboard.addListener("keyboardDidHide", () => {
+            setIsKeyboardVisible(false);
+        });
+
+        return () => {
+            keyboardDidShowListener.remove();
+            keyboardDidHideListener.remove();
         };
+    }, []);
+
+    const handleCadastro = async () => {
+        if (senha !== confirmacaoSenha) {
+            alert("As senhas não coincidem. Por favor, verifique.");
+            return;
+        }
+        
+        if (!nome || !email || !cpf || !telefone1  || !senha) {
+            alert("Preencha todos os campos obrigatórios!");
+            return;
+        }
+
+        try {
+            
+            const response = await api.post("/usuarios/cadastrar_user", {
+                cpf_cnpj: cpf,
+                email: email,
+                nome: nome,
+                telefone_1: telefone1,
+                telefone_2: telefone2 || null, // opcional
+                e_vendedor: false, // por enquanto
+                senha: senha,
+            });
+        
+            router.push("/login/loginPage");  
+        } catch (err) {
+            Alert.alert("Erro", "Erro ao cadastrar usuário. Tente novamente.");
+            console.error(err);
+        }
+    };
 
         return (
             
