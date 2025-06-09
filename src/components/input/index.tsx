@@ -1,5 +1,5 @@
 import { TextInput, View, TextInputProps, StyleSheet, TouchableOpacity } from "react-native";
-
+import { TextInputMask } from 'react-native-masked-text';
 import { styles } from "./styles";
 import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";

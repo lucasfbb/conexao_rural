@@ -11,4 +11,10 @@ export const styles = StyleSheet.create({
       color: '#FFFFFF',
       fontSize: 16,
     },
+    checkboxContainer: {
+      marginTop: 16,
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      
+    },
   });

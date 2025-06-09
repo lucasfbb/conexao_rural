@@ -7,15 +7,27 @@ import { View } from 'react-native'
 
 import CustomDrawer from "@/components/customDrawer"
 import { AppProvider } from "@/providers/AppProvider";
+import { useUser } from "@/contexts/UserContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function DrawerLayout() {
 
     const pathname = usePathname(); // Obtém a rota atual
 
-    const usuario = {
-        nome: "João",
-        tipo: "produtor", // ou "cliente"
-    };
+    const [usuario, setUsuario] = useState<any>(null);
+
+    useEffect(() => {
+        const load = async () => {
+            const storedUser = await AsyncStorage.getItem("usuario");
+            if (storedUser) {
+                const parsedUser = JSON.parse(storedUser);
+                console.log("Stored user: ", parsedUser);
+                setUsuario(parsedUser);
+            }
+        };
+
+        load();
+    }, []);
 
     return (
         <AppProvider>
@@ -72,25 +84,24 @@ export default function DrawerLayout() {
                         }} 
                     />
 
-                    {usuario.tipo === "produtor" ? 
+                    {usuario?.e_vendedor ? 
                         <Drawer.Screen 
                             name="areaProdutor"
                             options={{ 
-                            drawerLabel: "Área do Produtor",
-                            drawerLabelStyle: { color: "white" },
-                            drawerIcon: ({ color }) => <Feather name="package" size={20} color={'white'} />,
+                                drawerLabel: "Área do Produtor",
+                                drawerLabelStyle: { color: "white" },
+                                drawerIcon: ({ color }) => <Feather name="package" size={20} color={'white'} />,
                             }} 
                         /> :
 
                         <Drawer.Screen 
                             name="areaProdutor" 
                             options={{ 
-                                drawerLabel: () => null, // 🔹 Oculta do menu
-                                title: "", // 🔹 Remove o título do header
-                                drawerItemStyle: { height: 0 } // 🔹 Evita espaço vazio no Drawer
+                                drawerLabel: () => null,
+                                title: "",
+                                drawerItemStyle: { height: 0 }
                             }} 
-                    />
-
+                        />
                     }
 
                     <Drawer.Screen 

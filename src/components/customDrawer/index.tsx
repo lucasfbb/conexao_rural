@@ -5,13 +5,17 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialIcons} from "@expo/vector-icons";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useUser } from "@/contexts/UserContext";
 
 
 export default function CustomDrawer(props: any) {
 
+    const { logout } = useUser();
+
     const handleLogout = async () => {
         try {
-            await AsyncStorage.removeItem("token"); // Remove o token salvo
+            await logout();
+            
             router.replace("/"); // Redireciona para a página inicial ou login
         } catch (error) {
             console.error("Erro ao fazer logout:", error);

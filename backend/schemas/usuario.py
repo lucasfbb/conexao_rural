@@ -7,19 +7,17 @@ class UsuarioBase(BaseModel):
     e_vendedor: bool = False
 
 class UsuarioLogin(BaseModel):
-    email: str
+    email: EmailStr
     senha: str
 
 class UsuarioCreate(UsuarioBase):
     nome: str
-    email: str
+    email: EmailStr
     senha: str
     cpf_cnpj: str
     e_vendedor: bool
     telefone_1: str
     telefone_2: Optional[str] = None
-    # avaliacao: str
-    # foto_perfil: str
 
 class UsuarioResponse(UsuarioBase):
     cpf_cnpj: str

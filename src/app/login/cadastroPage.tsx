@@ -10,6 +10,8 @@ import Checkbox from "@/components/checkbox";
 import { useCallback, useEffect, useState } from "react";
 import { api } from "../../../services/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import MaskedInput from "@/components/maskedInput";
+import { validarCPF, validarEmail } from "../../../services/utils";
 
 
 export default function CadastroPage() {
@@ -21,7 +23,7 @@ export default function CadastroPage() {
     const [cpf, setCpf] = useState("");
     const [telefone1, setTelefone1] = useState("");
     const [telefone2, setTelefone2] = useState("");
-    const [categoria, setCategoria] = useState("");
+    const [categoria, setCategoria] = useState<string>('Consumidor');
     const [senha, setSenha] = useState("");
     const [confirmacaoSenha, setConfirmacaoSenha] = useState("");
 
@@ -66,22 +68,35 @@ export default function CadastroPage() {
             return;
         }
 
+        if (!validarCPF(cpf)) {
+            alert("CPF inválido. Por favor, verifique.");
+            return;
+        }
+
+        if (!validarEmail(email)) {
+            alert("E-mail inválido. Por favor, verifique.");
+            return;
+        }
+
         try {
-            
             const response = await api.post("/usuarios/cadastrar_user", {
                 cpf_cnpj: cpf,
                 email: email,
                 nome: nome,
                 telefone_1: telefone1,
-                telefone_2: telefone2 || null, // opcional
-                e_vendedor: false, // por enquanto
+                telefone_2: telefone2 || null,
+                e_vendedor: categoria === "Produtor",
                 senha: senha,
             });
-        
+
             router.push("/login/loginPage");  
-        } catch (err) {
-            Alert.alert("Erro", "Erro ao cadastrar usuário. Tente novamente.");
-            console.error(err);
+        } catch (err: any) {
+            if (err.response && err.response.status === 400) {
+                Alert.alert("Erro", err.response.data.detail);
+            } else {
+                Alert.alert("Erro", "Erro ao cadastrar usuário. Tente novamente.");
+                console.error(err);
+            }
         }
     };
 
@@ -96,7 +111,6 @@ export default function CadastroPage() {
                 keyboardShouldPersistTaps="handled"
             >
                 {/* 🔹 Cabeçalho (Some quando o teclado está aberto) */}
-              
                 <SafeAreaView style={styles.topContainer}>
                     <TouchableOpacity onPress={() => router.push('/')}>
                     <Image
@@ -113,31 +127,77 @@ export default function CadastroPage() {
                     />
                 </SafeAreaView>
               
-
-                
                 <View style={[styles.textContainer, { paddingHorizontal: width * 0.08 }]}>
                     <Text style={[styles.titleText, { fontSize: width * 0.07, marginBottom: height * 0.01}]}>Cadastro</Text> 
                     <Text style={[styles.descriptionText, { fontSize: width * 0.04 }]}>
                     Faça seu cadastro e tenha acesso ao aplicativo de entrega de produtos de agrícolas!
                     </Text>
                 </View>
-              
 
                 {/* 🔹 Inputs e Botão */}
                 <View style={styles.bottomContainer}>
                     <Input placeholder="Digite seu nome completo*" onChangeText={setNome} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
-                    <Input placeholder="Digite seu e-mail*" onChangeText={setEmail} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
-                    <Input placeholder="Digite seu CPF*" onChangeText={setCpf} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive}} />
-                    {/* TODO: trocar para radio buttons */}
-                    
 
-                    <Input placeholder="Digite seu primeiro telefone*" onChangeText={setTelefone1} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
-                    <Input placeholder="Digite seu segundo telefone" onChangeText={setTelefone2} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
-                    <Input placeholder="Digite sua senha*" value={senha} onChangeText={setSenha} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} secureTextEntry />
-                    <Input placeholder="Confirme sua senha*" value={confirmacaoSenha} onChangeText={setConfirmacaoSenha} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} secureTextEntry />
+                    <Input placeholder="Digite seu e-mail*" onChangeText={setEmail} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
                     
-                    <Checkbox
+                    <MaskedInput
+                        type="cpf"
+                        value={cpf}
+                        onChangeText={setCpf}
+                        placeholder="Digite seu CPF*"
+                        containerStyle={[styles.inputContainer, { width: width * 0.8 }]}
+                        inputStyle={{ fontSize: fontSizeResponsive }}
+                    />
+                
+                    <MaskedInput
+                        type="cel-phone"
+                        value={telefone1}
+                        onChangeText={setTelefone1}
+                        placeholder="Digite seu primeiro telefone*"
+                        options={{
+                            maskType: 'BRL',
+                            withDDD: true,
+                            dddMask: '(99) '
+                        }}
+                        containerStyle={[styles.inputContainer, { width: width * 0.8 }]}
+                        inputStyle={{ fontSize: fontSizeResponsive }}
+                    />
+
+                    <MaskedInput
+                        type="cel-phone"
+                        value={telefone2}
+                        onChangeText={setTelefone2}
+                        placeholder="Digite seu segundo telefone"
+                        options={{
+                            maskType: 'BRL',
+                            withDDD: true,
+                            dddMask: '(99) '
+                        }}
+                        containerStyle={[styles.inputContainer, { width: width * 0.8 }]}
+                        inputStyle={{ fontSize: fontSizeResponsive }}
+                    />
+
+                    <Input
+                        placeholder="Digite sua senha*"
+                        value={senha}
+                        onChangeText={setSenha}
+                        containerStyle={[styles.inputContainer, { width: width * 0.8 }]}
+                        inputStyle={{ fontSize: fontSizeResponsive }}
+                        isPassword
+                    />
                     
+                    <Input
+                        placeholder="Confirme sua senha*"
+                        value={confirmacaoSenha}
+                        onChangeText={setConfirmacaoSenha}
+                        containerStyle={[styles.inputContainer, { width: width * 0.8 }]}
+                        inputStyle={{ fontSize: fontSizeResponsive }}
+                        isPassword
+                    />
+                    
+                    <Checkbox 
+                        selectedOption={categoria} 
+                        onChange={setCategoria} 
                     />
                     
                     <Button 

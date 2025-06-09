@@ -15,14 +15,17 @@ import { useCallback } from 'react';
 
 import Button from "@/components/button";
 import Input from "@/components/input";
+import { useUser } from "@/contexts/UserContext";
 
 export default function LoginPage() {
-    const { width, height } = useWindowDimensions(); // Obtém dimensões da tela
+    const { width, height } = useWindowDimensions();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [mostrarSenha, setMostrarSenha] = useState(false);
     const [showAlert, setShowAlert] = useState(false);
     const [alertMessage, setAlertMessage] = useState("");
+
+    const { login, logout } = useUser();
 
     useFocusEffect(
         useCallback(() => {
@@ -42,9 +45,6 @@ export default function LoginPage() {
             if (!email || !password) {
                 return Alert.alert("Atenção", "Preencha todos os campos!");
             }
-            
-            // console.log(email)
-            // console.log(password)
 
             const response = await api.post("/auth/login", {
                 email,
@@ -52,9 +52,16 @@ export default function LoginPage() {
             });
         
             const token = response.data.access_token;
+            const userData = response.data.user;
         
             // Salve o token no AsyncStorage
             await AsyncStorage.setItem("token", token);
+
+            // apaga o token do contexto, se já estiver logado
+            await logout()
+
+            // Faz login no contexto
+            await login({ ...userData, token });
 
             router.push("/home");
         } catch (err: any) {
@@ -74,7 +81,7 @@ export default function LoginPage() {
                 <TouchableOpacity onPress={() => router.push('/')}>
                     <Image
                         source={require("../../../assets/images/voltar26.png")}
-                        style={[styles.logoVoltar, { marginTop: height * 0.03 }]} // 🔹 Ajuste dinâmico
+                        style={[styles.logoVoltar, { marginTop: height * 0.03 }]}
                         resizeMode="contain"
                     />
                 </TouchableOpacity>
@@ -131,15 +138,15 @@ const styles = StyleSheet.create({
         flex: 0.3,
         flexDirection: "row",
         justifyContent: "space-between",
-        paddingHorizontal: 20, // 🔹 Garante espaço lateral
+        paddingHorizontal: 20, // Garante espaço lateral
     },
     textContainer: {
-        flex: 0.6, // 🔹 Mantém o conteúdo ajustado ao tamanho da tela
+        flex: 0.6, // Mantém o conteúdo ajustado ao tamanho da tela
         justifyContent: "center",
         alignItems: 'flex-start'
     },
     logo: {
-        width: 80, // 🔹 Define um tamanho fixo adequado
+        width: 80, // Define um tamanho fixo adequado
         height: 50,
     },
     logoVoltar: {
@@ -168,12 +175,12 @@ const styles = StyleSheet.create({
     },
     inputContainer: {
         alignItems: "center",
-        maxWidth: 400, // 🔹 Evita que os inputs fiquem muito largos em telas grandes
-        minWidth: 280, // 🔹 Evita que os inputs fiquem muito pequenos em telas menores
-        marginBottom: 15, // 🔹 Garante espaço entre os campos
+        maxWidth: 400, // Evita que os inputs fiquem muito largos em telas grandes
+        minWidth: 280, // Evita que os inputs fiquem muito pequenos em telas menores
+        marginBottom: 15,
     },
     forgotPassword: {
-        color: "darkred",
+        color: '#CCCCCC',
         fontStyle: "italic",
         fontSize: 16,
         marginTop: 10,
