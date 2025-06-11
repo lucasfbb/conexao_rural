@@ -31,7 +31,7 @@ export default function LoginPage() {
         useCallback(() => {
 
             const onBackPress = () => {
-                router.replace('/');
+                // router.replace('/login');
                 return true;
             };
 
@@ -78,7 +78,7 @@ export default function LoginPage() {
         <View style={styles.container}>
             {/* 🔹 Logo + Botão Voltar */}
             <SafeAreaView style={styles.topContainer}>
-                <TouchableOpacity onPress={() => router.push('/')}>
+                <TouchableOpacity onPress={() => router.push('/login')}>
                     <Image
                         source={require("../../../assets/images/voltar26.png")}
                         style={[styles.logoVoltar, { marginTop: height * 0.03 }]}

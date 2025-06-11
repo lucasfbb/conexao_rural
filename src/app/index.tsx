@@ -1,31 +1,29 @@
-import { useEffect, useState } from "react";
-import { View, Image, Text, StyleSheet} from "react-native";
-
-import LoadingScreen from "@/components/loadingScreen";
-import LoginScreen from '@/app/login'
-import Button from "@/components/button";
-import { router } from "expo-router";
+// app/index.tsx
+import { useEffect } from "react";
+import { router, useRouter } from "expo-router";
+import { View, ActivityIndicator } from "react-native";
+import { useUser } from "@/contexts/UserContext";
 
 export default function Index() {
-    const [isLoading, setIsLoading] = useState(true);
-    const [fadeOut, setFadeOut] = useState(false);
+  const { user, isLoading } = useUser();
+  const r = useRouter();
 
-    useEffect(() => {
-        setTimeout(() => {
-            setFadeOut(true); // 🔹 Ativa a animação de saída
-            setTimeout(() => {
-                setIsLoading(false);
-                // router.replace("/login");
-            }, 1000); // Aguarda a animação antes de remover
-        }, 2000); // Simula um carregamento de 2 segundos
-    }, []);
-
-    if (isLoading) {
-        return <LoadingScreen fadeOut={fadeOut} />;
+  useEffect(() => {
+    if (!isLoading) {
+      // Espera o layout montar antes de navegar
+      setTimeout(() => {
+        if (user) {
+          r.replace("/home");
+        } else {
+          r.replace("/login");
+        }
+      }, 0);
     }
+  }, [isLoading, user]);
 
-    return (
-            <LoginScreen/>
-        );
+  return (
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <ActivityIndicator size="large" color="#4D7E1B" />
+    </View>
+  );
 }
-

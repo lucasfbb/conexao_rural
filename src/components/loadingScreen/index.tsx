@@ -1,6 +1,7 @@
 import { View, Image, StyleSheet, ActivityIndicator, Animated, Dimensions } from "react-native";
 import { useEffect, useRef } from "react";
 import { styles } from './styles'
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Definindo o tipo da prop `fadeOut`
 interface LoadingScreenProps {
@@ -20,6 +21,15 @@ export default function LoadingScreen({ fadeOut }: LoadingScreenProps) {
             }).start();
         }
     }, [fadeOut]);
+
+    // useEffect(() => {
+    //     const clearStorage = async () => {
+    //         await AsyncStorage.clear(); // ou removeItem("usuario"), etc.
+    //         console.log('AsyncStorage limpo!');
+    //     };
+
+    //     clearStorage();
+    // }, []);
 
     return (
         <Animated.View style={[styles.container, { opacity: fadeAnim }]}>

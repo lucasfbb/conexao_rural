@@ -4,3 +4,11 @@ export interface Item {
     details?: string[];
     addNew?: boolean;
   }
+
+export interface ItemHome {
+    nome: string;
+    endereco?: string;
+    distancia?: number;
+    categoria?: string;
+    foto?: string;
+}

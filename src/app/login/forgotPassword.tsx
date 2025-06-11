@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
         textAlign: 'center'
     },
     infoTelefone: {
-        color: "darkred",
+        color: '#CCCCCC',
         fontStyle: "italic",
         textAlign: 'right'
     },

@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 from psycopg2 import IntegrityError
 from sqlalchemy.orm import Session
+from models.produtor import Produtor
 from models.usuario import Usuario
 from schemas.usuario import UsuarioCreate
 from passlib.context import CryptContext
@@ -13,7 +14,7 @@ def criar_usuario(db: Session, usuario: UsuarioCreate):
     if existing_user:
         raise HTTPException(status_code=400, detail="Usuário com este CPF já existe.")
 
-    # Verificar se já existe um usuário com o mesmo e-mail (opcional, recomendado)
+    # Verificar se já existe um usuário com o mesmo e-mail
     existing_email = db.query(Usuario).filter(Usuario.email == usuario.email).first()
     if existing_email:
         raise HTTPException(status_code=400, detail="Usuário com este e-mail já existe.")
@@ -30,14 +31,27 @@ def criar_usuario(db: Session, usuario: UsuarioCreate):
         e_vendedor=usuario.e_vendedor,
         telefone_1=usuario.telefone_1,
         telefone_2=usuario.telefone_2,
-        # avaliacao=usuario.avaliacao,
-        # foto_perfil=usuario.foto_perfil
     )
 
     try:
         db.add(novo_usuario)
         db.commit()
         db.refresh(novo_usuario)
+
+        # ✅ Só cria o produtor depois que o usuário já existe no banco
+        if usuario.e_vendedor:
+            novo_produtor = Produtor(
+                cpf_cnpj=usuario.cpf_cnpj,
+                nome=usuario.nome,
+                endereco="",
+                categoria="",
+                banner="",
+                foto=""
+            )
+            db.add(novo_produtor)
+            db.commit()
+            db.refresh(novo_produtor)
+
         return novo_usuario
     except IntegrityError:
         db.rollback()

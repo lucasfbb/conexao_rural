@@ -7,11 +7,11 @@ class Produtor(Base):
     __tablename__ = 'produtores'
 
     cpf_cnpj = Column(String, ForeignKey('usuarios.cpf_cnpj'), primary_key=True)
-    banner = Column(String)
-    foto = Column(String)
-    categoria = Column(String)
-    endereco = Column(String)
-    nome = Column(String)
+    banner = Column(String, nullable=True)
+    foto = Column(String, nullable=True)
+    categoria = Column(String, nullable=True)
+    endereco = Column(String, nullable=True)
+    nome = Column(String, nullable=True)
 
     listagens = relationship("Listagem", back_populates="produtor")
 

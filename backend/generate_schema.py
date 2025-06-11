@@ -11,10 +11,8 @@ from models.endereco import Endereco
 from models.listagem import Listagem
 from models.associacoes import usuarios_produtos_favoritos, usuarios_produtores_favoritos
 
-# 👉 Aqui você coloca a DATABASE_URL LOCAL (só para o generate)
 DATABASE_URL = "postgresql://meuusuario:minhasenha@localhost:5432/meubanco"
 
-# 👉 Cria um engine local só para o generate
 engine = create_engine(DATABASE_URL)
 
 # Gera o SQL de criação das tabelas
