@@ -1,8 +1,8 @@
-"""alterando estrutura do produtor
+"""criação inicial
 
-Revision ID: a4102b6c58d5
-Revises: e52a4eaf7cf4
-Create Date: 2025-06-10 00:37:29.664832
+Revision ID: 9203bc06998a
+Revises: 
+Create Date: 2025-06-11 16:56:44.617874
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'a4102b6c58d5'
-down_revision: Union[str, None] = 'e52a4eaf7cf4'
+revision: str = '9203bc06998a'
+down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

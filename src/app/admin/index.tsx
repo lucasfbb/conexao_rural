@@ -88,7 +88,7 @@ export default function Admin() {
             <Text style={[styles.title, { color: colors.title }]}>Painel Administrativo</Text>
 
             <TouchableOpacity onPress={handleUpload} style={styles.button}>
-              <Text style={styles.buttonText}>Upload de Banner</Text>
+              <Text style={styles.buttonText}>Upload de Banners</Text>
             </TouchableOpacity>
 
             <FlatList
@@ -105,7 +105,7 @@ export default function Admin() {
             <TextInput
               value={produto}
               onChangeText={setProduto}
-              placeholder="Produto sazonal"
+              placeholder="Digite o nome do produto"
               style={[styles.input, { borderColor: colors.text, color: colors.text }]}
               placeholderTextColor={colors.text}
             />
