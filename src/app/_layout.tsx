@@ -11,7 +11,8 @@ export default function RootLayout() {
     pathname.startsWith("/home") ||
     pathname.startsWith("/perfil") ||
     pathname.startsWith("/notificacoes") ||
-    pathname.startsWith("/configuracoes");
+    pathname.startsWith("/configuracoes") ||
+    pathname.startsWith("/admin");
 
   return (
     <AppProvider>

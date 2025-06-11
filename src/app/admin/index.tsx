@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, Image, Alert } from "react-native";
+import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, Image, Alert, ScrollView } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { api } from "../../../services/api";
 import { useTema } from "@/contexts/ThemeContext";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Header from "@/components/header";
 
-export default function AdminBanners() {
+export default function Admin() {
   const { colors } = useTema();
   const [banners, setBanners] = useState<string[]>([]);
   const [produto, setProduto] = useState("");
   const [produtosSazonais, setProdutosSazonais] = useState<string[]>([]);
 
-  useEffect(() => {
-    fetchBanners();
-    fetchProdutos();
-  }, []);
+  // useEffect(() => {
+  //   fetchBanners();
+  //   fetchProdutos();
+  // }, []);
 
   async function fetchBanners() {
     try {
@@ -38,7 +39,7 @@ export default function AdminBanners() {
     if (!produto.trim()) return;
 
     try {
-      const res = await api.post("/produtos-sazonais", { nome: produto });
+      await api.post("/produtos-sazonais", { nome: produto });
       setProdutosSazonais([...produtosSazonais, produto]);
       setProduto("");
     } catch {
@@ -75,42 +76,59 @@ export default function AdminBanners() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background, padding: 20 }}>
-      <Text style={[styles.title, { color: colors.title }]}>Painel Administrativo</Text>
+    <>
+      <SafeAreaView edges={["top"]} style={{ backgroundColor: "#4D7E1B" }} />
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["left", "right", "bottom"]}>
+        <View style={{ flex: 1 }}>
+          <View style={{ backgroundColor: "#4D7E1B" }}>
+            <Header />
+          </View>
 
-      <TouchableOpacity onPress={handleUpload} style={styles.button}>
-        <Text style={styles.buttonText}>Upload de Banner</Text>
-      </TouchableOpacity>
+          <ScrollView contentContainerStyle={{ padding: 20 }} showsVerticalScrollIndicator={false} bounces={false}>
+            <Text style={[styles.title, { color: colors.title }]}>Painel Administrativo</Text>
 
-      <FlatList
-        data={banners}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        keyExtractor={(item, index) => index.toString()}
-        style={{ marginVertical: 10 }}
-        renderItem={({ item }) => (
-          <Image source={{ uri: item }} style={styles.banner} />
-        )}
-      />
+            <TouchableOpacity onPress={handleUpload} style={styles.button}>
+              <Text style={styles.buttonText}>Upload de Banner</Text>
+            </TouchableOpacity>
 
-      <TextInput
-        value={produto}
-        onChangeText={setProduto}
-        placeholder="Produto sazonal"
-        style={[styles.input, { borderColor: colors.text, color: colors.text }]}
-        placeholderTextColor={colors.text}
-      />
+            <FlatList
+              data={banners}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(item, index) => index.toString()}
+              style={{ marginVertical: 10 }}
+              renderItem={({ item }) => (
+                <Image source={{ uri: item }} style={styles.banner} />
+              )}
+            />
 
-      <TouchableOpacity onPress={handleAddProduto} style={styles.button}>
-        <Text style={styles.buttonText}>Adicionar Produto Sazonal</Text>
-      </TouchableOpacity>
+            <TextInput
+              value={produto}
+              onChangeText={setProduto}
+              placeholder="Produto sazonal"
+              style={[styles.input, { borderColor: colors.text, color: colors.text }]}
+              placeholderTextColor={colors.text}
+            />
 
-      <FlatList
-        data={produtosSazonais}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => <Text style={[styles.item, { color: colors.text }]}>{item}</Text>}
-      />
-    </SafeAreaView>
+            <TouchableOpacity onPress={handleAddProduto} style={styles.button}>
+              <Text style={styles.buttonText}>Adicionar Produto Sazonal</Text>
+            </TouchableOpacity>
+
+            <FlatList
+              data={produtosSazonais}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={({ item }) => (
+                <Text style={[styles.item, { color: colors.text }]}>{item}</Text>
+              )}
+              scrollEnabled={false} // evitar conflito com ScrollView externo
+              ListEmptyComponent={() => (
+                <Text style={{ textAlign: "center", color: colors.text }}>Nenhum produto adicionado ainda.</Text>
+              )}
+            />
+          </ScrollView>
+        </View>
+      </SafeAreaView>
+    </>
   );
 }
 
