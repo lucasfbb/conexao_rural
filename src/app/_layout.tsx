@@ -12,7 +12,9 @@ export default function RootLayout() {
     pathname.startsWith("/perfil") ||
     pathname.startsWith("/notificacoes") ||
     pathname.startsWith("/configuracoes") ||
-    pathname.startsWith("/admin");
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/carrinho") ||
+    pathname.startsWith("/areaProdutor");
 
   return (
     <AppProvider>

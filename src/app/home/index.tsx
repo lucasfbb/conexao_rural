@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { View, Text, StyleSheet, Alert, Image, TouchableOpacity, ScrollView, TextInput, FlatList, useWindowDimensions } from "react-native"
 import Carousel from 'react-native-reanimated-carousel';
 import { Feather, Ionicons, Fontisto } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from 'expo-router'
+import { router, useFocusEffect } from 'expo-router'
 
 import { useTema } from '@/contexts/ThemeContext';
 import Header from '@/components/header'
@@ -14,29 +14,49 @@ export default function Home(){
     const { width, height } = useWindowDimensions();
     const { isNightMode, colors } = useTema();
     const [agricultores, setAgricultores] = useState([]);
+    const [banners, setBanners] = useState<string[]>([]);
     
     const produtos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
 
     const imagens = {
         foto_perfil: require("../../../assets/images/perfil_agricultor.png"),
     } as const;
+
     
-    useEffect(() => {
-        const buscarAgricultores = async () => {
-            try {
-                const response = await api.get("/home/agricultores");
-                setAgricultores(response.data);
-            } catch (error) {
-                console.error("Erro ao buscar agricultores:", error);
-                Alert.alert("Erro", "Não foi possível carregar os agricultores.");
-            }
-        };
+    const buscarAgricultores = async () => {
+        try {
+            const response = await api.get("/home/agricultores");
+            setAgricultores(response.data);
+        } catch (error) {
+            console.error("Erro ao buscar agricultores:", error);
+            Alert.alert("Erro", "Não foi possível carregar os agricultores.");
+        }
+    };
+    
+    const fetchBanners = async () => {
+        try {
+            const res = await api.get("/banners");
+            const API_URL = "http://10.0.2.2:5000";
+            const bannersAbs = res.data.map((url: string) =>
+                url.startsWith("http") ? url : `${API_URL}${url}`
+        );
+        setBanners(bannersAbs);
+        console.log("Banners carregados:", bannersAbs);
+        } catch (error) {
+            console.error("Erro ao buscar banners:", error);
+        }
+    };
 
-        buscarAgricultores();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+        // Função que você quer rodar sempre que a tela volta pro foco
+            fetchBanners();
+            buscarAgricultores();
+        }, [])
+    );
 
-    const renderAgricultor = ({ item } : { item: ItemHome }) => (
-        <TouchableOpacity 
+const renderAgricultor = ({ item } : { item: ItemHome }) => (
+    <TouchableOpacity 
             style={styles.agricultorItem} 
             onPress={() => router.push({ pathname: "/home/produtorProfile", params: { nome: String(item.nome), endereco: String(item.endereco), distancia: String(item.distancia), foto: String(item.foto)} })}
         >
@@ -55,12 +75,6 @@ export default function Home(){
             </TouchableOpacity>
         </TouchableOpacity>
     );
-
-    const data = [
-        require("../../../assets/images/banner_teste.png"), 
-        require("../../../assets/images/banner_teste2.png"), 
-        require("../../../assets/images/banner_teste.png")
-    ];
 
     return (
         <>  
@@ -90,26 +104,35 @@ export default function Home(){
                         </View>
 
                         {/*  Carrossel de Avisos/Promoções */}
-                        <View style={styles.carouselContainer}>
-                            <Carousel
-                                width={width * 0.85} // Largura dos itens
-                                height={height * 0.23} // Altura dos itens
-                                data={data}
-                                scrollAnimationDuration={500} // Duração da animação
-                                loop
-                                renderItem={({ item }) => (
-                                    <Image
-                                        source={item}
-                                        style={{
-                                            width: "100%",
-                                            height: "100%",
-                                            borderRadius: 10,
-                                        }}
-                                        resizeMode="cover"
-                                    />
-                                )}
-                            />
-                        </View>
+                        {banners.length === 0 ? (
+                            <View style={[styles.carouselContainer, { height: height * 0.23, justifyContent: 'center', alignItems: 'center' }]}>
+                                <Text style={{ color: colors.text }}>Nenhum banner para exibir.</Text>
+                            </View>
+                        ) : (
+                            <View style={styles.carouselContainer}>
+                                <Carousel
+                                    width={width * 0.85}
+                                    height={height * 0.23}
+                                    data={banners}
+                                    defaultIndex={0}
+                                    scrollAnimationDuration={500}
+                                    loop
+                                    autoPlay={true}
+                                    autoPlayInterval={5000}
+                                    renderItem={({ item }) => (
+                                        <Image
+                                            source={{ uri: item }}
+                                            style={{
+                                                width: "100%",
+                                                height: "100%",
+                                                borderRadius: 10,
+                                            }}
+                                            resizeMode="cover"
+                                        />
+                                    )}
+                                />
+                            </View>
+                        )}
 
                         {/*  Produtos Sazonais */}
                         <Text style={[styles.sectionTitle, { marginBottom: height * 0.005, color: colors.title }]}>Produtos sazonais</Text>

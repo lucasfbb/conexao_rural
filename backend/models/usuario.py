@@ -1,11 +1,11 @@
 from datetime import datetime
-from sqlalchemy import Column, Date, DateTime, ForeignKey, String, Boolean, Table
+from sqlalchemy import Column, Date, DateTime, String, Boolean
 from sqlalchemy.orm import relationship
 from database import Base
-from models.associacoes import usuarios_produtos_favoritos, usuarios_produtores_favoritos
+from models.associacoes import usuario_produto_favorito, usuario_produtor_favorito
 
 class Usuario(Base):
-    __tablename__ = 'usuarios'
+    __tablename__ = 'usuario'
 
     cpf_cnpj = Column(String, primary_key=True, index=True)
     email = Column(String, unique=True, index=True)
@@ -22,16 +22,14 @@ class Usuario(Base):
     enderecos = relationship("Endereco", back_populates="usuario")
     pedidos = relationship("Pedido", back_populates="usuario")
 
-    # Produtos favoritos (relação muitos-para-muitos)
     produtos_favoritos = relationship(
         "Produto",
-        secondary=usuarios_produtos_favoritos,
+        secondary=usuario_produto_favorito,
         back_populates="usuarios_favoritaram"
     )
 
-    # Produtores favoritos (relação muitos-para-muitos)
     produtores_favoritos = relationship(
         "Produtor",
-        secondary=usuarios_produtores_favoritos,
+        secondary=usuario_produtor_favorito,
         back_populates="usuarios_favoritaram"
     )

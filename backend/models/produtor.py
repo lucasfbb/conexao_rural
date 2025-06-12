@@ -1,12 +1,12 @@
 from sqlalchemy import Column, String, ForeignKey
 from sqlalchemy.orm import relationship
 from database import Base
-from models.usuario import usuarios_produtores_favoritos
+from models.associacoes import usuario_produtor_favorito
 
 class Produtor(Base):
-    __tablename__ = 'produtores'
+    __tablename__ = 'produtor'
 
-    cpf_cnpj = Column(String, ForeignKey('usuarios.cpf_cnpj'), primary_key=True)
+    cpf_cnpj = Column(String, ForeignKey('usuario.cpf_cnpj'), primary_key=True)
     banner = Column(String, nullable=True)
     foto = Column(String, nullable=True)
     categoria = Column(String, nullable=True)
@@ -17,6 +17,6 @@ class Produtor(Base):
 
     usuarios_favoritaram = relationship(
         "Usuario",
-        secondary=usuarios_produtores_favoritos,
+        secondary=usuario_produtor_favorito,
         back_populates="produtores_favoritos"
     )

@@ -1,16 +1,16 @@
 from sqlalchemy import Table, Column, String, ForeignKey
 from database import Base
 
-usuarios_produtos_favoritos = Table(
-    'usuarios_produtos_favoritos',
+usuario_produto_favorito = Table(
+    'usuario_produto_favorito',
     Base.metadata,
-    Column('usuario_cpf_cnpj', String, ForeignKey('usuarios.cpf_cnpj'), primary_key=True),
-    Column('produto_id', String, ForeignKey('produtos.id'), primary_key=True)
+    Column('usuario_cpf_cnpj', String, ForeignKey('usuario.cpf_cnpj'), primary_key=True),
+    Column('produto_id', String, ForeignKey('produto.id'), primary_key=True)
 )
 
-usuarios_produtores_favoritos = Table(
-    'usuarios_produtores_favoritos',
+usuario_produtor_favorito = Table(
+    'usuario_produtor_favorito',
     Base.metadata,
-    Column('usuario_cpf_cnpj', String, ForeignKey('usuarios.cpf_cnpj'), primary_key=True),
-    Column('produtor_cpf_cnpj', String, ForeignKey('produtores.cpf_cnpj'), primary_key=True)
+    Column('usuario_cpf_cnpj', String, ForeignKey('usuario.cpf_cnpj'), primary_key=True),
+    Column('produtor_cpf_cnpj', String, ForeignKey('produtor.cpf_cnpj'), primary_key=True)
 )

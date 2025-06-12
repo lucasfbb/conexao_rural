@@ -1,10 +1,10 @@
 from sqlalchemy import Column, String, Boolean
 from sqlalchemy.orm import relationship
 from database import Base
-from models.usuario import usuarios_produtos_favoritos
+from models.associacoes import usuario_produto_favorito
 
 class Produto(Base):
-    __tablename__ = 'produtos'
+    __tablename__ = 'produto'
 
     id = Column(String, primary_key=True, index=True)
     nome = Column(String, nullable=False)
@@ -16,6 +16,6 @@ class Produto(Base):
 
     usuarios_favoritaram = relationship(
         "Usuario",
-        secondary=usuarios_produtos_favoritos,
+        secondary=usuario_produto_favorito,
         back_populates="produtos_favoritos"
     )
