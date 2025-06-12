@@ -19,3 +19,17 @@ def verificar_token(token: str = Depends(oauth2_scheme)):
             detail="Token inválido ou expirado",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    
+def get_current_user(token: str = Depends(oauth2_scheme)):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        usuario_id = payload.get("sub")  # Pode ser cpf_cnpj (string)
+        if usuario_id is None:
+            raise HTTPException(status_code=401, detail="Token inválido")
+        return usuario_id
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token inválido ou expirado",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
