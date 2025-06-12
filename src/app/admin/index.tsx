@@ -10,6 +10,7 @@ import Header from "@/components/header";
 import axios from "axios";
 import Button from "@/components/button";
 import { api } from "../../../services/api";
+import { baseURL } from "../../../services/api";
 
 const API_URL = "http://10.0.2.2:5000";
 
@@ -37,7 +38,7 @@ export default function Admin() {
   async function fetchBanners() {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_URL}/banners`);
+      const res = await axios.get(`${API_URL}banners`);
       const bannersAbs = res.data.map((url: string) =>
         url.startsWith("http") ? url : `${API_URL}${url}`
       );
@@ -66,8 +67,7 @@ export default function Admin() {
     } as any);
 
     try {
-      // Troque Axios por fetch:
-      const response = await fetch("http://10.0.2.2:5000/banners", {
+      const response = await fetch(`${API_URL}/banners`, {
         method: "POST",
         body: formData,
         // NÃO coloque Content-Type aqui!
@@ -75,7 +75,7 @@ export default function Admin() {
       const data = await response.json();
       Alert.alert("Banner enviado!");
       fetchBanners();
-      console.log("Upload OK:", data);
+      // console.log("Upload OK:", data);
     } catch (e) {
       console.log("Erro no upload:", e);
       Alert.alert("Erro ao enviar imagem");
