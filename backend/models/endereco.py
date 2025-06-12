@@ -1,11 +1,11 @@
-from sqlalchemy import Column, String, ForeignKey
+from sqlalchemy import Column, String, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 from database import Base
 
 class Endereco(Base):
     __tablename__ = 'endereco'
 
-    id = Column(String, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     cep = Column(String)
     estado = Column(String)
     cidade = Column(String)

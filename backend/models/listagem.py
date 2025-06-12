@@ -5,8 +5,8 @@ from database import Base
 class Listagem(Base):
     __tablename__ = 'listagem'
 
-    id = Column(String, primary_key=True, index=True)
-    produto_id = Column(String, ForeignKey('produto.id'))
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    produto_id = Column(Integer, ForeignKey('produto.id'))
     preco = Column(Integer)
     estoque = Column(Integer)
     produtor_cpf_cnpj = Column(String, ForeignKey('produtor.cpf_cnpj'))

@@ -6,7 +6,7 @@ import datetime
 class Pedido(Base):
     __tablename__ = 'pedido'
 
-    id = Column(String, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     produto = Column(String)
     quantidade = Column(Integer)
     valor = Column(Integer)
@@ -15,7 +15,7 @@ class Pedido(Base):
     avaliacao = Column(String)
 
     cpf_usuario = Column(String, ForeignKey("usuario.cpf_cnpj"))
-    id_endereco = Column(String, ForeignKey("endereco.id"))
+    id_endereco = Column(Integer, ForeignKey("endereco.id"))
 
     usuario = relationship("Usuario", back_populates="pedidos")
     endereco = relationship("Endereco", back_populates="pedidos")

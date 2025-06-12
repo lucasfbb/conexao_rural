@@ -15,8 +15,9 @@ export default function Home(){
     const { isNightMode, colors } = useTema();
     const [agricultores, setAgricultores] = useState([]);
     const [banners, setBanners] = useState<string[]>([]);
+    const [produtosSazonais, setProdutosSazonais] = useState<string[]>([]);
     
-    const produtos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
+    // const produtos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
 
     const imagens = {
         foto_perfil: require("../../../assets/images/perfil_agricultor.png"),
@@ -47,11 +48,23 @@ export default function Home(){
         }
     };
 
+    const fetchProdutosSazonais = async () => {
+        try {
+            const res = await api.get("/produtos");
+            // Filtra só os produtos que são sazonais
+            const sazonais = res.data.filter((p: any) => p.sazonal).map((p: any) => p.nome);
+            setProdutosSazonais(sazonais);
+        } catch (error) {
+            console.error("Erro ao buscar produtos sazonais:", error);
+        }
+    };
+
     useFocusEffect(
         useCallback(() => {
         // Função que você quer rodar sempre que a tela volta pro foco
             fetchBanners();
             buscarAgricultores();
+            fetchProdutosSazonais();
         }, [])
     );
 
@@ -137,7 +150,7 @@ const renderAgricultor = ({ item } : { item: ItemHome }) => (
                         {/*  Produtos Sazonais */}
                         <Text style={[styles.sectionTitle, { marginBottom: height * 0.005, color: colors.title }]}>Produtos sazonais</Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
-                            {produtos.map((produto, index) => (
+                            {produtosSazonais.map((produto, index) => (
                                 <TouchableOpacity key={index} style={styles.productItem}>
                                     <Text style={[styles.productText, { color: colors.text }]}>{produto}</Text>
                                 </TouchableOpacity>

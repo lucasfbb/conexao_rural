@@ -1,16 +1,22 @@
 import React, { useState, useEffect } from "react";
 import {
   View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity,
-  Image, Alert, ScrollView, ActivityIndicator, useWindowDimensions
+  Image, Alert, ScrollView, ActivityIndicator, useWindowDimensions, Switch
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTema } from "@/contexts/ThemeContext";
 import Header from "@/components/header";
-import axios from "axios";
 import Button from "@/components/button";
 import { api } from "../../../services/api";
-import { baseURL } from "../../../services/api";
+import { Ionicons } from "@expo/vector-icons";
+
+// TIPO DE PRODUTO
+type Produto = {
+  id: number;
+  nome: string;
+  sazonal: boolean;
+};
 
 const API_URL = "http://10.0.2.2:5000";
 
@@ -20,30 +26,34 @@ export default function Admin() {
 
   const styles = getStyles(width, height, colors);
 
+  // Banners
   const [banners, setBanners] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Produtos sazonais
-  const [produto, setProduto] = useState("");
-  const [produtosSazonais, setProdutosSazonais] = useState<string[]>([]);
+  // Produtos
+  const [produtos, setProdutos] = useState<Produto[]>([]);
   const [loadingProdutos, setLoadingProdutos] = useState(false);
 
-  // Carregar banners e produtos ao montar
+  // Adicionar produto novo
+  const [produto, setProduto] = useState("");
+  const [adicionandoProduto, setAdicionandoProduto] = useState(false);
+
+  // Buscar banners e produtos ao montar
   useEffect(() => {
     fetchBanners();
-    // fetchProdutos();
+    fetchProdutos();
   }, []);
 
-  // BANNERS
+  // ---- BANNERS ----
   async function fetchBanners() {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_URL}banners`);
+      const res = await api.get("/banners");
       const bannersAbs = res.data.map((url: string) =>
         url.startsWith("http") ? url : `${API_URL}${url}`
       );
       setBanners(bannersAbs);
-    } catch {
+    } catch (error) {
       Alert.alert("Erro ao buscar banners");
     } finally {
       setLoading(false);
@@ -51,39 +61,36 @@ export default function Admin() {
   }
 
   async function handleUpload() {
-  const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ImagePicker.MediaTypeOptions.Images,
-    quality: 1,
-  });
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+    });
 
-  if (!result.canceled && result.assets[0]) {
-    setLoading(true);
-    const file = result.assets[0];
-    const formData = new FormData();
-    formData.append("file", {
-      uri: file.uri,
-      name: file.fileName || `banner_${Date.now()}.jpg`,
-      type: file.mimeType || "image/jpeg",
-    } as any);
+    if (!result.canceled && result.assets[0]) {
+      setLoading(true);
+      const file = result.assets[0];
+      const formData = new FormData();
+      formData.append("file", {
+        uri: file.uri,
+        name: file.fileName || `banner_${Date.now()}.jpg`,
+        type: file.mimeType || "image/jpeg",
+      } as any);
 
-    try {
-      const response = await fetch(`${API_URL}/banners`, {
-        method: "POST",
-        body: formData,
-        // NÃO coloque Content-Type aqui!
-      });
-      const data = await response.json();
-      Alert.alert("Banner enviado!");
-      fetchBanners();
-      // console.log("Upload OK:", data);
-    } catch (e) {
-      console.log("Erro no upload:", e);
-      Alert.alert("Erro ao enviar imagem");
-    } finally {
-      setLoading(false);
+      try {
+        const response = await fetch(`${API_URL}/banners`, {
+          method: "POST",
+          body: formData,
+        });
+        await response.json();
+        Alert.alert("Banner enviado!");
+        fetchBanners();
+      } catch (e) {
+        Alert.alert("Erro ao enviar imagem");
+      } finally {
+        setLoading(false);
+      }
     }
   }
-}
 
   async function handleDeleteBanner(url: string) {
     const filename = url.split('/').pop();
@@ -100,7 +107,7 @@ export default function Admin() {
           onPress: async () => {
             setLoading(true);
             try {
-              await axios.delete(`${API_URL}/banners/${filename}`);
+              await api.delete(`/banners/${filename}`);
               Alert.alert("Banner excluído!");
               fetchBanners();
             } catch {
@@ -126,29 +133,116 @@ export default function Admin() {
     </View>
   );
 
-  // PRODUTOS SAZONAIS
+  // ---- PRODUTOS ----
   async function fetchProdutos() {
     setLoadingProdutos(true);
     try {
-      const res = await axios.get(`${API_URL}/produtos-sazonais`);
-      setProdutosSazonais(res.data);
+      const res = await api.get("/produtos");
+      setProdutos(res.data); // [{ id, nome, sazonal }]
     } catch {
-      Alert.alert("Erro ao buscar produtos sazonais");
+      Alert.alert("Erro ao buscar produtos");
     } finally {
       setLoadingProdutos(false);
     }
   }
 
+  async function handleToggleSazonal(produtoId: number, novoValor: boolean) {
+    try {
+      await api.patch(`/produtos/${produtoId}`, { sazonal: novoValor });
+      // Atualiza só o produto alterado no estado
+      setProdutos(produtos =>
+        produtos.map(p =>
+          p.id === produtoId ? { ...p, sazonal: novoValor } : p
+        )
+      );
+    } catch {
+      Alert.alert("Erro ao atualizar produto");
+    }
+  }
+
   async function handleAddProduto() {
     if (!produto.trim()) return;
+    setAdicionandoProduto(true);
     try {
-      await axios.post(`${API_URL}/produtos-sazonais`, { nome: produto });
+      await api.post(`/produtos`, { nome: produto });
       setProduto("");
       fetchProdutos();
     } catch {
       Alert.alert("Erro ao adicionar produto");
+    } finally {
+      setAdicionandoProduto(false);
     }
   }
+
+  async function handleDeleteProduto(produtoId: number) {
+    Alert.alert(
+      "Excluir produto",
+      "Tem certeza que deseja excluir este produto?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Excluir",
+          style: "destructive",
+          onPress: async () => {
+            setLoadingProdutos(true);
+            try {
+              await api.delete(`/produtos/${produtoId}`);
+              Alert.alert("Produto excluído!");
+              fetchProdutos();
+            } catch {
+              Alert.alert("Erro ao excluir produto");
+            } finally {
+              setLoadingProdutos(false);
+            }
+          }
+        }
+      ]
+    );
+  }
+
+
+  const renderProduto = ({ item }: { item: Produto }) => (
+  <View
+    style={{
+      flexDirection: "row",
+      alignItems: "center",
+      borderBottomWidth: 1,
+      borderColor: "#e0e0e0",
+      paddingVertical: 10,
+      backgroundColor: item.sazonal ? "#e9fbe5" : "transparent",
+      borderRadius: 8,
+      marginBottom: 6,
+    }}
+  >
+    {/* Toggle Sazonal - Clicável */}
+    <TouchableOpacity
+      style={{ flex: 1, flexDirection: "row", alignItems: "center" }}
+      activeOpacity={0.7}
+      onPress={() => handleToggleSazonal(item.id, !item.sazonal)}
+    >
+      <Text style={[styles.item, { color: colors.text, fontWeight: "bold" }]}>{item.nome}</Text>
+      <Ionicons
+        name={item.sazonal ? "checkmark-circle" : "ellipse-outline"}
+        size={22}
+        color={item.sazonal ? "#4D7E1B" : "#bbb"}
+        style={{ marginLeft: 8 }}
+      />
+      <Text style={{
+        color: item.sazonal ? "#357d22" : "#bbb",
+        marginLeft: 7,
+        fontWeight: "bold",
+        fontSize: 15
+      }}>
+        {item.sazonal ? "Sazonal" : "Não sazonal"}
+      </Text>
+    </TouchableOpacity>
+
+    {/* Botão Lixeira bem próximo */}
+    <TouchableOpacity onPress={() => handleDeleteProduto(item.id)} style={{ marginLeft: 4 }}>
+      <Ionicons name="trash" size={23} color="#b82020" />
+    </TouchableOpacity>
+  </View>
+);
 
   return (
     <>
@@ -158,25 +252,19 @@ export default function Admin() {
           <View style={{ backgroundColor: "#4D7E1B" }}>
             <Header />
           </View>
-
           <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} bounces={false}>
             <Text style={styles.title}>Painel Administrativo</Text>
-
             <Text style={styles.infoText}>
               Gerencie os banners do app. Você pode adicionar e excluir fotos!
             </Text>
-
             {loading && (
               <ActivityIndicator color="#4D7E1B" size="large" style={styles.loader} />
             )}
-
             {/* Layout banners: vazio = centralizado, senão FlatList */}
             {banners.length === 0 ? (
               <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>
-                  Nenhum banner cadastrado.
-                </Text>
-                <Button 
+                <Text style={styles.emptyText}>Nenhum banner cadastrado.</Text>
+                <Button
                   title="+"
                   onPress={handleUpload}
                   style={styles.bannerUploadButton}
@@ -193,7 +281,6 @@ export default function Admin() {
                   style={styles.flatList}
                   renderItem={renderBanner}
                 />
-
                 <Button
                   title="+"
                   onPress={handleUpload}
@@ -204,7 +291,7 @@ export default function Admin() {
             )}
 
             {/* Produtos Sazonais */}
-            <Text style={styles.subtitle}>Produtos Sazonais</Text>
+            <Text style={styles.subtitle}>Produtos do Sistema</Text>
 
             <TextInput
               value={produto}
@@ -215,24 +302,23 @@ export default function Admin() {
             />
 
             <Button
-              title="Adicionar"
+              title={adicionandoProduto ? "Adicionando..." : "Adicionar"}
               onPress={handleAddProduto}
               style={styles.button}
               textStyle={styles.buttonText}
+              disabled={adicionandoProduto}
             />
 
             {loadingProdutos ? (
               <ActivityIndicator color="#4D7E1B" size="small" style={styles.produtosLoader} />
             ) : (
               <FlatList
-                data={produtosSazonais}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item }) => (
-                  <Text style={styles.item}>{item}</Text>
-                )}
+                data={produtos}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={renderProduto}
                 scrollEnabled={false}
                 ListEmptyComponent={() => (
-                  <Text style={styles.emptyProdutosText}>Nenhum produto adicionado ainda.</Text>
+                  <Text style={styles.emptyProdutosText}>Nenhum produto cadastrado ainda.</Text>
                 )}
                 style={styles.produtosFlatList}
               />
@@ -244,10 +330,10 @@ export default function Admin() {
   );
 }
 
-// Função para criar estilos responsivos
+// -------- STYLES --------
 const getStyles = (width: number, height: number, colors: any) => StyleSheet.create({
   scrollContent: {
-    padding: width * 0.05,
+    padding: width * 0.055,
   },
   title: {
     fontSize: width * 0.06,
@@ -308,10 +394,10 @@ const getStyles = (width: number, height: number, colors: any) => StyleSheet.cre
     marginRight: width * 0.02,
     marginTop: height * 0.01,
   },
-  bannerUploadButtonText: {
+  bigAddButtonText: {
     color: "#4D7E1B",
     fontWeight: "bold",
-    fontSize: width * 0.12,
+    fontSize: width * 0.1,
   },
   emptyContainer: {
     alignItems: "center",
@@ -324,26 +410,6 @@ const getStyles = (width: number, height: number, colors: any) => StyleSheet.cre
     marginBottom: height * 0.022,
     fontSize: width * 0.045,
     textAlign: "center",
-  },
-  bigAddButton: {
-    width: width * 0.25,
-    height: width * 0.25,
-    borderRadius: width * 0.07,
-    backgroundColor: "#fff",
-    borderWidth: 2,
-    borderColor: "#4D7E1B",
-    alignItems: "center",
-    justifyContent: "center",
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 5,
-  },
-  bigAddButtonText: {
-    color: "#4D7E1B",
-    fontWeight: "bold",
-    fontSize: width * 0.1,
   },
   subtitle: {
     fontSize: width * 0.052,
@@ -380,6 +446,13 @@ const getStyles = (width: number, height: number, colors: any) => StyleSheet.cre
   produtosFlatList: {
     marginBottom: height * 0.03,
   },
+  produtoLinha: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: height * 0.012,
+    borderBottomWidth: 1,
+    borderColor: "#e0e0e0",
+  },
   item: {
     fontSize: width * 0.042,
     paddingVertical: height * 0.008,
@@ -389,5 +462,10 @@ const getStyles = (width: number, height: number, colors: any) => StyleSheet.cre
     textAlign: "center",
     color: colors.text,
     fontSize: width * 0.04,
+  },
+  sazonalLabel: {
+    fontSize: width * 0.04,
+    marginLeft: 12,
+    fontWeight: "bold",
   },
 });

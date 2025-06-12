@@ -26,7 +26,7 @@ def listar_agricultores(db: Session = Depends(get_db)):
             distancia=8.5  # valor default fictício por enquanto
         ))
 
-    print(resposta)
+    # print(resposta)
     
     return resposta
 

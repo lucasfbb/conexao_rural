@@ -1,8 +1,8 @@
-"""alterando nome das tabelas
+"""alterando id tipo
 
-Revision ID: 7f653886f336
+Revision ID: 589b02b2244e
 Revises: 
-Create Date: 2025-06-12 00:55:27.803535
+Create Date: 2025-06-12 16:15:38.206866
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '7f653886f336'
+revision: str = '589b02b2244e'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None

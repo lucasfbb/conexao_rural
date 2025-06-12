@@ -12,3 +12,9 @@ export interface ItemHome {
     categoria?: string;
     foto?: string;
 }
+
+export type Produto = {
+  id: number;
+  nome: string;
+  sazonal: boolean;
+}

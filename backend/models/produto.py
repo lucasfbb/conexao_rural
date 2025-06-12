@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Boolean
+from sqlalchemy import Column, String, Boolean, Integer
 from sqlalchemy.orm import relationship
 from database import Base
 from models.associacoes import usuario_produto_favorito
@@ -6,7 +6,7 @@ from models.associacoes import usuario_produto_favorito
 class Produto(Base):
     __tablename__ = 'produto'
 
-    id = Column(String, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     nome = Column(String, nullable=False)
     categoria = Column(String, nullable=True)
     descricao = Column(String)
