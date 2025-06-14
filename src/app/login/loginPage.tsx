@@ -46,6 +46,9 @@ export default function LoginPage() {
                 return Alert.alert("Atenção", "Preencha todos os campos!");
             }
 
+            // apaga o token do contexto, se já estiver logado
+            await logout()
+            
             const response = await api.post("/auth/login", {
                 email,
                 senha: password
@@ -57,8 +60,9 @@ export default function LoginPage() {
             // Salve o token no AsyncStorage
             await AsyncStorage.setItem("token", token);
 
-            // apaga o token do contexto, se já estiver logado
-            await logout()
+            const checkToken = await AsyncStorage.getItem("token");
+            // console.log("TOKEN SALVO:", checkToken);
+
 
             // Faz login no contexto
             await login({ ...userData, token });

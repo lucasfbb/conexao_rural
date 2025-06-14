@@ -20,6 +20,7 @@ def listar_agricultores(db: Session = Depends(get_db)):
     for produtor in produtores:
         resposta.append(ProdutorOut(
             nome=produtor.nome,
+            banner=produtor.banner,
             endereco=produtor.endereco,
             categoria=produtor.categoria,
             foto=produtor.foto,

@@ -5,6 +5,7 @@ from routes import auth  # rotas de login
 from routes import home
 from routes import banners
 from routes import produto
+from routes import produtor
 from database import Base, engine
 import models
 
@@ -17,5 +18,6 @@ app.include_router(auth.router, prefix="/auth", tags=["Autenticação"])
 app.include_router(home.router, prefix="/home", tags=["Página Inicial"])
 app.include_router(banners.router, tags=["Banners"])
 app.include_router(produto.router, tags=["Produtos"])
+app.include_router(produtor.router, tags=["Produtores"])
 
 Base.metadata.create_all(bind=engine)

@@ -11,6 +11,7 @@ export interface ItemHome {
     distancia?: number;
     categoria?: string;
     foto?: string;
+    banner?: string;
 }
 
 export type Produto = {

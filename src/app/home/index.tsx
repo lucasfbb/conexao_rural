@@ -7,8 +7,9 @@ import { router, useFocusEffect } from 'expo-router'
 
 import { useTema } from '@/contexts/ThemeContext';
 import Header from '@/components/header'
-import { api } from '../../../services/api';
+import { api, baseURL } from '../../../services/api';
 import { ItemHome } from '@/types/types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Home(){
     const { width, height } = useWindowDimensions();
@@ -16,6 +17,8 @@ export default function Home(){
     const [agricultores, setAgricultores] = useState([]);
     const [banners, setBanners] = useState<string[]>([]);
     const [produtosSazonais, setProdutosSazonais] = useState<string[]>([]);
+
+    const base = baseURL.slice(0, -1);
     
     // const produtos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
 
@@ -27,7 +30,9 @@ export default function Home(){
     const buscarAgricultores = async () => {
         try {
             const response = await api.get("/home/agricultores");
+            // console.log("Agricultores:", response.data);
             setAgricultores(response.data);
+            // console.log(agricultores)
         } catch (error) {
             console.error("Erro ao buscar agricultores:", error);
             Alert.alert("Erro", "Não foi possível carregar os agricultores.");
@@ -42,7 +47,8 @@ export default function Home(){
                 url.startsWith("http") ? url : `${API_URL}${url}`
         );
         setBanners(bannersAbs);
-        console.log("Banners carregados:", bannersAbs);
+        const token = await AsyncStorage.getItem("token");
+        // console.log("Token atual:", token);
         } catch (error) {
             console.error("Erro ao buscar banners:", error);
         }
@@ -74,6 +80,9 @@ const renderAgricultor = ({ item } : { item: ItemHome }) => (
             onPress={() => router.push({ pathname: "/home/produtorProfile", params: { nome: String(item.nome), endereco: String(item.endereco), distancia: String(item.distancia), foto: String(item.foto)} })}
         >
             <View style={styles.logoPlaceholder}>
+                <Image source={{
+                    uri: item.foto ? `${base}${item.foto}?t=${Date.now()}` : undefined
+                }} style={styles.perfilImagem} />
                 {/* <Image source={imagens[item.foto]} style={styles.produtoImagem} /> */}
             </View>
             
@@ -200,5 +209,6 @@ const styles = StyleSheet.create({
     card: { width: "100%", height: "100%", backgroundColor: "#ddd", justifyContent: "center", alignItems: "center", borderRadius: 10 },
     text: { fontSize: 18, fontWeight: "bold" },
     icon: { marginLeft: 10 },
-    produtoImagem: { width: 40, height: 40, marginRight: 10 }
+    produtoImagem: { width: 40, height: 40, marginRight: 10 },
+    perfilImagem: { width: 40, height: 40, borderRadius: 10 },
 });

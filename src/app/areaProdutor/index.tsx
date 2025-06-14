@@ -1,23 +1,63 @@
-import { View, Text, FlatList, Image, TouchableOpacity, Alert, StyleSheet, Modal, TextInput, ScrollView } from "react-native";
+import { View, Text, FlatList, Image, TouchableOpacity, Alert, StyleSheet, Modal, TextInput, ScrollView, ActivityIndicator, useWindowDimensions } from "react-native";
 import { useEffect, useState } from "react";
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from 'expo-image-picker';
 import Header from "@/components/header";
-import { api } from "../../../services/api";
+import { api, baseURL } from "../../../services/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+function getCamposAlterados(
+  orig: Record<string, any> = {},
+  editado: Record<string, any> = {}
+) {
+  const alterados: Record<string, any> = {};
+  Object.keys(editado).forEach((key) => {
+    if (editado[key] !== orig[key]) {
+      alterados[key] = editado[key];
+    }
+  });
+  return alterados;
+}
 
 export default function AreaProdutor() {
+  const { width, height } = useWindowDimensions();
+  const styles = getStyles(width, height);
+
+  const base = baseURL.slice(0, -1);
+
   const [perfil, setPerfil] = useState({
     nome: "",
     email: "",
     foto: "",
     banner: "",
     categoria: "",
-    telefone: "",
-    // ...outros campos
+    telefone_1: "",
+    telefone_2: "",
+    endereco: "",
   });
+  const [perfilOriginal, setPerfilOriginal] = useState({
+    nome: "",
+    email: "",
+    foto: "",
+    banner: "",
+    categoria: "",
+    telefone_1: "",
+    telefone_2: "",
+    endereco: "",
+  });
+
   const [carregando, setCarregando] = useState(true);
   const [editando, setEditando] = useState(false);
 
+  // Imagem do perfil/banner
+  const [imagemProdutor, setImagemProdutor] = useState<string | null>(null);
+  const [imagemBanner, setImagemBanner] = useState<string | null>(null);
+
+  // Modal de editar nome
+  const [modalNome, setModalNome] = useState(false);
+  const [novoNome, setNovoNome] = useState(perfil.nome);
+
+  // Produtos (mock ainda)
   const [produtos, setProdutos] = useState([
     {
       id: '1',
@@ -32,114 +72,27 @@ export default function AreaProdutor() {
       preco: 'R$ 3,00',
       quantidade: '20kg',
       imagem: require('../../../assets/images/principais/alface.png'),
-    },
-     {
-      id: '3',
-      nome: 'Alface',
-      preco: 'R$ 3,00',
-      quantidade: '20kg',
-      imagem: require('../../../assets/images/principais/alface.png'),
-    },
-     {
-      id: '4',
-      nome: 'Alface',
-      preco: 'R$ 3,00',
-      quantidade: '20kg',
-      imagem: require('../../../assets/images/principais/alface.png'),
-    },
-     {
-      id: '5',
-      nome: 'Alface',
-      preco: 'R$ 3,00',
-      quantidade: '20kg',
-      imagem: require('../../../assets/images/principais/alface.png'),
-    },
-     {
-      id: '6',
-      nome: 'Alface',
-      preco: 'R$ 3,00',
-      quantidade: '20kg',
-      imagem: require('../../../assets/images/principais/alface.png'),
-    },
-     {
-      id: '7',
-      nome: 'Alface',
-      preco: 'R$ 3,00',
-      quantidade: '20kg',
-      imagem: require('../../../assets/images/principais/alface.png'),
-    },
-     {
-      id: '8',
-      nome: 'Alface',
-      preco: 'R$ 3,00',
-      quantidade: '20kg',
-      imagem: require('../../../assets/images/principais/alface.png'),
-    },
-     {
-      id: '9',
-      nome: 'Alface',
-      preco: 'R$ 3,00',
-      quantidade: '20kg',
-      imagem: require('../../../assets/images/principais/alface.png'),
-    },
-     {
-      id: '10',
-      nome: 'Alface',
-      preco: 'R$ 3,00',
-      quantidade: '20kg',
-      imagem: require('../../../assets/images/principais/alface.png'),
-    },
-     {
-      id: '11',
-      nome: 'Alface',
-      preco: 'R$ 3,00',
-      quantidade: '20kg',
-      imagem: require('../../../assets/images/principais/alface.png'),
-    },
-     {
-      id: '12',
-      nome: 'Alface',
-      preco: 'R$ 3,00',
-      quantidade: '20kg',
-      imagem: require('../../../assets/images/principais/alface.png'),
-    },
-     {
-      id: '13',
-      nome: 'Alface',
-      preco: 'R$ 3,00',
-      quantidade: '20kg',
-      imagem: require('../../../assets/images/principais/alface.png'),
-    },
-     {
-      id: '14',
-      nome: 'Alface',
-      preco: 'R$ 3,00',
-      quantidade: '20kg',
-      imagem: require('../../../assets/images/principais/alface.png'),
-    },
-     {
-      id: '15',
-      nome: 'Alface',
-      preco: 'R$ 3,00',
-      quantidade: '20kg',
-      imagem: require('../../../assets/images/principais/alface.png'),
-    },
-     {
-      id: '16',
-      nome: 'Alface',
-      preco: 'R$ 3,00',
-      quantidade: '20kg',
-      imagem: require('../../../assets/images/principais/alface.png'),
     }
   ]);
 
+  // Modal de novo produto
+  const [modalNovoProduto, setModalNovoProduto] = useState(false);
+  const [novoNomeProd, setNovoNomeProd] = useState("");
+  const [novoPrecoProd, setNovoPrecoProd] = useState("");
+  const [novaQtdProd, setNovaQtdProd] = useState("");
+  const [imagemProdutoNovo, setImagemProdutoNovo] = useState<string | null>(null);
+  
+  // --- Funções de perfil e imagem
   async function salvarPerfil() {
-    try {
-      await api.patch("/produtores/me", perfil);
+    const camposAlterados = getCamposAlterados(perfilOriginal, perfil);
+    if (Object.keys(camposAlterados).length > 0) {
+      await api.patch("/produtores/me", camposAlterados);
       Alert.alert("Perfil atualizado!");
+      // Atualize o original para os próximos edits
+      setPerfilOriginal(perfil);
       setEditando(false);
-    } catch {
-      Alert.alert("Erro ao atualizar perfil");
+    } else {
+      Alert.alert("Nenhuma alteração feita.");
     }
   }
 
@@ -149,7 +102,16 @@ export default function AreaProdutor() {
       try {
         const res = await api.get("/produtores/me");
         setPerfil(res.data);
+        setPerfilOriginal(res.data);
+        setImagemProdutor(`${res.data.foto}?t=${Date.now()}`);
+        setImagemBanner(res.data.banner);
       } catch (e) {
+        if (typeof e === "object" && e !== null && "response" in e) {
+          // @ts-expect-error: e.response may exist if this is an AxiosError
+          console.log("ERRO AO BUSCAR PERFIL", e.response?.data || e);
+        } else {
+          console.log("ERRO AO BUSCAR PERFIL", e);
+        }
         Alert.alert("Erro ao carregar perfil");
       } finally {
         setCarregando(false);
@@ -158,28 +120,104 @@ export default function AreaProdutor() {
     buscarPerfil();
   }, []);
 
-  const [imagemProdutor, setImagemProdutor] = useState<string | null>(null);
-  const [nomeProdutor, setNomeProdutor] = useState("João da Feira");
-
-  const [modalNome, setModalNome] = useState(false);
-  const [novoNome, setNovoNome] = useState(nomeProdutor);
-
-  const [modalNovoProduto, setModalNovoProduto] = useState(false);
-  const [novoNomeProd, setNovoNomeProd] = useState("");
-  const [novoPrecoProd, setNovoPrecoProd] = useState("");
-  const [novaQtdProd, setNovaQtdProd] = useState("");
-  const [imagemProdutoNovo, setImagemProdutoNovo] = useState<string | null>(null);
-
   const escolherImagemProdutor = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images });
-    if (!result.canceled) setImagemProdutor(result.assets[0].uri);
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      const asset = result.assets[0];
+      const localUri = asset.uri;
+      let filename = localUri.split('/').pop();
+      let match = /\.(\w+)$/.exec(filename ?? "");
+      let type = match ? `image/${match[1]}` : `image`;
+
+      const formData = new FormData();
+      formData.append("file", {
+      uri: localUri,
+      name: filename ?? `foto.jpg`,
+      type: type,
+    } as any);
+
+      // DEBUG
+      // console.log('Preparando envio...', {
+      //   uri: localUri,
+      //   name: filename,
+      //   type: type
+      // });
+
+      try {
+        const response = await api.post(
+          '/produtores/foto/upload',
+          formData,
+          {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          }
+        );
+        setImagemProdutor(`${response.data.foto}?t=${Date.now()}`);
+        setPerfil(prev => ({
+          ...prev,
+          foto: `${response.data.foto}?t=${Date.now()}`,
+        }));
+        Alert.alert("Foto de perfil atualizada!");
+      } catch (err) {
+        console.error("Erro no upload:", err);
+        Alert.alert("Erro ao enviar imagem de perfil!");
+      }
+    }
   };
 
-  const escolherImagemProduto = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images });
-    if (!result.canceled) setImagemProdutoNovo(result.assets[0].uri);
+
+  const escolherImagemBanner = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      const asset = result.assets[0];
+      const localUri = asset.uri;
+      let filename = localUri.split('/').pop();
+      let match = /\.(\w+)$/.exec(filename ?? "");
+      let type = match ? `image/${match[1]}` : `image`;
+
+      const formData = new FormData();
+      formData.append("file", {
+        uri: localUri,
+        name: filename ?? `foto.jpg`,
+        type: type,
+      } as any);
+
+      // DEBUG
+      // console.log('Preparando envio...', {
+      //   uri: localUri,
+      //   name: filename,
+      //   type: type
+      // });
+
+      try {
+        const response = await api.post(
+          '/produtores/banner/upload',
+          formData,
+          {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          }
+        );
+        setImagemBanner(response.data.banner);
+        setPerfil(prev => ({
+          ...prev,
+          banner: response.data.banner,
+        }));
+        Alert.alert("Foto de banner atualizada!");
+      } catch (err) {
+        console.error("Erro no upload:", err);
+        Alert.alert("Erro ao enviar imagem de banner!");
+      }
+    }
   };
 
+  // ---- Produtos
   const excluirProduto = (id: string) => {
     Alert.alert("Confirmar exclusão", "Tem certeza que deseja excluir este produto?", [
       { text: "Cancelar", style: "cancel" },
@@ -196,7 +234,6 @@ export default function AreaProdutor() {
       Alert.alert("Preencha todos os campos");
       return;
     }
-
     const novo = {
       id: Date.now().toString(),
       nome: novoNomeProd,
@@ -204,13 +241,17 @@ export default function AreaProdutor() {
       quantidade: novaQtdProd,
       imagem: { uri: imagemProdutoNovo },
     };
-
     setProdutos(prev => [...prev, novo]);
     setModalNovoProduto(false);
     setNovoNomeProd("");
     setNovoPrecoProd("");
     setNovaQtdProd("");
     setImagemProdutoNovo(null);
+  };
+
+  const escolherImagemProduto = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images });
+    if (!result.canceled) setImagemProdutoNovo(result.assets[0].uri);
   };
 
   const renderItem = ({ item }: any) => (
@@ -224,23 +265,49 @@ export default function AreaProdutor() {
       </View>
       <View style={styles.botoesContainer}>
         <TouchableOpacity onPress={() => alert(`Editar ${item.nome}`)}>
-          <Feather name="edit" size={24} color="#E15610" />
+          <Feather name="edit" size={width * 0.06} color="#E15610" />
         </TouchableOpacity>
         <TouchableOpacity onPress={() => excluirProduto(item.id)}>
-          <Feather name="trash" size={24} color="#B00020" />
+          <Feather name="trash" size={width * 0.06} color="#B00020" />
         </TouchableOpacity>
       </View>
     </View>
   );
 
+  if (carregando) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <ActivityIndicator size="large" color="#4D7E1B" />
+      </View>
+    );
+  }
+
   return (
-    <View style={{ flex: 1 }}>
+    <ScrollView contentContainerStyle={{ paddingBottom: height * 0.03 }}>
       <Header />
 
-      <View style={{ alignItems: 'center', marginVertical: 20 }}>
+      {/* Banner */}
+      <View style={{ alignItems: 'center', marginTop: height * 0.015 }}>
+        <TouchableOpacity onPress={escolherImagemBanner}>
+          {imagemBanner ? (
+            <Image source={{
+              uri: imagemBanner ? `${base}${imagemBanner}` : undefined
+            }} style={styles.bannerImg} />
+          ) : (
+            <View style={styles.bannerPlaceholder}>
+              <Text>Adicionar Banner</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      </View>
+
+      {/* Foto de perfil */}
+      <View style={{ alignItems: 'center', marginTop: height * -0.05 }}>
         <TouchableOpacity onPress={escolherImagemProdutor}>
           {imagemProdutor ? (
-            <Image source={{ uri: imagemProdutor }} style={styles.imagemPerfil} />
+            <Image source={{
+              uri: imagemProdutor ? `${base}${imagemProdutor}` : undefined
+            }} style={styles.imagemPerfil} />
           ) : (
             <View style={styles.placeholderImagem}>
               <Text>Adicionar Foto</Text>
@@ -249,30 +316,70 @@ export default function AreaProdutor() {
         </TouchableOpacity>
 
         <View style={styles.nomeContainer}>
-          <Text style={styles.nomeProdutor}>{nomeProdutor}</Text>
+          <Text style={styles.nomeProdutor}>{perfil.nome}</Text>
           <TouchableOpacity onPress={() => {
-            setNovoNome(nomeProdutor);
+            setNovoNome(perfil.nome);
             setModalNome(true);
           }}>
-            <Feather name="edit-2" size={18} color="#E15610" />
+            <Feather name="edit-2" size={width * 0.05} color="#E15610" />
           </TouchableOpacity>
         </View>
+        <Text style={styles.label}>{perfil.email || "teste@email.com"}</Text>
+        <Text style={styles.label}>{perfil.telefone_1 || "(21)972943363"}</Text>
+        { perfil.telefone_2 && (
+            <Text style={styles.label}>{perfil.telefone_2}</Text>
+          )
+        }
+        <Text style={styles.label}>{perfil.categoria || "Teste"}</Text>
       </View>
 
+      {/* Editar perfil */}
+      {editando && (
+        <View style={{ marginHorizontal: width * 0.06 }}>
+          <Text style={styles.inputLabel}>Nome</Text>
+          <TextInput style={styles.input} value={perfil.nome} onChangeText={nome => setPerfil(p => ({ ...p, nome }))} />
+          <Text style={styles.inputLabel}>Email</Text>
+          <TextInput style={styles.input} value={perfil.email} onChangeText={email => setPerfil(p => ({ ...p, email }))} />
+          <Text style={styles.inputLabel}>Endereço</Text>
+          <TextInput style={styles.input} value={perfil.endereco} onChangeText={endereco => setPerfil(p => ({ ...p, endereco }))} />
+          <Text style={styles.inputLabel}>Telefone</Text>
+          <TextInput style={styles.input} value={perfil.telefone_1} onChangeText={telefone => setPerfil(p => ({ ...p, telefone }))} />
+          <Text style={styles.inputLabel}>Categoria</Text>
+          <TextInput style={styles.input} value={perfil.categoria} onChangeText={categoria => setPerfil(p => ({ ...p, categoria }))} />
+
+          <View style={{ flexDirection: "row", gap: width * 0.04, justifyContent: "space-between", marginTop: height * 0.01 }}>
+            <TouchableOpacity style={styles.buttonSalvar} onPress={salvarPerfil}>
+              <Text style={styles.title}>Salvar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.buttonCancelar} onPress={() => setEditando(false)}>
+              <Text style={styles.title}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      {!editando && (
+        <TouchableOpacity style={styles.buttonEditar} onPress={() => setEditando(true)}>
+          <Feather name="edit" size={width * 0.055} color="#fff" />
+          <Text style={[styles.title, { marginLeft: width * 0.025 }]}>Editar informações</Text>
+        </TouchableOpacity>
+      )}
+
+      {/* Produtos */}
       <Text style={styles.titulo}>Estoque dos produtos</Text>
 
       <FlatList
         data={produtos}
         keyExtractor={item => item.id}
         renderItem={renderItem}
-        style={{ marginHorizontal: 20, marginTop: 10 }}
+        style={{ marginHorizontal: width * 0.05, marginTop: height * 0.01 }}
+        scrollEnabled={false}
       />
 
-      <View style={{ margin: 20, gap: 10 }}>
+      <View style={{ margin: width * 0.05, gap: height * 0.012 }}>
         <TouchableOpacity style={styles.buttonAdicionar} onPress={() => setModalNovoProduto(true)}>
           <Text style={styles.title}>Adicionar Produto</Text>
         </TouchableOpacity>
-
         <TouchableOpacity style={styles.buttonPedidos} onPress={() => alert("Ver pedidos")}>
           <Text style={styles.title}>Ver Pedidos</Text>
         </TouchableOpacity>
@@ -289,7 +396,7 @@ export default function AreaProdutor() {
                 <Text style={{ color: '#B00020' }}>Cancelar</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => {
-                setNomeProdutor(novoNome);
+                setPerfil(p => ({ ...p, nome: novoNome }));
                 setModalNome(false);
               }}>
                 <Text style={{ color: '#4CAF50' }}>Salvar</Text>
@@ -304,21 +411,18 @@ export default function AreaProdutor() {
         <View style={styles.modalOverlay}>
           <ScrollView contentContainerStyle={styles.modalBox}>
             <Text style={styles.modalTitle}>Novo Produto</Text>
-
             <TextInput placeholder="Nome" style={styles.input} value={novoNomeProd} onChangeText={setNovoNomeProd} />
             <TextInput placeholder="Preço" style={styles.input} value={novoPrecoProd} onChangeText={setNovoPrecoProd} />
             <TextInput placeholder="Quantidade" style={styles.input} value={novaQtdProd} onChangeText={setNovaQtdProd} />
-
             <TouchableOpacity onPress={escolherImagemProduto}>
               {imagemProdutoNovo ? (
                 <Image source={{ uri: imagemProdutoNovo }} style={styles.produtoImagemPreview} />
               ) : (
-                <View style={[styles.placeholderImagem, { width: 80, height: 80 }]}>
+                <View style={[styles.placeholderImagem, { width: width * 0.22, height: width * 0.22 }]}>
                   <Text>Imagem</Text>
                 </View>
               )}
             </TouchableOpacity>
-
             <View style={styles.modalButtons}>
               <TouchableOpacity onPress={() => setModalNovoProduto(false)}>
                 <Text style={{ color: '#B00020' }}>Cancelar</Text>
@@ -330,423 +434,143 @@ export default function AreaProdutor() {
           </ScrollView>
         </View>
       </Modal>
-    </View>
+    </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  imagemPerfil: { width: 120, height: 120, borderRadius: 60 },
-  placeholderImagem: {
-    width: 120, height: 120, borderRadius: 60,
-    backgroundColor: '#ccc', justifyContent: 'center', alignItems: 'center'
-  },
-  nomeContainer: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10 },
-  nomeProdutor: { fontSize: 18, fontWeight: 'bold' },
-  titulo: { fontSize: 20, fontWeight: 'bold', textAlign: 'center', marginVertical: 10 },
-  produtoItem: {
-    borderBottomWidth: 1, borderColor: '#ccc', paddingVertical: 10,
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'
-  },
-  produtoEsquerda: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  produtoImagem: { width: 40, height: 40, borderRadius: 5 },
-  produtoImagemPreview: { width: 80, height: 80, borderRadius: 8, marginVertical: 10 },
-  produtoNome: { fontSize: 16, fontWeight: 'bold' },
-  produtoPreco: { fontSize: 14, color: '#555' },
-  botoesContainer: { flexDirection: 'row', gap: 15, alignItems: 'center' },
-  buttonAdicionar: {
-    width: "100%", height: 52, backgroundColor: '#E15610',
-    borderRadius: 10, justifyContent: 'center', alignItems: 'center'
-  },
-  buttonPedidos: {
-    width: "100%", height: 52, backgroundColor: '#4CAF50',
-    borderRadius: 10, justifyContent: 'center', alignItems: 'center'
-  },
-  title: { fontSize: 16, fontWeight: 'bold', color: 'white' },
-  modalOverlay: {
-    flex: 1, backgroundColor: '#00000099', justifyContent: 'center', alignItems: 'center'
-  },
-  modalBox: {
-    width: '85%', backgroundColor: 'white', borderRadius: 10,
-    padding: 20, gap: 10, elevation: 5
-  },
-  modalTitle: { fontSize: 16, fontWeight: 'bold' },
-  input: {
-    borderWidth: 1, borderColor: '#ccc',
-    borderRadius: 8, padding: 10
-  },
-  modalButtons: {
-    flexDirection: 'row', justifyContent: 'space-between', marginTop: 10
-  }
-});
-
-// import { View, Text, FlatList, Image, TouchableOpacity, Alert, StyleSheet, Modal, TextInput, ScrollView, ActivityIndicator } from "react-native";
-// import { useEffect, useState } from "react";
-// import { Feather } from "@expo/vector-icons";
-// import * as ImagePicker from 'expo-image-picker';
-// import Header from "@/components/header";
-// import { api } from "../../../services/api";
-
-// export default function AreaProdutor() {
-//   // -------------------- PERFIL PRODUTOR -----------------------
-//   const [perfil, setPerfil] = useState({
-//     nome: "",
-//     email: "",
-//     foto: "",
-//     banner: "",
-//     categoria: "",
-//     telefone: "",
-//   });
-//   const [carregando, setCarregando] = useState(true);
-//   const [editando, setEditando] = useState(false);
-
-//   // Modal antigo do nome - ainda funciona mas agora sincroniza com perfil.nome
-//   const [modalNome, setModalNome] = useState(false);
-//   const [novoNome, setNovoNome] = useState("");
-
-//   useEffect(() => {
-//     async function buscarPerfil() {
-//       setCarregando(true);
-//       try {
-//         const res = await api.get("/produtores/me");
-//         setPerfil(res.data);
-//         setNovoNome(res.data.nome); // já prepara o novoNome com o nome do backend
-//       } catch (e) {
-//         Alert.alert("Erro ao carregar perfil");
-//       } finally {
-//         setCarregando(false);
-//       }
-//     }
-//     buscarPerfil();
-//   }, []);
-
-//   async function salvarPerfil() {
-//     try {
-//       await api.patch("/produtores/me", perfil);
-//       Alert.alert("Perfil atualizado!");
-//       setEditando(false);
-//     } catch {
-//       Alert.alert("Erro ao atualizar perfil");
-//     }
-//   }
-
-//   async function escolherImagem(campo: "foto" | "banner") {
-//     const result = await ImagePicker.launchImageLibraryAsync({
-//       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-//       quality: 0.7,
-//     });
-//     if (!result.canceled && result.assets[0]) {
-//       setPerfil((p) => ({ ...p, [campo]: result.assets[0].uri }));
-//     }
-//   }
-
-//   // ---------------------- PRODUTOS ---------------------------
-//   const [produtos, setProdutos] = useState([
-//     {
-//       id: '1',
-//       nome: 'Tomate',
-//       preco: 'R$ 5,00',
-//       quantidade: '10kg',
-//       imagem: require('../../../assets/images/principais/alface.png'),
-//     },
-//     // ... demais produtos mockados
-//   ]);
-
-//   const [modalNovoProduto, setModalNovoProduto] = useState(false);
-//   const [novoNomeProd, setNovoNomeProd] = useState("");
-//   const [novoPrecoProd, setNovoPrecoProd] = useState("");
-//   const [novaQtdProd, setNovaQtdProd] = useState("");
-//   const [imagemProdutoNovo, setImagemProdutoNovo] = useState<string | null>(null);
-
-//   const escolherImagemProduto = async () => {
-//     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images });
-//     if (!result.canceled) setImagemProdutoNovo(result.assets[0].uri);
-//   };
-
-//   const excluirProduto = (id: string) => {
-//     Alert.alert("Confirmar exclusão", "Tem certeza que deseja excluir este produto?", [
-//       { text: "Cancelar", style: "cancel" },
-//       {
-//         text: "Excluir",
-//         style: "destructive",
-//         onPress: () => setProdutos(prev => prev.filter(prod => prod.id !== id)),
-//       },
-//     ]);
-//   };
-
-//   const salvarNovoProduto = () => {
-//     if (!novoNomeProd || !novoPrecoProd || !novaQtdProd || !imagemProdutoNovo) {
-//       Alert.alert("Preencha todos os campos");
-//       return;
-//     }
-//     const novo = {
-//       id: Date.now().toString(),
-//       nome: novoNomeProd,
-//       preco: novoPrecoProd,
-//       quantidade: novaQtdProd,
-//       imagem: { uri: imagemProdutoNovo },
-//     };
-//     setProdutos(prev => [...prev, novo]);
-//     setModalNovoProduto(false);
-//     setNovoNomeProd("");
-//     setNovoPrecoProd("");
-//     setNovaQtdProd("");
-//     setImagemProdutoNovo(null);
-//   };
-
-//   const renderItem = ({ item }: any) => (
-//     <View style={styles.produtoItem}>
-//       <View style={styles.produtoEsquerda}>
-//         <Image source={item.imagem} style={styles.produtoImagem} />
-//         <View>
-//           <Text style={styles.produtoNome}>{item.nome}</Text>
-//           <Text style={styles.produtoPreco}>{item.quantidade} - {item.preco}</Text>
-//         </View>
-//       </View>
-//       <View style={styles.botoesContainer}>
-//         <TouchableOpacity onPress={() => alert(`Editar ${item.nome}`)}>
-//           <Feather name="edit" size={24} color="#E15610" />
-//         </TouchableOpacity>
-//         <TouchableOpacity onPress={() => excluirProduto(item.id)}>
-//           <Feather name="trash" size={24} color="#B00020" />
-//         </TouchableOpacity>
-//       </View>
-//     </View>
-//   );
-
-//   // ---------------------- RENDER -----------------------------
-//   if (carregando) {
-//     return (
-//       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-//         <ActivityIndicator size="large" color="#4D7E1B" />
-//         <Text style={{ marginTop: 12 }}>Carregando perfil...</Text>
-//       </View>
-//     );
-//   }
-
-//   return (
-//     <View style={{ flex: 1 }}>
-//       <Header />
-
-//       {/* ----- BANNER ----- */}
-//       <TouchableOpacity style={{ alignItems: 'center', marginTop: 10 }} onPress={() => escolherImagem("banner")}>
-//         {perfil.banner ? (
-//           <Image source={{ uri: perfil.banner }} style={styles.bannerImg} />
-//         ) : (
-//           <View style={styles.bannerPlaceholder}><Text>Adicionar banner</Text></View>
-//         )}
-//         <Text style={styles.label}>Banner</Text>
-//       </TouchableOpacity>
-
-//       {/* ----- FOTO E NOME ----- */}
-//       <View style={{ alignItems: 'center', marginVertical: 20 }}>
-//         <TouchableOpacity onPress={() => escolherImagem("foto")}>
-//           {perfil.foto ? (
-//             <Image source={{ uri: perfil.foto }} style={styles.imagemPerfil} />
-//           ) : (
-//             <View style={styles.placeholderImagem}>
-//               <Text>Adicionar Foto</Text>
-//             </View>
-//           )}
-//         </TouchableOpacity>
-//         <Text style={styles.label}>Foto de perfil</Text>
-//         <View style={styles.nomeContainer}>
-//           <Text style={styles.nomeProdutor}>{perfil.nome}</Text>
-//           <TouchableOpacity onPress={() => {
-//             setNovoNome(perfil.nome);
-//             setModalNome(true);
-//           }}>
-//             <Feather name="edit-2" size={18} color="#E15610" />
-//           </TouchableOpacity>
-//         </View>
-//       </View>
-
-//       {/* ----- RESTANTE DO PERFIL ----- */}
-//       <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
-//         <Text style={styles.inputLabel}>E-mail</Text>
-//         <TextInput value={perfil.email} style={styles.input} editable={false} />
-
-//         <Text style={styles.inputLabel}>Categoria</Text>
-//         <TextInput
-//           value={perfil.categoria}
-//           style={styles.input}
-//           editable={editando}
-//           onChangeText={categoria => setPerfil(p => ({ ...p, categoria }))}
-//           placeholder="Categoria ex: Orgânicos, Hortaliças..."
-//         />
-
-//         <Text style={styles.inputLabel}>Telefone</Text>
-//         <TextInput
-//           value={perfil.telefone}
-//           style={styles.input}
-//           editable={editando}
-//           onChangeText={telefone => setPerfil(p => ({ ...p, telefone }))}
-//           placeholder="Telefone"
-//           keyboardType="phone-pad"
-//         />
-
-//         {/* Botões de editar/salvar */}
-//         {editando ? (
-//           <View style={{ flexDirection: 'row', gap: 18, marginTop: 18 }}>
-//             <TouchableOpacity style={styles.buttonSalvar} onPress={salvarPerfil}>
-//               <Text style={{ color: '#fff', fontWeight: 'bold' }}>Salvar</Text>
-//             </TouchableOpacity>
-//             <TouchableOpacity style={styles.buttonCancelar} onPress={() => setEditando(false)}>
-//               <Text style={{ color: '#fff', fontWeight: 'bold' }}>Cancelar</Text>
-//             </TouchableOpacity>
-//           </View>
-//         ) : (
-//           <TouchableOpacity style={styles.buttonEditar} onPress={() => setEditando(true)}>
-//             <Feather name="edit-2" size={18} color="#fff" />
-//             <Text style={{ color: '#fff', fontWeight: 'bold', marginLeft: 8 }}>Editar perfil</Text>
-//           </TouchableOpacity>
-//         )}
-
-//         {/* ----- PRODUTOS ----- */}
-//         <Text style={styles.titulo}>Estoque dos produtos</Text>
-//         <FlatList
-//           data={produtos}
-//           keyExtractor={item => item.id}
-//           renderItem={renderItem}
-//           style={{ marginTop: 10 }}
-//         />
-//         <View style={{ marginTop: 20, gap: 10 }}>
-//           <TouchableOpacity style={styles.buttonAdicionar} onPress={() => setModalNovoProduto(true)}>
-//             <Text style={styles.title}>Adicionar Produto</Text>
-//           </TouchableOpacity>
-//           <TouchableOpacity style={styles.buttonPedidos} onPress={() => alert("Ver pedidos")}>
-//             <Text style={styles.title}>Ver Pedidos</Text>
-//           </TouchableOpacity>
-//         </View>
-//       </ScrollView>
-
-//       {/* Modal editar nome produtor */}
-//       <Modal visible={modalNome} transparent animationType="fade">
-//         <View style={styles.modalOverlay}>
-//           <View style={styles.modalBox}>
-//             <Text style={styles.modalTitle}>Editar nome do produtor</Text>
-//             <TextInput style={styles.input} value={novoNome} onChangeText={setNovoNome} />
-//             <View style={styles.modalButtons}>
-//               <TouchableOpacity onPress={() => setModalNome(false)}>
-//                 <Text style={{ color: '#B00020' }}>Cancelar</Text>
-//               </TouchableOpacity>
-//               <TouchableOpacity onPress={() => {
-//                 setPerfil(p => ({ ...p, nome: novoNome }));
-//                 setModalNome(false);
-//               }}>
-//                 <Text style={{ color: '#4CAF50' }}>Salvar</Text>
-//               </TouchableOpacity>
-//             </View>
-//           </View>
-//         </View>
-//       </Modal>
-
-//       {/* Modal adicionar produto */}
-//       <Modal visible={modalNovoProduto} transparent animationType="fade">
-//         <View style={styles.modalOverlay}>
-//           <ScrollView contentContainerStyle={styles.modalBox}>
-//             <Text style={styles.modalTitle}>Novo Produto</Text>
-//             <TextInput placeholder="Nome" style={styles.input} value={novoNomeProd} onChangeText={setNovoNomeProd} />
-//             <TextInput placeholder="Preço" style={styles.input} value={novoPrecoProd} onChangeText={setNovoPrecoProd} />
-//             <TextInput placeholder="Quantidade" style={styles.input} value={novaQtdProd} onChangeText={setNovaQtdProd} />
-//             <TouchableOpacity onPress={escolherImagemProduto}>
-//               {imagemProdutoNovo ? (
-//                 <Image source={{ uri: imagemProdutoNovo }} style={styles.produtoImagemPreview} />
-//               ) : (
-//                 <View style={[styles.placeholderImagem, { width: 80, height: 80 }]}><Text>Imagem</Text></View>
-//               )}
-//             </TouchableOpacity>
-//             <View style={styles.modalButtons}>
-//               <TouchableOpacity onPress={() => setModalNovoProduto(false)}>
-//                 <Text style={{ color: '#B00020' }}>Cancelar</Text>
-//               </TouchableOpacity>
-//               <TouchableOpacity onPress={salvarNovoProduto}>
-//                 <Text style={{ color: '#4CAF50' }}>Salvar</Text>
-//               </TouchableOpacity>
-//             </View>
-//           </ScrollView>
-//         </View>
-//       </Modal>
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   bannerImg: {
-//     width: 300, height: 100, borderRadius: 10, marginBottom: 8, backgroundColor: "#eee"
-//   },
-//   bannerPlaceholder: {
-//     width: 300, height: 100, borderRadius: 10, backgroundColor: "#ccc",
-//     alignItems: 'center', justifyContent: 'center', marginBottom: 8,
-//   },
-//   imagemPerfil: { width: 120, height: 120, borderRadius: 60, backgroundColor: "#eee" },
-//   placeholderImagem: {
-//     width: 120, height: 120, borderRadius: 60,
-//     backgroundColor: '#ccc', justifyContent: 'center', alignItems: 'center'
-//   },
-//   label: { fontSize: 14, color: '#555', marginBottom: 8, marginTop: -6 },
-//   nomeContainer: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10 },
-//   nomeProdutor: { fontSize: 18, fontWeight: 'bold' },
-//   inputLabel: { fontWeight: "bold", marginBottom: 4, marginTop: 10, color: "#4D7E1B" },
-//   input: {
-//     borderWidth: 1, borderColor: '#ccc',
-//     borderRadius: 8, padding: 10, marginBottom: 6, backgroundColor: '#fff'
-//   },
-//   buttonEditar: {
-//     marginTop: 24,
-//     flexDirection: "row",
-//     backgroundColor: "#4D7E1B",
-//     alignItems: "center",
-//     justifyContent: "center",
-//     paddingVertical: 12,
-//     paddingHorizontal: 28,
-//     borderRadius: 8,
-//   },
-//   buttonSalvar: {
-//     backgroundColor: "#4D7E1B",
-//     paddingVertical: 12,
-//     paddingHorizontal: 24,
-//     borderRadius: 8,
-//     minWidth: 100,
-//     alignItems: "center"
-//   },
-//   buttonCancelar: {
-//     backgroundColor: "#B00020",
-//     paddingVertical: 12,
-//     paddingHorizontal: 24,
-//     borderRadius: 8,
-//     minWidth: 100,
-//     alignItems: "center"
-//   },
-//   titulo: { fontSize: 20, fontWeight: 'bold', textAlign: 'center', marginVertical: 10 },
-//   produtoItem: {
-//     borderBottomWidth: 1, borderColor: '#ccc', paddingVertical: 10,
-//     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'
-//   },
-//   produtoEsquerda: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-//   produtoImagem: { width: 40, height: 40, borderRadius: 5 },
-//   produtoImagemPreview: { width: 80, height: 80, borderRadius: 8, marginVertical: 10 },
-//   produtoNome: { fontSize: 16, fontWeight: 'bold' },
-//   produtoPreco: { fontSize: 14, color: '#555' },
-//   botoesContainer: { flexDirection: 'row', gap: 15, alignItems: 'center' },
-//   buttonAdicionar: {
-//     width: "100%", height: 52, backgroundColor: '#E15610',
-//     borderRadius: 10, justifyContent: 'center', alignItems: 'center'
-//   },
-//   buttonPedidos: {
-//     width: "100%", height: 52, backgroundColor: '#4CAF50',
-//     borderRadius: 10, justifyContent: 'center', alignItems: 'center'
-//   },
-//   title: { fontSize: 16, fontWeight: 'bold', color: 'white' },
-//   modalOverlay: {
-//     flex: 1, backgroundColor: '#00000099', justifyContent: 'center', alignItems: 'center'
-//   },
-//   modalBox: {
-//     width: '85%', backgroundColor: 'white', borderRadius: 10,
-//     padding: 20, gap: 10, elevation: 5
-//   },
-//   modalTitle: { fontSize: 16, fontWeight: 'bold' },
-//   modalButtons: {
-//     flexDirection: 'row', justifyContent: 'space-between', marginTop: 10
-//   }
-// });
-
+// -------- STYLES DINÂMICOS --------
+function getStyles(width: number, height: number) {
+  return StyleSheet.create({
+    bannerImg: {
+      width: width * 0.85,
+      height: height * 0.13,
+      borderRadius: width * 0.025,
+      marginBottom: height * 0.01,
+      backgroundColor: "#eee"
+    },
+    bannerPlaceholder: {
+      width: width * 0.85,
+      height: height * 0.13,
+      borderRadius: width * 0.025,
+      backgroundColor: "#ccc",
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: height * 0.01,
+    },
+    imagemPerfil: {
+      width: width * 0.33,
+      height: width * 0.33,
+      borderRadius: width * 0.165,
+      backgroundColor: "#eee"
+    },
+    placeholderImagem: {
+      width: width * 0.33,
+      height: width * 0.33,
+      borderRadius: width * 0.165,
+      backgroundColor: '#ccc',
+      justifyContent: 'center',
+      alignItems: 'center'
+    },
+    label: { fontSize: width * 0.035, color: '#333', marginBottom: 8, marginTop: -6 },
+    nomeContainer: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: height * 0.01,  marginBottom: height * 0.018 },
+    nomeProdutor: { fontSize: width * 0.045, fontWeight: 'bold' },
+    inputLabel: { fontWeight: "bold", marginBottom: 4, marginTop: height * 0.01, color: "#4D7E1B", fontSize: width * 0.035 },
+    input: {
+      borderWidth: 1,
+      borderColor: '#ccc',
+      borderRadius: width * 0.02,
+      padding: width * 0.035,
+      marginBottom: height * 0.01,
+      backgroundColor: '#fff',
+      fontSize: width * 0.04,
+    },
+    buttonEditar: {
+      marginHorizontal: width * 0.06,
+      marginBottom: height * 0.02,
+      flexDirection: "row",
+      backgroundColor: "#4D7E1B",
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: height * 0.018,
+      paddingHorizontal: width * 0.08,
+      borderRadius: width * 0.02,
+    },
+    buttonSalvar: {
+      backgroundColor: "#4D7E1B",
+      paddingVertical: height * 0.018,
+      paddingHorizontal: width * 0.08,
+      borderRadius: width * 0.02,
+      minWidth: width * 0.25,
+      alignItems: "center"
+    },
+    buttonCancelar: {
+      backgroundColor: "#B00020",
+      paddingVertical: height * 0.018,
+      paddingHorizontal: width * 0.08,
+      borderRadius: width * 0.02,
+      minWidth: width * 0.25,
+      alignItems: "center"
+    },
+    titulo: { fontSize: width * 0.06, fontWeight: 'bold', textAlign: 'center', marginVertical: height * 0.018 },
+    produtoItem: {
+      borderBottomWidth: 1,
+      borderColor: '#ccc',
+      paddingVertical: height * 0.012,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center'
+    },
+    produtoEsquerda: { flexDirection: 'row', alignItems: 'center', gap: width * 0.03 },
+    produtoImagem: {
+      width: width * 0.13,
+      height: width * 0.13,
+      borderRadius: width * 0.03
+    },
+    produtoImagemPreview: {
+      width: width * 0.22,
+      height: width * 0.22,
+      borderRadius: width * 0.04,
+      marginVertical: height * 0.014
+    },
+    produtoNome: { fontSize: width * 0.045, fontWeight: 'bold' },
+    produtoPreco: { fontSize: width * 0.038, color: '#555' },
+    botoesContainer: { flexDirection: 'row', gap: width * 0.05, alignItems: 'center' },
+    buttonAdicionar: {
+      width: "100%",
+      height: height * 0.065,
+      backgroundColor: '#E15610',
+      borderRadius: width * 0.025,
+      justifyContent: 'center',
+      alignItems: 'center'
+    },
+    buttonPedidos: {
+      width: "100%",
+      height: height * 0.065,
+      backgroundColor: '#4CAF50',
+      borderRadius: width * 0.025,
+      justifyContent: 'center',
+      alignItems: 'center'
+    },
+    title: { fontSize: width * 0.043, fontWeight: 'bold', color: 'white' },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: '#00000099',
+      justifyContent: 'center',
+      alignItems: 'center'
+    },
+    modalBox: {
+      width: '85%',
+      backgroundColor: 'white',
+      borderRadius: width * 0.025,
+      padding: width * 0.055,
+      gap: height * 0.012,
+      elevation: 5
+    },
+    modalTitle: { fontSize: width * 0.043, fontWeight: 'bold' },
+    modalButtons: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: height * 0.014
+    }
+  });
+}
