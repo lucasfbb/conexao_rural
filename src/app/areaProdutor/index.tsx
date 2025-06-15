@@ -103,7 +103,7 @@ export default function AreaProdutor() {
         const res = await api.get("/produtores/me");
         setPerfil(res.data);
         setPerfilOriginal(res.data);
-        setImagemProdutor(`${res.data.foto}?t=${Date.now()}`);
+        setImagemProdutor(`${res.data.foto}`);
         setImagemBanner(res.data.banner);
       } catch (e) {
         if (typeof e === "object" && e !== null && "response" in e) {
@@ -155,10 +155,10 @@ export default function AreaProdutor() {
             headers: { 'Content-Type': 'multipart/form-data' },
           }
         );
-        setImagemProdutor(`${response.data.foto}?t=${Date.now()}`);
+        setImagemProdutor(`${response.data.foto}`);
         setPerfil(prev => ({
           ...prev,
-          foto: `${response.data.foto}?t=${Date.now()}`,
+          foto: `${response.data.foto}`,
         }));
         Alert.alert("Foto de perfil atualizada!");
       } catch (err) {

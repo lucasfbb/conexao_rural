@@ -18,7 +18,9 @@ def listar_agricultores(db: Session = Depends(get_db)):
 
     resposta = []
     for produtor in produtores:
+        usuario = db.query(Usuario).filter(Usuario.cpf_cnpj == produtor.cpf_cnpj).first()
         resposta.append(ProdutorOut(
+            cpf_cnpj=usuario.cpf_cnpj,
             nome=produtor.nome,
             banner=produtor.banner,
             endereco=produtor.endereco,
@@ -27,7 +29,5 @@ def listar_agricultores(db: Session = Depends(get_db)):
             distancia=8.5  # valor default fictício por enquanto
         ))
 
-    # print(resposta)
-    
     return resposta
 

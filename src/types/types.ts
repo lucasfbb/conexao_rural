@@ -6,6 +6,7 @@ export interface Item {
   }
 
 export interface ItemHome {
+    cpf_cnpj: string;
     nome: string;
     endereco?: string;
     distancia?: number;

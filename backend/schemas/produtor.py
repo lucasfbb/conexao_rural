@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 class ProdutorOut(BaseModel):
+    cpf_cnpj: Optional[str] = None
     nome: str
     endereco: Optional[str] = None
     distancia: Optional[float] = None
@@ -14,6 +15,7 @@ class ProdutorOut(BaseModel):
 
     class Config:
         from_attributes = True
+        
 
 
 class ProdutorUpdate(BaseModel):

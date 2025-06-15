@@ -81,7 +81,7 @@ const renderAgricultor = ({ item } : { item: ItemHome }) => (
         >
             <View style={styles.logoPlaceholder}>
                 <Image source={{
-                    uri: item.foto ? `${base}${item.foto}?t=${Date.now()}` : undefined
+                    uri: item.foto ? `${base}${item.foto}` : undefined
                 }} style={styles.perfilImagem} />
                 {/* <Image source={imagens[item.foto]} style={styles.produtoImagem} /> */}
             </View>

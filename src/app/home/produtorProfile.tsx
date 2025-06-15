@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { View, Text, Image, TouchableOpacity, ScrollView, FlatList, StyleSheet, Dimensions } from "react-native";
 import { AntDesign, Feather, MaterialIcons } from "@expo/vector-icons";
@@ -7,16 +7,41 @@ import Header from "@/components/header";
 import ModalProduto from "@/components/modais/modalProduto";
 import { useTema } from "@/contexts/ThemeContext";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { api } from "../../../services/api";
 
 const { width, height } = Dimensions.get("window");
 
 export default function ProdutorScreen() {
-
+    
     const params = useLocalSearchParams();
+    const { cpf_cnpj } = params;
+    const { colors } = useTema()
+
+    const [produtor, setProdutor] = useState(null);
+    const [produtos, setProdutos] = useState([]);
+    const [carregando, setCarregando] = useState(true);
+
+    useEffect(() => {
+        async function buscarDados() {
+            setCarregando(true);
+            try {
+                // 🔹 Troque a rota para a sua de detalhes do produtor!
+                const resProdutor = await api.get(`/produtores/${cpf_cnpj}`);
+                setProdutor(resProdutor.data);
+
+                // 🔹 Produtos desse produtor
+                const resProdutos = await api.get(`/produtores/${cpf_cnpj}/produtos`);
+                setProdutos(resProdutos.data);
+            } catch (e) {
+                console.error("Erro ao buscar dados do produtor:", e);
+            } finally {
+                setCarregando(false);
+            }
+        }
+        if (cpf_cnpj) buscarDados();
+    }, [cpf_cnpj]);
 
     const [modalProdutoVisivel, setModalProdutoVisivel] = useState(false);
-
-    const { colors } = useTema()
 
     const [produtoSelecionado, setProdutoSelecionado] = useState<{
         nome: string;
