@@ -50,7 +50,6 @@ export default function ModalEndereco({ visible, onClose, onSave }: ModalEnderec
   );
 }
 
-
 const styles = StyleSheet.create({
   modalBackground: {
     flex: 1,

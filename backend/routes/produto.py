@@ -1,12 +1,18 @@
 # routes/produtos.py
 
-from fastapi import APIRouter, Depends, HTTPException
+import os
+import shutil
+import uuid
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
 from sqlalchemy.orm import Session
 from models.produto import Produto
 from schemas.produto import ProdutoOut, ProdutoUpdate, ProdutoCreate
 from database import get_db
 
 router = APIRouter()
+
+FOTO_PRODUTO_DIR = "uploads/fotoProduto"
+os.makedirs(FOTO_PRODUTO_DIR, exist_ok=True)
 
 @router.get("/produtos", response_model=list[ProdutoOut])
 def listar_produtos(db: Session = Depends(get_db)):
@@ -21,6 +27,28 @@ def atualizar_sazonal(produto_id: int, update: ProdutoUpdate, db: Session = Depe
     db.commit()
     db.refresh(produto)
     return produto
+
+@router.post("/produtos/{produto_id}/foto/upload")
+async def upload_foto_produto(produto_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
+    # Gere um nome único para o arquivo
+    ext = file.filename.split('.')[-1]
+    nome_arquivo = f"produto_{produto_id}_{uuid.uuid4().hex}.{ext}"
+    caminho = os.path.join(FOTO_PRODUTO_DIR, nome_arquivo)
+
+    # Salve o arquivo
+    with open(caminho, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    # Atualize o campo foto no Produto
+    from models.produto import Produto
+    produto = db.query(Produto).get(produto_id)
+    if not produto:
+        raise HTTPException(status_code=404, detail="Produto não encontrado")
+
+    produto.foto = f"/uploads/fotoProduto/{nome_arquivo}"
+    db.commit()
+
+    return {"foto": produto.foto}
 
 @router.post("/produtos", response_model=ProdutoOut)
 def criar_produto(produto: ProdutoCreate, db: Session = Depends(get_db)):

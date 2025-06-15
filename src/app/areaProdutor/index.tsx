@@ -5,6 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import Header from "@/components/header";
 import { api, baseURL } from "../../../services/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import ModalAddProduto from "@/components/modais/modalAddProduto";
 
 function getCamposAlterados(
   orig: Record<string, any> = {},
@@ -407,7 +408,7 @@ export default function AreaProdutor() {
       </Modal>
 
       {/* Modal adicionar produto */}
-      <Modal visible={modalNovoProduto} transparent animationType="fade">
+      {/* <Modal visible={modalNovoProduto} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <ScrollView contentContainerStyle={styles.modalBox}>
             <Text style={styles.modalTitle}>Novo Produto</Text>
@@ -433,7 +434,20 @@ export default function AreaProdutor() {
             </View>
           </ScrollView>
         </View>
-      </Modal>
+      </Modal> */}
+      <ModalAddProduto
+        visible={modalNovoProduto}
+        nome={novoNomeProd}
+        preco={novoPrecoProd}
+        quantidade={novaQtdProd}
+        imagemProduto={imagemProdutoNovo}
+        onNomeChange={setNovoNomeProd}
+        onPrecoChange={setNovoPrecoProd}
+        onQuantidadeChange={setNovaQtdProd}
+        onEscolherImagem={escolherImagemProduto}
+        onSave={salvarNovoProduto}
+        onClose={() => setModalNovoProduto(false)}
+      />
     </ScrollView>
   );
 }
@@ -559,12 +573,15 @@ function getStyles(width: number, height: number) {
       alignItems: 'center'
     },
     modalBox: {
-      width: '85%',
+      width: '95%',            // Deixe praticamente a tela toda
+      maxWidth: 400,           // Limite para tablets/desktops
       backgroundColor: 'white',
-      borderRadius: width * 0.025,
-      padding: width * 0.055,
-      gap: height * 0.012,
-      elevation: 5
+      borderRadius: width * 0.035,
+      paddingHorizontal: width * 0.06,
+      paddingVertical: height * 0.035,
+      alignItems: 'center',    // Centraliza tudo dentro do box
+      gap: height * 0.018,
+      elevation: 10
     },
     modalTitle: { fontSize: width * 0.043, fontWeight: 'bold' },
     modalButtons: {

@@ -8,6 +8,7 @@ class Listagem(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     produto_id = Column(Integer, ForeignKey('produto.id'))
     preco = Column(Integer)
+    preco_promocional = Column(Integer, nullable=True)
     estoque = Column(Integer)
     produtor_cpf_cnpj = Column(String, ForeignKey('produtor.cpf_cnpj'))
 

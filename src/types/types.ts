@@ -20,3 +20,16 @@ export type Produto = {
   nome: string;
   sazonal: boolean;
 }
+
+export type Produtor = {
+  nome: string;
+  banner?: string;
+  foto?: string;
+  categoria?: string;
+  endereco?: string;
+  telefone1?: string;
+  telefone2?: string;
+  distancia?: number;
+  email?: string;
+}
+

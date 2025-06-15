@@ -7,7 +7,8 @@ import Header from "@/components/header";
 import ModalProduto from "@/components/modais/modalProduto";
 import { useTema } from "@/contexts/ThemeContext";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { api } from "../../../services/api";
+import { api, baseURL } from "../../../services/api";
+import { Produtor } from "@/types/types";
 
 const { width, height } = Dimensions.get("window");
 
@@ -17,7 +18,9 @@ export default function ProdutorScreen() {
     const { cpf_cnpj } = params;
     const { colors } = useTema()
 
-    const [produtor, setProdutor] = useState(null);
+    const base = baseURL.slice(0, -1);
+
+    const [produtor, setProdutor] = useState<Produtor | null>(null);
     const [produtos, setProdutos] = useState([]);
     const [carregando, setCarregando] = useState(true);
 
@@ -32,6 +35,9 @@ export default function ProdutorScreen() {
                 // 🔹 Produtos desse produtor
                 const resProdutos = await api.get(`/produtores/${cpf_cnpj}/produtos`);
                 setProdutos(resProdutos.data);
+
+                console.log("Dados do produtor:", resProdutor.data);
+                console.log("Produtos do produtor:", resProdutos.data);
             } catch (e) {
                 console.error("Erro ao buscar dados do produtor:", e);
             } finally {
@@ -40,7 +46,7 @@ export default function ProdutorScreen() {
         }
         if (cpf_cnpj) buscarDados();
     }, [cpf_cnpj]);
-
+    
     const [modalProdutoVisivel, setModalProdutoVisivel] = useState(false);
 
     const [produtoSelecionado, setProdutoSelecionado] = useState<{
@@ -101,14 +107,17 @@ export default function ProdutorScreen() {
                         />
                     )}
 
-                    {/* 🔹 Banner */}
-                
-                    <Image source={require("../../../assets/images/banner_produtor.png")}  style={styles.banner}/>
+                    {/* 🔹 Banner */} 
+                    <Image source={{
+                        uri: produtor?.banner ? `${base}${produtor?.banner}` : undefined
+                    }} style={styles.banner} />
             
                     {/* 🔹 Informações do Produtor */}
                     <View style={styles.produtorInfo}>
-                        <Image source={require("../../../assets/images/perfil_agricultor.png")} style={styles.logo} />
-                        <Text style={[styles.produtorNome, { color: colors.text }]}>{params?.nome || "Nome não disponível"}</Text>
+                        <Image source={{
+                            uri: produtor?.foto ? `${base}${produtor?.foto}` : undefined
+                        }} style={styles.logo} />
+                        <Text style={[styles.produtorNome, { color: colors.text }]}>{produtor?.nome || "Nome não disponível"}</Text>
                         <TouchableOpacity style={styles.localizacao} onPress={() => router.push('/home/localizacaoProdutor')}>
                             <Feather name="map-pin" size={16} color={colors.text} />
                             <Text style={[styles.localizacaoText, { color: colors.text }]}> Localização</Text>
@@ -215,7 +224,7 @@ const styles = StyleSheet.create({
 
     // 🔹 Informações do Produtor
     produtorInfo: { alignItems: "center", padding: 15, borderBottomWidth: 1, borderColor: "#ddd" },
-    logo: { width: 90, height: 90, borderRadius: 30, marginBottom: 5 },
+    logo: { width: 90, height: 90, borderRadius: 20, marginBottom: 5 },
     produtorNome: { fontSize: 18, fontWeight: "bold" },
     localizacao: { flexDirection: "row", alignItems: "center", marginVertical: 8 },
     localizacaoText: { fontSize: 14, color: "black" },

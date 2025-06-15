@@ -77,7 +77,7 @@ export default function Home(){
 const renderAgricultor = ({ item } : { item: ItemHome }) => (
     <TouchableOpacity 
             style={styles.agricultorItem} 
-            onPress={() => router.push({ pathname: "/home/produtorProfile", params: { nome: String(item.nome), endereco: String(item.endereco), distancia: String(item.distancia), foto: String(item.foto)} })}
+            onPress={() => router.push({ pathname: "/home/produtorProfile", params: { cpf_cnpj: String(item.cpf_cnpj) }})}
         >
             <View style={styles.logoPlaceholder}>
                 <Image source={{
@@ -113,7 +113,7 @@ const renderAgricultor = ({ item } : { item: ItemHome }) => (
                     </View>
 
                     {/* 🔹 Conteúdo separado do Header */}
-                    <ScrollView contentContainerStyle={{  padding: 20 }} showsVerticalScrollIndicator={false} bounces={false} >
+                    <ScrollView contentContainerStyle={{  padding: 15 }} showsVerticalScrollIndicator={false} bounces={false} >
 
                         {/*  Barra de Pesquisa e Localização */}
                         <View style={styles.searchContainer}>
