@@ -279,6 +279,18 @@ export default function AreaProdutor() {
     if (!result.canceled) setImagemProdutoNovo(result.assets[0].uri);
   };
 
+  const handlePrecoChange = (text: string) => {
+    // Permite apenas números, vírgula e ponto (para decimais)
+    const clean = text.replace(/[^0-9.,]/g, "");
+    setNovoPrecoProd(clean);
+  };
+
+  const handleQuantidadeChange = (text: string) => {
+    // Permite apenas números inteiros
+    const clean = text.replace(/[^0-9]/g, "");
+    setNovaQtdProd(clean);
+  };
+
   const renderItem = ({ item }: any) => (
     <View style={styles.produtoItem}>
       <View style={styles.produtoEsquerda}>
@@ -469,8 +481,8 @@ export default function AreaProdutor() {
         unidade={unidade}
         imagemProduto={imagemProdutoNovo}
         onNomeChange={setNovoNomeProd}
-        onPrecoChange={setNovoPrecoProd}
-        onQuantidadeChange={setNovaQtdProd}
+        onPrecoChange={handlePrecoChange}
+        onQuantidadeChange={handleQuantidadeChange}
         onUnidadeChange={setUnidade}
         onEscolherImagem={escolherImagemProduto}
         onSave={salvarNovoProduto}

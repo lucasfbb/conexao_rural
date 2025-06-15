@@ -71,10 +71,10 @@ export default function ModalAddProduto({
               keyboardType="numeric"
               inputMode="numeric"
             />
-            <View style={styles.pickerBox}>
+            {/* <View style={styles.pickerBox}> */}
               <Picker
                 selectedValue={unidade}
-                style={{ height: 42, minWidth: 100 }}
+                style={{ height: height * 0.08, width: 110, color: "#4D7E1B" }}
                 onValueChange={onUnidadeChange}
                 dropdownIconColor="#4D7E1B"
               >
@@ -83,7 +83,7 @@ export default function ModalAddProduto({
                 <Picker.Item label="kg" value="kg" />
                 <Picker.Item label="ton" value="ton" />
               </Picker>
-            </View>
+            {/* </View> */}
           </View>
           
           <TouchableOpacity onPress={onEscolherImagem}>
