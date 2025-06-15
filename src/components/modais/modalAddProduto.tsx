@@ -1,6 +1,6 @@
-// ModalAddProduto.tsx
 import React from "react";
 import { Modal, View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Dimensions, ScrollView } from "react-native";
+import { Picker } from "@react-native-picker/picker";
 import { Feather } from "@expo/vector-icons";
 import { useTema } from "@/contexts/ThemeContext";
 
@@ -11,10 +11,12 @@ interface ModalAddProdutoProps {
   nome: string;
   preco: string;
   quantidade: string;
+  unidade: string;
   imagemProduto: string | null;
   onNomeChange: (nome: string) => void;
   onPrecoChange: (preco: string) => void;
   onQuantidadeChange: (qtd: string) => void;
+  onUnidadeChange: (unidade: string) => void;
   onEscolherImagem: () => void;
   onSave: () => void;
   onClose: () => void;
@@ -25,10 +27,12 @@ export default function ModalAddProduto({
   nome,
   preco,
   quantidade,
+  unidade,
   imagemProduto,
   onNomeChange,
   onPrecoChange,
   onQuantidadeChange,
+  onUnidadeChange,
   onEscolherImagem,
   onSave,
   onClose
@@ -40,9 +44,48 @@ export default function ModalAddProduto({
       <View style={styles.modalBackground}>
         <ScrollView contentContainerStyle={[styles.modalContainer, { backgroundColor: colors.modalBackground }]}>
           <Text style={styles.modalTitle}>Novo Produto</Text>
-          <TextInput placeholder="Nome" style={styles.input} value={nome} onChangeText={onNomeChange} />
-          <TextInput placeholder="Preço" style={styles.input} value={preco} onChangeText={onPrecoChange} keyboardType="decimal-pad" />
-          <TextInput placeholder="Quantidade" style={styles.input} value={quantidade} onChangeText={onQuantidadeChange} />
+          
+          <TextInput 
+            placeholder="Nome"
+            style={styles.input}
+            value={nome}
+            onChangeText={onNomeChange}
+            autoCapitalize="sentences"
+          />
+          
+          <TextInput
+            placeholder="Preço"
+            style={styles.input}
+            value={preco}
+            onChangeText={onPrecoChange}
+            keyboardType="decimal-pad"
+            inputMode="decimal"
+          />
+
+          <View style={styles.rowInputPicker}>
+            <TextInput
+              placeholder="Quantidade"
+              style={[styles.input, { flex: 1, marginBottom: 0, marginRight: 12 }]}
+              value={quantidade}
+              onChangeText={onQuantidadeChange}
+              keyboardType="numeric"
+              inputMode="numeric"
+            />
+            <View style={styles.pickerBox}>
+              <Picker
+                selectedValue={unidade}
+                style={{ height: 42, minWidth: 100 }}
+                onValueChange={onUnidadeChange}
+                dropdownIconColor="#4D7E1B"
+              >
+                <Picker.Item label="unid." value="unidade" />
+                <Picker.Item label="g" value="g" />
+                <Picker.Item label="kg" value="kg" />
+                <Picker.Item label="ton" value="ton" />
+              </Picker>
+            </View>
+          </View>
+          
           <TouchableOpacity onPress={onEscolherImagem}>
             {imagemProduto ? (
               <Image source={{ uri: imagemProduto }} style={styles.produtoImagemPreview} />
@@ -52,6 +95,7 @@ export default function ModalAddProduto({
               </View>
             )}
           </TouchableOpacity>
+          
           <View style={styles.modalButtons}>
             <TouchableOpacity onPress={onClose}>
               <Text style={{ color: '#B00020' }}>Cancelar</Text>
@@ -98,6 +142,19 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     fontSize: 16,
     color: "#4D7E1B"
+  },
+  rowInputPicker: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20
+  },
+  pickerBox: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#4D7E1B",
+    borderRadius: 7,
+    paddingHorizontal: 0,
+    marginBottom: 0
   },
   produtoImagemPreview: {
     width: width * 0.22,

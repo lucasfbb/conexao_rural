@@ -7,6 +7,15 @@ import { api, baseURL } from "../../../services/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ModalAddProduto from "@/components/modais/modalAddProduto";
 
+type Produto = {
+  id: string;
+  nome: string;
+  preco: number;
+  quantidade: number;
+  unidade: string;
+  imagem: any;
+};
+
 function getCamposAlterados(
   orig: Record<string, any> = {},
   editado: Record<string, any> = {}
@@ -59,19 +68,21 @@ export default function AreaProdutor() {
   const [novoNome, setNovoNome] = useState(perfil.nome);
 
   // Produtos (mock ainda)
-  const [produtos, setProdutos] = useState([
+  const [produtos, setProdutos] = useState<Produto[]>([
     {
       id: '1',
       nome: 'Tomate',
-      preco: 'R$ 5,00',
-      quantidade: '10kg',
+      preco: 5,
+      quantidade: 10,
+      unidade: "kg",
       imagem: require('../../../assets/images/principais/alface.png'),
     },
     {
       id: '2',
       nome: 'Alface',
-      preco: 'R$ 3,00',
-      quantidade: '20kg',
+      preco: 3,
+      quantidade: 20,
+      unidade: "kg",
       imagem: require('../../../assets/images/principais/alface.png'),
     }
   ]);
@@ -82,6 +93,7 @@ export default function AreaProdutor() {
   const [novoPrecoProd, setNovoPrecoProd] = useState("");
   const [novaQtdProd, setNovaQtdProd] = useState("");
   const [imagemProdutoNovo, setImagemProdutoNovo] = useState<string | null>(null);
+  const [unidade, setUnidade] = useState("unidade");
   
   // --- Funções de perfil e imagem
   async function salvarPerfil() {
@@ -235,19 +247,31 @@ export default function AreaProdutor() {
       Alert.alert("Preencha todos os campos");
       return;
     }
+    
+    // Converte para float e faz validação
+    const precoFloat = parseFloat(novoPrecoProd.replace(',', '.'));
+    const quantidadeFloat = parseFloat(novaQtdProd.replace(',', '.'));
+    if (isNaN(precoFloat) || isNaN(quantidadeFloat)) {
+      Alert.alert("Preço ou quantidade inválidos");
+      return;
+    }
+
     const novo = {
       id: Date.now().toString(),
       nome: novoNomeProd,
-      preco: novoPrecoProd,
-      quantidade: novaQtdProd,
+      preco: precoFloat,
+      quantidade: quantidadeFloat,
+      unidade, // variável de unidade do picker: 'unidade', 'g', 'kg', 'ton'
       imagem: { uri: imagemProdutoNovo },
     };
+
     setProdutos(prev => [...prev, novo]);
     setModalNovoProduto(false);
     setNovoNomeProd("");
     setNovoPrecoProd("");
     setNovaQtdProd("");
     setImagemProdutoNovo(null);
+    setUnidade("unidade"); // reset se quiser
   };
 
   const escolherImagemProduto = async () => {
@@ -261,7 +285,9 @@ export default function AreaProdutor() {
         <Image source={item.imagem} style={styles.produtoImagem} />
         <View>
           <Text style={styles.produtoNome}>{item.nome}</Text>
-          <Text style={styles.produtoPreco}>{item.quantidade} - {item.preco}</Text>
+          <Text style={styles.produtoPreco}>
+            {item.quantidade} {item.unidade} - R$ {item.preco}
+          </Text>
         </View>
       </View>
       <View style={styles.botoesContainer}>
@@ -440,10 +466,12 @@ export default function AreaProdutor() {
         nome={novoNomeProd}
         preco={novoPrecoProd}
         quantidade={novaQtdProd}
+        unidade={unidade}
         imagemProduto={imagemProdutoNovo}
         onNomeChange={setNovoNomeProd}
         onPrecoChange={setNovoPrecoProd}
         onQuantidadeChange={setNovaQtdProd}
+        onUnidadeChange={setUnidade}
         onEscolherImagem={escolherImagemProduto}
         onSave={salvarNovoProduto}
         onClose={() => setModalNovoProduto(false)}
