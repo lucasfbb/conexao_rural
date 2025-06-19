@@ -581,7 +581,7 @@ function getStyles(width: number, height: number) {
       minWidth: width * 0.25,
       alignItems: "center"
     },
-    titulo: { fontSize: width * 0.06, fontWeight: 'bold', textAlign: 'center', marginVertical: height * 0.018 },
+    titulo: { fontSize: width * 0.06, fontWeight: 'bold', textAlign: 'center', marginVertical: height * 0.018, marginTop: height * 0.04 },
     produtoItem: {
       borderBottomWidth: 1,
       borderColor: '#ccc',
