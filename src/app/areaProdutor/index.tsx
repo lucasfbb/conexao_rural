@@ -36,6 +36,7 @@ export default function AreaProdutor() {
   const base = baseURL.slice(0, -1);
 
   const [perfil, setPerfil] = useState({
+    cpf_cnpj: "",
     nome: "",
     email: "",
     foto: "",
@@ -45,7 +46,9 @@ export default function AreaProdutor() {
     telefone_2: "",
     endereco: "",
   });
+
   const [perfilOriginal, setPerfilOriginal] = useState({
+    cpf_cnpj: "",
     nome: "",
     email: "",
     foto: "",
@@ -68,24 +71,7 @@ export default function AreaProdutor() {
   const [novoNome, setNovoNome] = useState(perfil.nome);
 
   // Produtos (mock ainda)
-  const [produtos, setProdutos] = useState<Produto[]>([
-    {
-      id: '1',
-      nome: 'Tomate',
-      preco: 5,
-      quantidade: 10,
-      unidade: "kg",
-      imagem: require('../../../assets/images/principais/alface.png'),
-    },
-    {
-      id: '2',
-      nome: 'Alface',
-      preco: 3,
-      quantidade: 20,
-      unidade: "kg",
-      imagem: require('../../../assets/images/principais/alface.png'),
-    }
-  ]);
+  const [produtos, setProdutos] = useState<Produto[]>([]);
 
   // Modal de novo produto
   const [modalNovoProduto, setModalNovoProduto] = useState(false);
@@ -113,7 +99,7 @@ export default function AreaProdutor() {
     async function buscarPerfil() {
       setCarregando(true);
       try {
-        const res = await api.get("/produtores/me");
+        const res = await api.get("/produtores/me");    
         setPerfil(res.data);
         setPerfilOriginal(res.data);
         setImagemProdutor(`${res.data.foto}`);
@@ -132,6 +118,12 @@ export default function AreaProdutor() {
     }
     buscarPerfil();
   }, []);
+
+  useEffect(() => {
+    if (perfil.cpf_cnpj) {
+      buscarProdutos();
+    }
+  }, [perfil.cpf_cnpj]);
 
   const escolherImagemProdutor = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -152,13 +144,6 @@ export default function AreaProdutor() {
       name: filename ?? `foto.jpg`,
       type: type,
     } as any);
-
-      // DEBUG
-      // console.log('Preparando envio...', {
-      //   uri: localUri,
-      //   name: filename,
-      //   type: type
-      // });
 
       try {
         const response = await api.post(
@@ -181,7 +166,6 @@ export default function AreaProdutor() {
     }
   };
 
-
   const escolherImagemBanner = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -201,13 +185,6 @@ export default function AreaProdutor() {
         name: filename ?? `foto.jpg`,
         type: type,
       } as any);
-
-      // DEBUG
-      // console.log('Preparando envio...', {
-      //   uri: localUri,
-      //   name: filename,
-      //   type: type
-      // });
 
       try {
         const response = await api.post(
@@ -231,6 +208,30 @@ export default function AreaProdutor() {
   };
 
   // ---- Produtos
+
+  const buscarProdutos = async () => {
+    try {
+      const res = await api.get(`/produtores/${perfil.cpf_cnpj}/produtos`);
+      // console.log("Produtos do produtor:", res.data);
+      
+      // Ajusta o array para o formato esperado na FlatList
+      const produtosTratados = res.data.map((produto: any) => ({
+        id: produto.id?.toString() ?? Math.random().toString(),
+        nome: produto.nome,
+        preco: produto.preco,
+        quantidade: produto.estoque,
+        unidade: produto.unidade ?? 'unidade',
+        foto: produto.foto ? { uri: base + produto.foto } : require('../../../assets/images/principais/alface.png'),
+      }));
+
+      setProdutos(produtosTratados);
+      console.log("Produtos carregados:", produtosTratados);
+    } catch (err) {
+      Alert.alert("Erro ao buscar produtos");
+      console.log("Erro ao buscar produtos do produtor:", err);
+    }
+  };
+
   const excluirProduto = (id: string) => {
     Alert.alert("Confirmar exclusão", "Tem certeza que deseja excluir este produto?", [
       { text: "Cancelar", style: "cancel" },
@@ -242,13 +243,12 @@ export default function AreaProdutor() {
     ]);
   };
 
-  const salvarNovoProduto = () => {
+  const salvarNovoProduto = async () => {
     if (!novoNomeProd || !novoPrecoProd || !novaQtdProd || !imagemProdutoNovo) {
       Alert.alert("Preencha todos os campos");
       return;
     }
-    
-    // Converte para float e faz validação
+
     const precoFloat = parseFloat(novoPrecoProd.replace(',', '.'));
     const quantidadeFloat = parseFloat(novaQtdProd.replace(',', '.'));
     if (isNaN(precoFloat) || isNaN(quantidadeFloat)) {
@@ -256,22 +256,38 @@ export default function AreaProdutor() {
       return;
     }
 
-    const novo = {
-      id: Date.now().toString(),
-      nome: novoNomeProd,
-      preco: precoFloat,
-      quantidade: quantidadeFloat,
-      unidade, // variável de unidade do picker: 'unidade', 'g', 'kg', 'ton'
-      imagem: { uri: imagemProdutoNovo },
-    };
+    try {
+      // Monta o FormData para enviar tudo junto!
+      const formData = new FormData();
+      formData.append('nome', novoNomeProd);
+      formData.append('preco', precoFloat.toString());
+      formData.append('quantidade', quantidadeFloat.toString());
+      formData.append('unidade', unidade);
+      formData.append('file', {
+        uri: imagemProdutoNovo,
+        name: "produto.jpg",
+        type: "image/jpeg"
+      } as any);
 
-    setProdutos(prev => [...prev, novo]);
-    setModalNovoProduto(false);
-    setNovoNomeProd("");
-    setNovoPrecoProd("");
-    setNovaQtdProd("");
-    setImagemProdutoNovo(null);
-    setUnidade("unidade"); // reset se quiser
+      // Envia tudo para a rota que salva na listagem e faz upload
+      await api.post("/produtores/produtos/adicionar", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      Alert.alert("Produto cadastrado!");
+      
+      await buscarProdutos();
+      
+      setModalNovoProduto(false);
+      setNovoNomeProd("");
+      setNovoPrecoProd("");
+      setNovaQtdProd("");
+      setImagemProdutoNovo(null);
+      setUnidade("unidade");
+      // Aqui você pode buscar os produtos novamente do backend para atualizar a lista real!
+    } catch (err) {
+      Alert.alert("Erro ao cadastrar produto", err instanceof Error ? err.message : "Erro desconhecido");
+    }
   };
 
   const escolherImagemProduto = async () => {
@@ -294,7 +310,7 @@ export default function AreaProdutor() {
   const renderItem = ({ item }: any) => (
     <View style={styles.produtoItem}>
       <View style={styles.produtoEsquerda}>
-        <Image source={item.imagem} style={styles.produtoImagem} />
+        <Image source={item.foto} style={styles.produtoImagem} />
         <View>
           <Text style={styles.produtoNome}>{item.nome}</Text>
           <Text style={styles.produtoPreco}>

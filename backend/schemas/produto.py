@@ -27,3 +27,14 @@ class ProdutoListagemOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class ProdutoEstoqueOut(BaseModel):
+    id: int
+    nome: str
+    preco: float
+    estoque: int
+    unidade: Optional[str]
+    foto: Optional[str] = None  # ou imagem, como preferir
+
+    class Config:
+        from_attributes = True

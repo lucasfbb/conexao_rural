@@ -7,4 +7,4 @@ class ListagemCreate(BaseModel):
     preco_promocional: Optional[float] = None
     quantidade: float
     unidade: str
-    imagem_url: Optional[str] = None
+    # imagem_url: Optional[str] = None

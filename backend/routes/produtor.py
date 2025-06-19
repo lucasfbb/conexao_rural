@@ -1,8 +1,9 @@
 import os
 import time
 from auth.auth_utils import get_current_user
-from schemas.produto import ProdutoOut
-from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
+from schemas.listagem import ListagemCreate
+from schemas.produto import ProdutoEstoqueOut, ProdutoOut
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form
 import shutil
 from sqlalchemy.orm import Session
 from database import get_db
@@ -16,8 +17,10 @@ router = APIRouter()
 
 UPLOAD_BANNERS_DIR = "uploads/bannerProdutor"
 UPLOAD_PERFIS_DIR = "uploads/perfilProdutor"
+FOTO_PRODUTO_DIR = "uploads/fotoProduto"
 os.makedirs(UPLOAD_BANNERS_DIR, exist_ok=True)
 os.makedirs(UPLOAD_PERFIS_DIR, exist_ok=True)
+os.makedirs(FOTO_PRODUTO_DIR, exist_ok=True)
 
 @router.get("/produtores/me", response_model=ProdutorOut)
 def get_me_produtor(
@@ -29,6 +32,7 @@ def get_me_produtor(
         raise HTTPException(status_code=404, detail="Produtor não encontrado")
     # Evita erro de campo faltando:
     return ProdutorOut(
+        cpf_cnpj=current_user.cpf_cnpj,
         nome=produtor.nome,
         endereco=produtor.endereco,
         categoria=produtor.categoria,
@@ -161,7 +165,26 @@ def detalhes_produtor(cpf_cnpj: str, db: Session = Depends(get_db)):
         distancia=None  # ou calcule se quiser!
     )
 
-@router.get("/produtores/{cpf_cnpj}/produtos", response_model=list[ProdutoOut])
+# @router.get("/produtores/{cpf_cnpj}/produtos", response_model=list[ProdutoOut])
+# def listar_produtos_produtor(cpf_cnpj: str, db: Session = Depends(get_db)):
+#     listagens = (
+#         db.query(Listagem)
+#         .join(Produto, Listagem.produto_id == Produto.id)
+#         .filter(Listagem.produtor_cpf_cnpj == cpf_cnpj)
+#         .all()
+#     )
+#     # Para cada listagem, pegue o produto e adicione info de preço e estoque!
+#     produtos = []
+#     for listagem in listagens:
+#         produto = listagem.produto
+#         produto_dict = ProdutoOut.from_orm(produto).dict()
+#         produto_dict["preco"] = listagem.preco
+#         produto_dict["estoque"] = listagem.estoque
+#         produtos.append(produto_dict)
+#     print("==> PRODUTOS DO PRODUTOR", cpf_cnpj, ":", produtos)
+#     return produtos
+
+@router.get("/produtores/{cpf_cnpj}/produtos", response_model=list[ProdutoEstoqueOut])
 def listar_produtos_produtor(cpf_cnpj: str, db: Session = Depends(get_db)):
     listagens = (
         db.query(Listagem)
@@ -169,13 +192,62 @@ def listar_produtos_produtor(cpf_cnpj: str, db: Session = Depends(get_db)):
         .filter(Listagem.produtor_cpf_cnpj == cpf_cnpj)
         .all()
     )
-    # Para cada listagem, pegue o produto e adicione info de preço e estoque!
     produtos = []
     for listagem in listagens:
         produto = listagem.produto
-        produto_dict = ProdutoOut.from_orm(produto).dict()
-        produto_dict["preco"] = listagem.preco
-        produto_dict["estoque"] = listagem.estoque
-        produtos.append(produto_dict)
-    print("==> PRODUTOS DO PRODUTOR", cpf_cnpj, ":", produtos)
+        produtos.append({
+            "id": produto.id,
+            "nome": produto.nome,
+            "preco": float(listagem.preco),
+            "estoque": listagem.estoque,
+            "unidade": listagem.unidade,
+            "foto": listagem.foto if hasattr(listagem, "foto") else produto.foto if hasattr(produto, "foto") else None,
+        })
     return produtos
+
+@router.post("/produtores/produtos/adicionar")
+async def adicionar_produto(
+    nome: str = Form(...),
+    preco: float = Form(...),
+    quantidade: int = Form(...),
+    unidade: str = Form(...),
+    file: UploadFile = File(...),
+    current_user: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # 1. Procura produto existente (opcional: pode ser só pelo nome)
+    produto_existente = db.query(Produto).filter(Produto.nome == nome).first()
+    if not produto_existente:
+        produto_existente = Produto(nome=nome)
+        db.add(produto_existente)
+        db.commit()
+        db.refresh(produto_existente)
+    
+    # 2. Gera o nome do arquivo e salva a imagem
+    ext = file.filename.split('.')[-1]
+    filename = f"produto_{current_user.cpf_cnpj}_{int(time.time())}.{ext}"
+    file_path = os.path.join(FOTO_PRODUTO_DIR, filename)
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    foto_url = f"/uploads/fotoProduto/{filename}"
+
+    # 3. Cria a Listagem (se não existe)
+    listagem_existente = db.query(Listagem).filter(
+        Listagem.produto_id == produto_existente.id,
+        Listagem.produtor_cpf_cnpj == current_user.cpf_cnpj
+    ).first()
+    if listagem_existente:
+        raise HTTPException(status_code=400, detail="Este produto já está no estoque do produtor")
+    
+    listagem = Listagem(
+        produto_id=produto_existente.id,
+        preco=preco,
+        estoque=quantidade,
+        produtor_cpf_cnpj=current_user.cpf_cnpj,
+        unidade=unidade,
+        foto=foto_url    # Salva o caminho!
+    )
+    db.add(listagem)
+    db.commit()
+    db.refresh(listagem)
+    return {"message": "Produto adicionado com sucesso!", "foto": foto_url}

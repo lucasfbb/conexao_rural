@@ -35,7 +35,7 @@ export default function ProdutorScreen() {
                 // 🔹 Produtos desse produtor
                 const resProdutos = await api.get(`/produtores/${cpf_cnpj}/produtos`);
                 setProdutos(resProdutos.data);
-
+                
                 console.log("Dados do produtor:", resProdutor.data);
                 console.log("Produtos do produtor:", resProdutos.data);
             } catch (e) {
