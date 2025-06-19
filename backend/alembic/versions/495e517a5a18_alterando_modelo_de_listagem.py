@@ -1,8 +1,8 @@
-"""alterando id tipo
+"""alterando modelo de listagem
 
-Revision ID: 589b02b2244e
+Revision ID: 495e517a5a18
 Revises: 
-Create Date: 2025-06-12 16:15:38.206866
+Create Date: 2025-06-19 03:38:15.986005
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '589b02b2244e'
+revision: str = '495e517a5a18'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
