@@ -34,6 +34,8 @@ class ProdutoEstoqueOut(BaseModel):
     preco: float
     estoque: int
     unidade: Optional[str]
+    descricao: Optional[str] = None
+    preco_promocional: Optional[float] = None
     foto: Optional[str] = None  # ou imagem, como preferir
 
     class Config:

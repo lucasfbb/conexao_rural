@@ -9,7 +9,6 @@ class Produto(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     nome = Column(String, nullable=False)
     categoria = Column(String, nullable=True)
-    descricao = Column(String)
     sazonal = Column(Boolean, default=False)
 
     listagens = relationship("Listagem", back_populates="produto")

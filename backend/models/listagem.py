@@ -12,6 +12,7 @@ class Listagem(Base):
     produtor_cpf_cnpj = Column(String, ForeignKey('produtor.cpf_cnpj'))
     preco_promocional = Column(DECIMAL(10, 2))
     unidade = Column(String(50), nullable=True)
+    descricao = Column(String(255), nullable=True)
     foto = Column(String(100), nullable=True)
 
     produtor = relationship("Produtor", back_populates="listagens")

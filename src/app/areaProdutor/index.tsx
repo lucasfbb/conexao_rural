@@ -13,7 +13,8 @@ type Produto = {
   preco: number;
   quantidade: number;
   unidade: string;
-  imagem: any;
+  foto: any;
+  descricao?: string;
 };
 
 function getCamposAlterados(
@@ -78,6 +79,7 @@ export default function AreaProdutor() {
   const [novoNomeProd, setNovoNomeProd] = useState("");
   const [novoPrecoProd, setNovoPrecoProd] = useState("");
   const [novaQtdProd, setNovaQtdProd] = useState("");
+  const [novaDescricaoProd, setNovaDescricaoProd] = useState("");
   const [imagemProdutoNovo, setImagemProdutoNovo] = useState<string | null>(null);
   const [unidade, setUnidade] = useState("unidade");
   
@@ -220,6 +222,7 @@ export default function AreaProdutor() {
         nome: produto.nome,
         preco: produto.preco,
         quantidade: produto.estoque,
+        descricao: produto.descricao,
         unidade: produto.unidade ?? 'unidade',
         foto: produto.foto ? { uri: base + produto.foto } : require('../../../assets/images/principais/alface.png'),
       }));
@@ -263,6 +266,7 @@ export default function AreaProdutor() {
       formData.append('preco', precoFloat.toString());
       formData.append('quantidade', quantidadeFloat.toString());
       formData.append('unidade', unidade);
+      formData.append('descricao', novaDescricaoProd || "");
       formData.append('file', {
         uri: imagemProdutoNovo,
         name: "produto.jpg",
@@ -495,11 +499,13 @@ export default function AreaProdutor() {
         preco={novoPrecoProd}
         quantidade={novaQtdProd}
         unidade={unidade}
+        descricao={novaDescricaoProd}
         imagemProduto={imagemProdutoNovo}
         onNomeChange={setNovoNomeProd}
         onPrecoChange={handlePrecoChange}
         onQuantidadeChange={handleQuantidadeChange}
         onUnidadeChange={setUnidade}
+        onDescricaoChange={setNovaDescricaoProd} 
         onEscolherImagem={escolherImagemProduto}
         onSave={salvarNovoProduto}
         onClose={() => setModalNovoProduto(false)}

@@ -12,11 +12,13 @@ interface ModalAddProdutoProps {
   preco: string;
   quantidade: string;
   unidade: string;
+  descricao?: string;
   imagemProduto: string | null;
   onNomeChange: (nome: string) => void;
   onPrecoChange: (preco: string) => void;
   onQuantidadeChange: (qtd: string) => void;
   onUnidadeChange: (unidade: string) => void;
+  onDescricaoChange: (desc: string) => void;
   onEscolherImagem: () => void;
   onSave: () => void;
   onClose: () => void;
@@ -25,6 +27,7 @@ interface ModalAddProdutoProps {
 export default function ModalAddProduto({
   visible,
   nome,
+  descricao,
   preco,
   quantidade,
   unidade,
@@ -34,6 +37,7 @@ export default function ModalAddProduto({
   onQuantidadeChange,
   onUnidadeChange,
   onEscolherImagem,
+  onDescricaoChange,
   onSave,
   onClose
 }: ModalAddProdutoProps) {
@@ -51,6 +55,15 @@ export default function ModalAddProduto({
             value={nome}
             onChangeText={onNomeChange}
             autoCapitalize="sentences"
+          />
+
+          <TextInput
+            placeholder="Descrição"
+            style={[styles.input, { minHeight: 60, textAlignVertical: 'top' }]}
+            value={descricao}
+            onChangeText={onDescricaoChange}
+            multiline
+            maxLength={200}
           />
           
           <TextInput

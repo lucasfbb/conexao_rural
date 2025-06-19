@@ -201,6 +201,8 @@ def listar_produtos_produtor(cpf_cnpj: str, db: Session = Depends(get_db)):
             "preco": float(listagem.preco),
             "estoque": listagem.estoque,
             "unidade": listagem.unidade,
+            "descricao": listagem.descricao,
+            "preco_promocional": float(listagem.preco_promocional) if listagem.preco_promocional else None,
             "foto": listagem.foto if hasattr(listagem, "foto") else produto.foto if hasattr(produto, "foto") else None,
         })
     return produtos
@@ -211,6 +213,7 @@ async def adicionar_produto(
     preco: float = Form(...),
     quantidade: int = Form(...),
     unidade: str = Form(...),
+    descricao: str = Form(None),
     file: UploadFile = File(...),
     current_user: Usuario = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -245,6 +248,7 @@ async def adicionar_produto(
         estoque=quantidade,
         produtor_cpf_cnpj=current_user.cpf_cnpj,
         unidade=unidade,
+        descricao=descricao,
         foto=foto_url    # Salva o caminho!
     )
     db.add(listagem)
