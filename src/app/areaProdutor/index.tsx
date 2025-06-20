@@ -1,11 +1,12 @@
 import { View, Text, FlatList, Image, TouchableOpacity, Alert, StyleSheet, Modal, TextInput, ScrollView, ActivityIndicator, useWindowDimensions } from "react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from 'expo-image-picker';
 import Header from "@/components/header";
 import { api, baseURL } from "../../../services/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ModalAddProduto from "@/components/modais/modalAddProduto";
+import { ProdutoGlobal } from "@/components/autoComplete";
 
 type Produto = {
   id: string;
@@ -86,6 +87,11 @@ export default function AreaProdutor() {
 
   const [editandoProduto, setEditandoProduto] = useState<Produto | null>(null);
   const [modoEdicao, setModoEdicao] = useState(false);
+
+  // Produtos globais buscados dinamicamente
+  const [produtosGlobais, setProdutosGlobais] = useState<ProdutoGlobal[]>([]);
+  const [loadingSugestoes, setLoadingSugestoes] = useState(false);
+  const buscaTimeout = useRef<any>(null);
   
   const abrirModalEditar = (produto: Produto) => {
     setModoEdicao(true);
@@ -98,6 +104,25 @@ export default function AreaProdutor() {
     setImagemProdutoNovo(typeof produto.foto === "object" && produto.foto?.uri ? produto.foto.uri : null);
     setNovaDescricaoProd(produto.descricao ?? "");
     setModalNovoProduto(true);
+  };
+
+  const buscarProdutosGlobais = (termo: string) => {
+    if (buscaTimeout.current) clearTimeout(buscaTimeout.current);
+    if (!termo || termo.length < 2) {
+      setProdutosGlobais([]);
+      setLoadingSugestoes(false);
+      return;
+    }
+    setLoadingSugestoes(true);
+    buscaTimeout.current = setTimeout(async () => {
+      try {
+        const res = await api.get(`/produtos/search?q=${encodeURIComponent(termo)}`);
+        setProdutosGlobais(res.data || []);
+      } catch {
+        setProdutosGlobais([]);
+      }
+      setLoadingSugestoes(false);
+    }, 300); // 300ms debounce
   };
 
   // --- Funções de perfil e imagem
@@ -238,6 +263,7 @@ export default function AreaProdutor() {
         id: produto.id?.toString() ?? Math.random().toString(),
         listagem_id: produto.listagem_id,
         nome: produto.nome,
+        nome_personalizado: produto.nome_personalizado || produto.nome,
         preco: produto.preco,
         quantidade: produto.estoque,
         descricao: produto.descricao,
@@ -274,7 +300,7 @@ export default function AreaProdutor() {
   };
 
   const salvarProduto = async () => {
-    if (!novoNomeProd || !novoPrecoProd || !novaQtdProd || (!imagemProdutoNovo && !modoEdicao)) {
+    if (!novoNomeProd || !novoPrecoProd || !novaQtdProd) {
       Alert.alert("Preencha todos os campos");
       return;
     }
@@ -366,9 +392,12 @@ export default function AreaProdutor() {
       <View style={styles.produtoEsquerda}>
         <Image source={item.foto} style={styles.produtoImagem} />
         <View>
-          <Text style={styles.produtoNome}>{item.nome}</Text>
+          <Text style={styles.produtoNome}>{item.nome_personalizado}</Text>
           <Text style={styles.produtoPreco}>
-            {item.quantidade} {item.unidade} - R$ {item.preco}
+            {item.unidade === "unidade"
+              ? `${item.quantidade} unidade(s) - R$ ${item.preco}`
+              : `${item.quantidade} ${item.unidade} - R$ ${item.preco}`
+            }
           </Text>
         </View>
       </View>
@@ -551,6 +580,9 @@ export default function AreaProdutor() {
         unidade={unidade}
         descricao={novaDescricaoProd}
         imagemProduto={imagemProdutoNovo}
+        produtosGlobais={produtosGlobais}
+        loadingSugestoes={loadingSugestoes}
+        buscarProdutosGlobais={buscarProdutosGlobais}
         onNomeChange={setNovoNomeProd}
         onPrecoChange={handlePrecoChange}
         onQuantidadeChange={handleQuantidadeChange}

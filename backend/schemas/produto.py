@@ -32,6 +32,7 @@ class ProdutoEstoqueOut(BaseModel):
     id: int
     listagem_id: int
     nome: str
+    nome_personalizado: Optional[str] = None
     preco: float
     estoque: int
     unidade: Optional[str]

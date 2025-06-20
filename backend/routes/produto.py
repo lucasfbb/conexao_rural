@@ -65,4 +65,13 @@ def deletar_produto(produto_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Produto não encontrado")
     db.delete(produto)
     db.commit()
-    return None  # Ou apenas "pass"
+    return None
+
+@router.get("/produtos/search")
+def search_produtos(q: str = "", db: Session = Depends(get_db)):
+    # Busca produtos por nome, ignorando caixa/letras
+    query = db.query(Produto)
+    if q:
+        query = query.filter(Produto.nome.ilike(f"%{q.strip()}%"))
+    results = query.order_by(Produto.nome).limit(15).all()
+    return [{"id": p.id, "nome": p.nome, "categoria": p.categoria} for p in results]

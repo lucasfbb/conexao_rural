@@ -201,6 +201,7 @@ def listar_produtos_produtor(cpf_cnpj: str, db: Session = Depends(get_db)):
             "id": produto.id,
             "listagem_id": listagem.id,
             "nome": produto.nome,
+            "nome_personalizado": listagem.nome_personalizado if listagem.nome_personalizado else produto.nome,
             "preco": float(listagem.preco),
             "estoque": listagem.estoque,
             "unidade": listagem.unidade,
@@ -214,32 +215,35 @@ def listar_produtos_produtor(cpf_cnpj: str, db: Session = Depends(get_db)):
 
 @router.post("/produtores/produtos/adicionar")
 async def adicionar_produto(
-    nome: str = Form(...),
+    nome: str = Form(...),  # Nome para busca no catálogo e exibição personalizada
     preco: float = Form(...),
     quantidade: int = Form(...),
     unidade: str = Form(...),
     descricao: str = Form(None),
-    file: UploadFile = File(...),
+    file: Optional[UploadFile] = File(None),
     current_user: Usuario = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    # 1. Procura produto existente (opcional: pode ser só pelo nome)
-    produto_existente = db.query(Produto).filter(Produto.nome == nome).first()
+    # 1. Procura produto existente no catálogo (ignora maiúscula/minúscula)
+    produto_existente = db.query(Produto).filter(Produto.nome.ilike(nome.strip())).first()
     if not produto_existente:
-        produto_existente = Produto(nome=nome)
+        # Em produção, só admin pode criar produto novo!
+        produto_existente = Produto(nome=nome.strip())
         db.add(produto_existente)
         db.commit()
         db.refresh(produto_existente)
     
-    # 2. Gera o nome do arquivo e salva a imagem
-    ext = file.filename.split('.')[-1]
-    filename = f"produto_{current_user.cpf_cnpj}_{int(time.time())}.{ext}"
-    file_path = os.path.join(FOTO_PRODUTO_DIR, filename)
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-    foto_url = f"/uploads/fotoProduto/{filename}"
+    # 2. Salvar imagem SE enviada
+    foto_url = None
+    if file is not None:
+        ext = file.filename.split('.')[-1]
+        filename = f"produto_{current_user.cpf_cnpj}_{int(time.time())}.{ext}"
+        file_path = os.path.join(FOTO_PRODUTO_DIR, filename)
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        foto_url = f"/uploads/fotoProduto/{filename}"
 
-    # 3. Cria a Listagem (se não existe)
+    # 3. Cria a Listagem, agora usando nome_personalizado
     listagem_existente = db.query(Listagem).filter(
         Listagem.produto_id == produto_existente.id,
         Listagem.produtor_cpf_cnpj == current_user.cpf_cnpj
@@ -250,16 +254,22 @@ async def adicionar_produto(
     listagem = Listagem(
         produto_id=produto_existente.id,
         preco=preco,
+        nome_personalizado=nome.strip(),   # <--- Aqui você personaliza!
         estoque=quantidade,
         produtor_cpf_cnpj=current_user.cpf_cnpj,
         unidade=unidade,
         descricao=descricao,
-        foto=foto_url    # Salva o caminho!
+        foto=foto_url
     )
     db.add(listagem)
     db.commit()
     db.refresh(listagem)
-    return {"message": "Produto adicionado com sucesso!", "foto": foto_url}
+    return {
+        "message": "Produto adicionado com sucesso!",
+        "produto_id": produto_existente.id,
+        "foto": foto_url,
+        "nome": nome.strip()
+    }
 
 @router.delete("/produtores/produtos/remover/{listagem_id}", status_code=204)
 def remover_listagem_produto(listagem_id: int, db: Session = Depends(get_db)):
@@ -287,13 +297,15 @@ async def editar_produto(
         raise HTTPException(status_code=404, detail="Produto não encontrado")
     produto = listagem.produto
 
+    # Só altera o nome_personalizado do estoque do produtor!
     if nome is not None:
-        produto.nome = nome
+        listagem.nome_personalizado = nome.strip()
+        
     if descricao is not None:
-        produto.descricao = descricao
+        listagem.descricao = descricao
     
     if file:
-        filename = f"produto_{produto.id}_{file.filename}"
+        filename = f"produto_{listagem.id}_{file.filename}"
         full_path = os.path.join("uploads/fotoProduto", filename)
         os.makedirs(os.path.dirname(full_path), exist_ok=True)
         with open(full_path, "wb") as buffer:
@@ -307,21 +319,16 @@ async def editar_produto(
     if quantidade is not None:
         listagem.estoque = quantidade
     if unidade is not None:
-        produto.unidade = unidade
+        listagem.unidade = unidade
 
     db.commit()
-    db.refresh(produto)
     db.refresh(listagem)
-    print("Após commit:")
-    print("listagem.foto =", listagem.foto)
-    print("listagem.preco =", listagem.preco)
-    print("== FIM PATCH ==")
     return {
         "message": "Produto atualizado com sucesso",
         "foto": listagem.foto,
-        "nome": produto.nome,
+        "nome": listagem.nome_personalizado,  # Retorna o nome personalizado
         "preco": listagem.preco,
         "quantidade": listagem.estoque,
-        "unidade": produto.unidade,
-        "descricao": produto.descricao
+        "unidade": listagem.unidade,
+        "descricao": listagem.descricao
     }

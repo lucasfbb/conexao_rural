@@ -7,6 +7,7 @@ class Listagem(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     produto_id = Column(Integer, ForeignKey('produto.id'))
+    nome_personalizado = Column(String(255), nullable=True) # Nome personalizado do produto na listagem do produtor
     preco = Column(DECIMAL(10, 2))
     estoque = Column(Integer)
     produtor_cpf_cnpj = Column(String, ForeignKey('produtor.cpf_cnpj'))

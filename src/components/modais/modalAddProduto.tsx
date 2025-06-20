@@ -1,10 +1,19 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Modal, View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Dimensions, ScrollView } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { Feather } from "@expo/vector-icons";
 import { useTema } from "@/contexts/ThemeContext";
 
+import AutocompleteProduto from "@/components/autoComplete";
+
 const { width, height } = Dimensions.get("window");
+
+interface ProdutoGlobal {
+  id: number;
+  nome: string;
+  categoria?: string;
+}
+
 
 interface ModalAddProdutoProps {
   visible: boolean;
@@ -14,8 +23,11 @@ interface ModalAddProdutoProps {
   unidade: string;
   descricao?: string;
   imagemProduto: string | null;
+  produtosGlobais: ProdutoGlobal[];
+  loadingSugestoes: boolean;
   modoEdicao?: boolean;
   textBotao?: string;
+  buscarProdutosGlobais: (termo: string) => void;
   onNomeChange: (nome: string) => void;
   onPrecoChange: (preco: string) => void;
   onQuantidadeChange: (qtd: string) => void;
@@ -34,8 +46,11 @@ export default function ModalAddProduto({
   quantidade,
   unidade,
   imagemProduto,
+  produtosGlobais,
+  loadingSugestoes,
   modoEdicao,
   textBotao,
+  buscarProdutosGlobais,
   onNomeChange,
   onPrecoChange,
   onQuantidadeChange,
@@ -47,19 +62,75 @@ export default function ModalAddProduto({
 }: ModalAddProdutoProps) {
   const { colors } = useTema();
 
+  // Estado só para autocomplete (local do modal)
+  const [showSugestoes, setShowSugestoes] = useState(false);
+
+  const [focused, setFocused] = useState(false);
+
+  function handleBlur() {
+    setTimeout(() => {
+      setFocused(false);
+      setShowSugestoes(false);
+    }, 120);
+  }
+
   return (
     <Modal visible={visible} animationType="fade" transparent>
       <View style={styles.modalBackground}>
         <ScrollView contentContainerStyle={[styles.modalContainer, { backgroundColor: colors.modalBackground }]}>
           <Text style={styles.modalTitle}>{modoEdicao ? "Editar Produto" : "Novo Produto"}</Text>
           
-          <TextInput 
-            placeholder="Nome"
-            style={styles.input}
-            value={nome}
-            onChangeText={onNomeChange}
-            autoCapitalize="sentences"
-          />
+          {/* Autocomplete produto */}
+          <View style={{ width: "100%" }}>
+            <TextInput
+              placeholder="Nome do produto"
+              style={styles.input}
+              value={nome}
+              onChangeText={text => {
+                onNomeChange(text);
+                buscarProdutosGlobais(text);
+                setShowSugestoes(true);
+              }}
+              onFocus={() => {
+                setFocused(true);
+                setShowSugestoes(true);
+              }}
+              onBlur={handleBlur}
+              autoCapitalize="sentences"
+            />
+            {showSugestoes && focused && nome.length >= 2 && (
+              <View style={{
+                backgroundColor: "#fff",
+                borderWidth: 1,
+                borderColor: "#4D7E1B",
+                borderRadius: 8,
+                maxHeight: 140,
+                width: "100%",
+                position: "absolute",
+                top: 54,
+                zIndex: 10,
+              }}>
+                {loadingSugestoes && <Text style={{ padding: 10 }}>Carregando...</Text>}
+                {!loadingSugestoes && produtosGlobais.length === 0 && nome.length >= 2 && (
+                  <Text style={{ padding: 10, color: "#888" }}>Nenhum produto encontrado</Text>
+                )}
+                {produtosGlobais.map(produto => (
+                  <TouchableOpacity
+                    key={produto.id}
+                    onPress={() => {
+                      onNomeChange(produto.nome);
+                      setFocused(false);
+                      setShowSugestoes(false);
+                    }}
+                    style={{ padding: 12 }}
+                  >
+                    <Text>{produto.nome}</Text>
+                    {produto.categoria && <Text style={{ fontSize: 12, color: "#aaa" }}>{produto.categoria}</Text>}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
 
           <TextInput
             placeholder="Descrição"
