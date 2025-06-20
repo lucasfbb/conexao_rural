@@ -30,6 +30,7 @@ class ProdutoListagemOut(BaseModel):
 
 class ProdutoEstoqueOut(BaseModel):
     id: int
+    listagem_id: int
     nome: str
     preco: float
     estoque: int

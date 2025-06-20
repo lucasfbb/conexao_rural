@@ -9,6 +9,7 @@ import ModalAddProduto from "@/components/modais/modalAddProduto";
 
 type Produto = {
   id: string;
+  listagem_id: number;
   nome: string;
   preco: number;
   quantidade: number;
@@ -82,7 +83,23 @@ export default function AreaProdutor() {
   const [novaDescricaoProd, setNovaDescricaoProd] = useState("");
   const [imagemProdutoNovo, setImagemProdutoNovo] = useState<string | null>(null);
   const [unidade, setUnidade] = useState("unidade");
+
+  const [editandoProduto, setEditandoProduto] = useState<Produto | null>(null);
+  const [modoEdicao, setModoEdicao] = useState(false);
   
+  const abrirModalEditar = (produto: Produto) => {
+    setModoEdicao(true);
+    setEditandoProduto(produto);
+
+    setNovoNomeProd(produto.nome);
+    setNovoPrecoProd(produto.preco.toString());
+    setNovaQtdProd(produto.quantidade.toString());
+    setUnidade(produto.unidade);
+    setImagemProdutoNovo(typeof produto.foto === "object" && produto.foto?.uri ? produto.foto.uri : null);
+    setNovaDescricaoProd(produto.descricao ?? "");
+    setModalNovoProduto(true);
+  };
+
   // --- Funções de perfil e imagem
   async function salvarPerfil() {
     const camposAlterados = getCamposAlterados(perfilOriginal, perfil);
@@ -214,40 +231,50 @@ export default function AreaProdutor() {
   const buscarProdutos = async () => {
     try {
       const res = await api.get(`/produtores/${perfil.cpf_cnpj}/produtos`);
-      // console.log("Produtos do produtor:", res.data);
+      console.log("Produtos do produtor:", res.data);
       
       // Ajusta o array para o formato esperado na FlatList
       const produtosTratados = res.data.map((produto: any) => ({
         id: produto.id?.toString() ?? Math.random().toString(),
+        listagem_id: produto.listagem_id,
         nome: produto.nome,
         preco: produto.preco,
         quantidade: produto.estoque,
         descricao: produto.descricao,
         unidade: produto.unidade ?? 'unidade',
-        foto: produto.foto ? { uri: base + produto.foto } : require('../../../assets/images/principais/alface.png'),
+        foto: produto.foto ? { uri: base + produto.foto } : require('../../../assets/images/pacote_produto.png'), // Imagem padrão se não tiver foto
       }));
 
       setProdutos(produtosTratados);
-      console.log("Produtos carregados:", produtosTratados);
+      // console.log("Produtos carregados:", produtosTratados);
     } catch (err) {
       Alert.alert("Erro ao buscar produtos");
       console.log("Erro ao buscar produtos do produtor:", err);
     }
   };
 
-  const excluirProduto = (id: string) => {
+  const excluirProduto = (listagem_id: number) => {
     Alert.alert("Confirmar exclusão", "Tem certeza que deseja excluir este produto?", [
       { text: "Cancelar", style: "cancel" },
       {
         text: "Excluir",
         style: "destructive",
-        onPress: () => setProdutos(prev => prev.filter(prod => prod.id !== id)),
+        onPress: async () => {
+          try {
+            await api.delete(`/produtores/produtos/remover/${listagem_id}`);
+            setProdutos(prev => prev.filter(prod => prod.listagem_id !== listagem_id));
+            Alert.alert("Produto removido do estoque!");
+          } catch (err) {
+            Alert.alert("Erro ao excluir produto");
+            console.error("Erro ao excluir produto:", err);
+          }
+        },
       },
     ]);
   };
 
-  const salvarNovoProduto = async () => {
-    if (!novoNomeProd || !novoPrecoProd || !novaQtdProd || !imagemProdutoNovo) {
+  const salvarProduto = async () => {
+    if (!novoNomeProd || !novoPrecoProd || !novaQtdProd || (!imagemProdutoNovo && !modoEdicao)) {
       Alert.alert("Preencha todos os campos");
       return;
     }
@@ -260,37 +287,60 @@ export default function AreaProdutor() {
     }
 
     try {
-      // Monta o FormData para enviar tudo junto!
-      const formData = new FormData();
-      formData.append('nome', novoNomeProd);
-      formData.append('preco', precoFloat.toString());
-      formData.append('quantidade', quantidadeFloat.toString());
-      formData.append('unidade', unidade);
-      formData.append('descricao', novaDescricaoProd || "");
-      formData.append('file', {
-        uri: imagemProdutoNovo,
-        name: "produto.jpg",
-        type: "image/jpeg"
-      } as any);
+      if (modoEdicao && editandoProduto) {
+        const formData = new FormData();
+        formData.append("nome", novoNomeProd);
+        formData.append("descricao", novaDescricaoProd);
+        formData.append("preco", precoFloat.toString());
+        formData.append("quantidade", quantidadeFloat.toString());
+        formData.append("unidade", unidade);
+        if (imagemProdutoNovo && imagemProdutoNovo !== editandoProduto.foto?.uri) {
+          formData.append('file', {
+            uri: imagemProdutoNovo,
+            name: "produto.jpg",
+            type: "image/jpeg"
+          } as any);
+        }
+        await api.patch(`/produtores/produtos/editar/${editandoProduto.listagem_id}`, formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
 
-      // Envia tudo para a rota que salva na listagem e faz upload
-      await api.post("/produtores/produtos/adicionar", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+        Alert.alert("Produto atualizado!");
+      } else {
+        // ADIÇÃO (POST) ---------------------------
+        const formData = new FormData();
+        formData.append('nome', novoNomeProd);
+        formData.append('preco', precoFloat.toString());
+        formData.append('quantidade', quantidadeFloat.toString());
+        formData.append('unidade', unidade);
+        formData.append('descricao', novaDescricaoProd || "");
+        if (imagemProdutoNovo) {
+          formData.append('file', {
+            uri: imagemProdutoNovo,
+            name: "produto.jpg",
+            type: "image/jpeg"
+          } as any);
+        }
 
-      Alert.alert("Produto cadastrado!");
-      
+        await api.post("/produtores/produtos/adicionar", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        Alert.alert("Produto cadastrado!");
+      }
+
       await buscarProdutos();
-      
       setModalNovoProduto(false);
       setNovoNomeProd("");
       setNovoPrecoProd("");
       setNovaQtdProd("");
       setImagemProdutoNovo(null);
       setUnidade("unidade");
-      // Aqui você pode buscar os produtos novamente do backend para atualizar a lista real!
+      setModoEdicao(false);
+      setEditandoProduto(null);
+
     } catch (err) {
-      Alert.alert("Erro ao cadastrar produto", err instanceof Error ? err.message : "Erro desconhecido");
+      Alert.alert("Erro ao salvar produto", err instanceof Error ? err.message : "Erro desconhecido");
     }
   };
 
@@ -323,10 +373,10 @@ export default function AreaProdutor() {
         </View>
       </View>
       <View style={styles.botoesContainer}>
-        <TouchableOpacity onPress={() => alert(`Editar ${item.nome}`)}>
+        <TouchableOpacity onPress={() => abrirModalEditar(item)}>
           <Feather name="edit" size={width * 0.06} color="#E15610" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => excluirProduto(item.id)}>
+        <TouchableOpacity onPress={() => excluirProduto(item.listagem_id)}>
           <Feather name="trash" size={width * 0.06} color="#B00020" />
         </TouchableOpacity>
       </View>
@@ -507,8 +557,13 @@ export default function AreaProdutor() {
         onUnidadeChange={setUnidade}
         onDescricaoChange={setNovaDescricaoProd} 
         onEscolherImagem={escolherImagemProduto}
-        onSave={salvarNovoProduto}
-        onClose={() => setModalNovoProduto(false)}
+        onSave={salvarProduto}
+        onClose={() => {
+          setModalNovoProduto(false);
+          setModoEdicao(false);
+          setEditandoProduto(null);
+        }}
+        modoEdicao={modoEdicao}
       />
     </ScrollView>
   );

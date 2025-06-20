@@ -1,5 +1,6 @@
 import os
 import time
+from typing import Optional
 from auth.auth_utils import get_current_user
 from schemas.listagem import ListagemCreate
 from schemas.produto import ProdutoEstoqueOut, ProdutoOut
@@ -192,11 +193,13 @@ def listar_produtos_produtor(cpf_cnpj: str, db: Session = Depends(get_db)):
         .filter(Listagem.produtor_cpf_cnpj == cpf_cnpj)
         .all()
     )
+    
     produtos = []
     for listagem in listagens:
         produto = listagem.produto
         produtos.append({
             "id": produto.id,
+            "listagem_id": listagem.id,
             "nome": produto.nome,
             "preco": float(listagem.preco),
             "estoque": listagem.estoque,
@@ -205,6 +208,8 @@ def listar_produtos_produtor(cpf_cnpj: str, db: Session = Depends(get_db)):
             "preco_promocional": float(listagem.preco_promocional) if listagem.preco_promocional else None,
             "foto": listagem.foto if hasattr(listagem, "foto") else produto.foto if hasattr(produto, "foto") else None,
         })
+    
+    # print("==> PRODUTOS DO PRODUTOR", cpf_cnpj, ":", produtos)
     return produtos
 
 @router.post("/produtores/produtos/adicionar")
@@ -255,3 +260,68 @@ async def adicionar_produto(
     db.commit()
     db.refresh(listagem)
     return {"message": "Produto adicionado com sucesso!", "foto": foto_url}
+
+@router.delete("/produtores/produtos/remover/{listagem_id}", status_code=204)
+def remover_listagem_produto(listagem_id: int, db: Session = Depends(get_db)):
+    listagem = db.query(Listagem).filter(Listagem.id == listagem_id).first()
+    if not listagem:
+        raise HTTPException(status_code=404, detail="Produto não encontrado na listagem do produtor")
+    db.delete(listagem)
+    db.commit()
+    return {"message": "Produto removido com sucesso!"}
+
+@router.patch("/produtores/produtos/editar/{listagem_id}")
+async def editar_produto(
+    listagem_id: int,
+    nome: Optional[str] = Form(None),
+    preco: Optional[float] = Form(None),
+    quantidade: Optional[float] = Form(None),
+    unidade: Optional[str] = Form(None),
+    descricao: Optional[str] = Form(None),
+    file: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db)
+):
+    listagem = db.query(Listagem).filter_by(id=listagem_id).first()
+    if not listagem:
+        print("Produto não encontrado!")
+        raise HTTPException(status_code=404, detail="Produto não encontrado")
+    produto = listagem.produto
+
+    if nome is not None:
+        produto.nome = nome
+    if descricao is not None:
+        produto.descricao = descricao
+    
+    if file:
+        filename = f"produto_{produto.id}_{file.filename}"
+        full_path = os.path.join("uploads/fotoProduto", filename)
+        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+        with open(full_path, "wb") as buffer:
+            buffer.write(await file.read())
+        listagem.foto = f"/uploads/fotoProduto/{filename}"
+    else:
+        print("Nenhuma imagem enviada")
+
+    if preco is not None:
+        listagem.preco = preco
+    if quantidade is not None:
+        listagem.estoque = quantidade
+    if unidade is not None:
+        produto.unidade = unidade
+
+    db.commit()
+    db.refresh(produto)
+    db.refresh(listagem)
+    print("Após commit:")
+    print("listagem.foto =", listagem.foto)
+    print("listagem.preco =", listagem.preco)
+    print("== FIM PATCH ==")
+    return {
+        "message": "Produto atualizado com sucesso",
+        "foto": listagem.foto,
+        "nome": produto.nome,
+        "preco": listagem.preco,
+        "quantidade": listagem.estoque,
+        "unidade": produto.unidade,
+        "descricao": produto.descricao
+    }

@@ -14,6 +14,8 @@ interface ModalAddProdutoProps {
   unidade: string;
   descricao?: string;
   imagemProduto: string | null;
+  modoEdicao?: boolean;
+  textBotao?: string;
   onNomeChange: (nome: string) => void;
   onPrecoChange: (preco: string) => void;
   onQuantidadeChange: (qtd: string) => void;
@@ -32,6 +34,8 @@ export default function ModalAddProduto({
   quantidade,
   unidade,
   imagemProduto,
+  modoEdicao,
+  textBotao,
   onNomeChange,
   onPrecoChange,
   onQuantidadeChange,
@@ -47,7 +51,7 @@ export default function ModalAddProduto({
     <Modal visible={visible} animationType="fade" transparent>
       <View style={styles.modalBackground}>
         <ScrollView contentContainerStyle={[styles.modalContainer, { backgroundColor: colors.modalBackground }]}>
-          <Text style={styles.modalTitle}>Novo Produto</Text>
+          <Text style={styles.modalTitle}>{modoEdicao ? "Editar Produto" : "Novo Produto"}</Text>
           
           <TextInput 
             placeholder="Nome"
@@ -114,7 +118,7 @@ export default function ModalAddProduto({
               <Text style={{ color: '#B00020' }}>Cancelar</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={onSave}>
-              <Text style={{ color: '#4CAF50' }}>Salvar</Text>
+              <Text style={{ color: '#4CAF50' }}>{textBotao || (modoEdicao ? "Salvar alterações" : "Salvar")}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
