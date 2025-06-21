@@ -166,24 +166,22 @@ def detalhes_produtor(cpf_cnpj: str, db: Session = Depends(get_db)):
         distancia=None  # ou calcule se quiser!
     )
 
-# @router.get("/produtores/{cpf_cnpj}/produtos", response_model=list[ProdutoOut])
-# def listar_produtos_produtor(cpf_cnpj: str, db: Session = Depends(get_db)):
-#     listagens = (
-#         db.query(Listagem)
-#         .join(Produto, Listagem.produto_id == Produto.id)
-#         .filter(Listagem.produtor_cpf_cnpj == cpf_cnpj)
-#         .all()
-#     )
-#     # Para cada listagem, pegue o produto e adicione info de preço e estoque!
-#     produtos = []
-#     for listagem in listagens:
-#         produto = listagem.produto
-#         produto_dict = ProdutoOut.from_orm(produto).dict()
-#         produto_dict["preco"] = listagem.preco
-#         produto_dict["estoque"] = listagem.estoque
-#         produtos.append(produto_dict)
-#     print("==> PRODUTOS DO PRODUTOR", cpf_cnpj, ":", produtos)
-#     return produtos
+@router.get("/produtores/perto")
+async def listar_produtores_perto(
+    lat: float,
+    lng: float,
+    raio_km: float = 10,
+    exclude_cpf_cnpj: str = None,
+    limit: int = 20,
+    offset: int = 0,
+    db: Session = Depends(get_db)
+):
+    query = db.query(Produtor)
+    # Filtro de localização e outros...
+    if exclude_cpf_cnpj:
+        query = query.filter(Produtor.cpf_cnpj != exclude_cpf_cnpj)
+    query = query.offset(offset).limit(limit)
+    return query.all()
 
 @router.get("/produtores/{cpf_cnpj}/produtos", response_model=list[ProdutoEstoqueOut])
 def listar_produtos_produtor(cpf_cnpj: str, db: Session = Depends(get_db)):

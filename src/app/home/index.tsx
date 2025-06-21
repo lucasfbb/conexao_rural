@@ -10,18 +10,20 @@ import Header from '@/components/header'
 import { api, baseURL } from '../../../services/api';
 import { ItemHome } from '@/types/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useUser } from '@/contexts/UserContext';
 
 export default function Home(){
     const { width, height } = useWindowDimensions();
     const { isNightMode, colors } = useTema();
+    const [cpf_cnpj_user, setCpfCnpjUser] = useState('');
     const [agricultores, setAgricultores] = useState([]);
     const [banners, setBanners] = useState<string[]>([]);
     const [produtosSazonais, setProdutosSazonais] = useState<string[]>([]);
 
     const base = baseURL.slice(0, -1);
-    
-    // const produtos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
 
+    const { user } = useUser();
+    
     const imagens = {
         foto_perfil: require("../../../assets/images/perfil_agricultor.png"),
     } as const;
@@ -29,7 +31,7 @@ export default function Home(){
     
     const buscarAgricultores = async () => {
         try {
-            const response = await api.get("/home/agricultores");
+            const response = await api.get(`/home/agricultores?exclude_cpf_cnpj=${cpf_cnpj_user}&limit=10`);
             // console.log("Agricultores:", response.data);
             setAgricultores(response.data);
             // console.log(agricultores)
@@ -68,6 +70,9 @@ export default function Home(){
     useFocusEffect(
         useCallback(() => {
         // Função que você quer rodar sempre que a tela volta pro foco
+            if (user?.cpf_cnpj) {
+                setCpfCnpjUser(user.cpf_cnpj);
+            }
             fetchBanners();
             buscarAgricultores();
             fetchProdutosSazonais();
