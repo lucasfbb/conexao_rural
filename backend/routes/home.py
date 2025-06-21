@@ -7,8 +7,8 @@ from schemas.produtor import ProdutorOut
 
 router = APIRouter()
 
-@router.get("/agricultores", response_model=list[ProdutorOut])
-def listar_agricultores(
+@router.get("/produtores", response_model=list[ProdutorOut])
+def listar_produtores(
     db: Session = Depends(get_db),
     exclude_cpf_cnpj: str = Query(None, description="CPF/CNPJ do usuário logado para não aparecer na lista"),
     limit: int = Query(20, description="Máximo de produtores"),

@@ -31,10 +31,13 @@ export default function Home(){
     
     const buscarAgricultores = async () => {
         try {
-            const response = await api.get(`/home/agricultores?exclude_cpf_cnpj=${cpf_cnpj_user}&limit=10`);
-            // console.log("Agricultores:", response.data);
+            const response = await api.get(`/home/produtores?exclude_cpf_cnpj=${cpf_cnpj_user}&limit=10`);
+            
+            // USAR PARA DEBUG
+
+            // const response = await api.get(`/home/produtores`);
+
             setAgricultores(response.data);
-            // console.log(agricultores)
         } catch (error) {
             console.error("Erro ao buscar agricultores:", error);
             Alert.alert("Erro", "Não foi possível carregar os agricultores.");
