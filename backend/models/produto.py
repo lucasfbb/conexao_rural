@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String, Boolean, Integer
 from sqlalchemy.orm import relationship
 from database import Base
-from models.associacoes import usuario_produto_favorito
+from models.Associacoes import usuario_produto_favorito
 
 class Produto(Base):
     __tablename__ = 'produto'

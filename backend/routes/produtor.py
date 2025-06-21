@@ -8,10 +8,10 @@ from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form
 import shutil
 from sqlalchemy.orm import Session
 from database import get_db
-from models.usuario import Usuario
-from models.produtor import Produtor
-from models.produto import Produto
-from models.listagem import Listagem
+from models.Usuario import Usuario
+from models.Produtor import Produtor
+from models.Produto import Produto
+from models.Listagem import Listagem
 from schemas.produtor import ProdutorOut, ProdutorUpdate
 
 router = APIRouter()

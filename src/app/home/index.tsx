@@ -34,7 +34,6 @@ export default function Home(){
             const response = await api.get(`/home/produtores?exclude_cpf_cnpj=${cpf_cnpj_user}&limit=10`);
             
             // USAR PARA DEBUG
-
             // const response = await api.get(`/home/produtores`);
 
             setAgricultores(response.data);

@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String, ForeignKey
 from sqlalchemy.orm import relationship
 from database import Base
-from models.associacoes import usuario_produtor_favorito
+from models.Associacoes import usuario_produtor_favorito
 
 class Produtor(Base):
     __tablename__ = 'produtor'

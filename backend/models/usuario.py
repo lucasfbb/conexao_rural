@@ -2,7 +2,7 @@ from datetime import datetime
 from sqlalchemy import Column, Date, DateTime, String, Boolean
 from sqlalchemy.orm import relationship
 from database import Base
-from models.associacoes import usuario_produto_favorito, usuario_produtor_favorito
+from models.Associacoes import usuario_produto_favorito, usuario_produtor_favorito
 
 class Usuario(Base):
     __tablename__ = 'usuario'
@@ -21,6 +21,7 @@ class Usuario(Base):
 
     enderecos = relationship("Endereco", back_populates="usuario")
     pedidos = relationship("Pedido", back_populates="usuario")
+    formas_pagamento = relationship("FormaPagamento", back_populates="usuario")
 
     produtos_favoritos = relationship(
         "Produto",

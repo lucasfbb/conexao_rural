@@ -3,13 +3,13 @@ from sqlalchemy.schema import CreateTable
 from sqlalchemy import create_engine
 from database import Base  # usa o mesmo Base que suas models já usam!
 
-from models.produtor import Produtor
-from models.produto import Produto
-from models.pedido import Pedido
-from models.usuario import Usuario
-from models.endereco import Endereco
-from models.listagem import Listagem
-from models.associacoes import usuarios_produtos_favoritos, usuarios_produtores_favoritos
+from models.Produtor import Produtor
+from models.Produto import Produto
+from models.Pedido import Pedido
+from models.Usuario import Usuario
+from models.Endereco import Endereco
+from models.Listagem import Listagem
+from models.Associacoes import usuarios_produtos_favoritos, usuarios_produtores_favoritos
 
 DATABASE_URL = "postgresql://meuusuario:minhasenha@localhost:5432/meubanco"
 

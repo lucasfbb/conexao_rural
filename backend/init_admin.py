@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from database import SessionLocal
-from models.usuario import Usuario
+from models.Usuario import Usuario
 from passlib.hash import bcrypt
 from sqlalchemy.exc import IntegrityError
 
