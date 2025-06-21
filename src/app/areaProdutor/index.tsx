@@ -13,6 +13,7 @@ type Produto = {
   listagem_id: number;
   nome: string;
   preco: number;
+  preco_promocional?: number;
   quantidade: number;
   unidade: string;
   foto: any;
@@ -80,6 +81,7 @@ export default function AreaProdutor() {
   const [modalNovoProduto, setModalNovoProduto] = useState(false);
   const [novoNomeProd, setNovoNomeProd] = useState("");
   const [novoPrecoProd, setNovoPrecoProd] = useState("");
+  const [novoPrecoPromocional, setNovoPrecoPromocional] = useState("");
   const [novaQtdProd, setNovaQtdProd] = useState("");
   const [novaDescricaoProd, setNovaDescricaoProd] = useState("");
   const [imagemProdutoNovo, setImagemProdutoNovo] = useState<string | null>(null);
@@ -96,9 +98,9 @@ export default function AreaProdutor() {
   const abrirModalEditar = (produto: Produto) => {
     setModoEdicao(true);
     setEditandoProduto(produto);
-
     setNovoNomeProd(produto.nome);
     setNovoPrecoProd(produto.preco.toString());
+    setNovoPrecoPromocional(produto.preco_promocional?.toString() || "");
     setNovaQtdProd(produto.quantidade.toString());
     setUnidade(produto.unidade);
     setImagemProdutoNovo(typeof produto.foto === "object" && produto.foto?.uri ? produto.foto.uri : null);
@@ -265,6 +267,7 @@ export default function AreaProdutor() {
         nome: produto.nome,
         nome_personalizado: produto.nome_personalizado || produto.nome,
         preco: produto.preco,
+        preco_promocional: produto.preco_promocional,
         quantidade: produto.estoque,
         descricao: produto.descricao,
         unidade: produto.unidade ?? 'unidade',
@@ -306,6 +309,7 @@ export default function AreaProdutor() {
     }
 
     const precoFloat = parseFloat(novoPrecoProd.replace(',', '.'));
+    const precoPromocional = novoPrecoPromocional ? parseFloat(novoPrecoPromocional.replace(',', '.')) : undefined;
     const quantidadeFloat = parseFloat(novaQtdProd.replace(',', '.'));
     if (isNaN(precoFloat) || isNaN(quantidadeFloat)) {
       Alert.alert("Preço ou quantidade inválidos");
@@ -318,6 +322,9 @@ export default function AreaProdutor() {
         formData.append("nome", novoNomeProd);
         formData.append("descricao", novaDescricaoProd);
         formData.append("preco", precoFloat.toString());
+        if (precoPromocional) {
+          formData.append("preco_promocional", precoPromocional.toString());
+        }
         formData.append("quantidade", quantidadeFloat.toString());
         formData.append("unidade", unidade);
         if (imagemProdutoNovo && imagemProdutoNovo !== editandoProduto.foto?.uri) {
@@ -337,6 +344,9 @@ export default function AreaProdutor() {
         const formData = new FormData();
         formData.append('nome', novoNomeProd);
         formData.append('preco', precoFloat.toString());
+        if (precoPromocional) {
+          formData.append("preco_promocional", precoPromocional.toString());
+        }
         formData.append('quantidade', quantidadeFloat.toString());
         formData.append('unidade', unidade);
         formData.append('descricao', novaDescricaoProd || "");
@@ -359,6 +369,7 @@ export default function AreaProdutor() {
       setModalNovoProduto(false);
       setNovoNomeProd("");
       setNovoPrecoProd("");
+      setNovoPrecoPromocional("");
       setNovaQtdProd("");
       setImagemProdutoNovo(null);
       setUnidade("unidade");
@@ -379,6 +390,12 @@ export default function AreaProdutor() {
     // Permite apenas números, vírgula e ponto (para decimais)
     const clean = text.replace(/[^0-9.,]/g, "");
     setNovoPrecoProd(clean);
+  };
+
+  const handlePrecoPromocionalChange = (text: string) => {
+    // Permite apenas números, vírgula e ponto (para decimais)
+    const clean = text.replace(/[^0-9.,]/g, "");
+    setNovoPrecoPromocional(clean);
   };
 
   const handleQuantidadeChange = (text: string) => {
@@ -544,38 +561,11 @@ export default function AreaProdutor() {
         </View>
       </Modal>
 
-      {/* Modal adicionar produto */}
-      {/* <Modal visible={modalNovoProduto} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <ScrollView contentContainerStyle={styles.modalBox}>
-            <Text style={styles.modalTitle}>Novo Produto</Text>
-            <TextInput placeholder="Nome" style={styles.input} value={novoNomeProd} onChangeText={setNovoNomeProd} />
-            <TextInput placeholder="Preço" style={styles.input} value={novoPrecoProd} onChangeText={setNovoPrecoProd} />
-            <TextInput placeholder="Quantidade" style={styles.input} value={novaQtdProd} onChangeText={setNovaQtdProd} />
-            <TouchableOpacity onPress={escolherImagemProduto}>
-              {imagemProdutoNovo ? (
-                <Image source={{ uri: imagemProdutoNovo }} style={styles.produtoImagemPreview} />
-              ) : (
-                <View style={[styles.placeholderImagem, { width: width * 0.22, height: width * 0.22 }]}>
-                  <Text>Imagem</Text>
-                </View>
-              )}
-            </TouchableOpacity>
-            <View style={styles.modalButtons}>
-              <TouchableOpacity onPress={() => setModalNovoProduto(false)}>
-                <Text style={{ color: '#B00020' }}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={salvarNovoProduto}>
-                <Text style={{ color: '#4CAF50' }}>Salvar</Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
-        </View>
-      </Modal> */}
       <ModalAddProduto
         visible={modalNovoProduto}
         nome={novoNomeProd}
         preco={novoPrecoProd}
+        precoPromocional={novoPrecoPromocional}
         quantidade={novaQtdProd}
         unidade={unidade}
         descricao={novaDescricaoProd}
@@ -585,6 +575,7 @@ export default function AreaProdutor() {
         buscarProdutosGlobais={buscarProdutosGlobais}
         onNomeChange={setNovoNomeProd}
         onPrecoChange={handlePrecoChange}
+        onPrecoPromocionalChange={handlePrecoPromocionalChange}
         onQuantidadeChange={handleQuantidadeChange}
         onUnidadeChange={setUnidade}
         onDescricaoChange={setNovaDescricaoProd} 

@@ -12,13 +12,21 @@ import { Produtor } from "@/types/types";
 
 const { width, height } = Dimensions.get("window");
 
+// Fatores dinâmicos
+const fontSizeTitulo = width * 0.047;
+const fontSizePromoNome = width * 0.03;
+const fontSizePrecoRiscado = width * 0.028;
+const fontSizePromocao = width * 0.036;
+const fontSizePreco = width * 0.035;
+const fontSizeDescricao = width * 0.03;
+
 type Produto = {
   id: string;
   nome: string;
   descricao?: string;
   preco: string;
   preco_promocional?: string;
-  imagem: any; // { uri: string } ou require()
+  imagem: any;
 };
 
 export default function ProdutorScreen() {
@@ -47,8 +55,6 @@ export default function ProdutorScreen() {
 
         // Produtos desse produtor
         const resProdutos = await api.get(`/produtores/${cpf_cnpj}/produtos`);
-        // console.log("Produtos:", resProdutos.data);
-
         const produtosTratados: Produto[] = resProdutos.data.map((produto: any) => ({
           id: produto.id?.toString() ?? Math.random().toString(),
           nome: produto.nome,
@@ -123,21 +129,21 @@ export default function ProdutorScreen() {
             }} style={styles.logo} />
             <Text style={[styles.produtorNome, { color: colors.text }]}>{produtor?.nome || "Nome não disponível"}</Text>
             <TouchableOpacity style={styles.localizacao} onPress={() => router.push('/home/localizacaoProdutor')}>
-              <Feather name="map-pin" size={16} color={colors.text} />
+              <Feather name="map-pin" size={fontSizePrecoRiscado} color={colors.text} />
               <Text style={[styles.localizacaoText, { color: colors.text }]}> Localização</Text>
             </TouchableOpacity>
             <View style={styles.produtorDetalhes}>
-              <Text style={styles.avaliacao}><MaterialIcons name="star" size={16} color="gold" /> 4.7</Text>
+              <Text style={styles.avaliacao}><MaterialIcons name="star" size={fontSizePrecoRiscado} color="gold" /> 4.7</Text>
               <Text style={styles.categoria}>- Legumes -</Text>
               <Text style={styles.distancia}>10km</Text>
             </View>
           </View>
 
           {/* Seção Promoções */}
-          <Text style={[styles.sectionTitle, { color: colors.title }]}>Promoções</Text>
+          <Text style={[styles.sectionTitle, { color: colors.title, fontSize: fontSizeTitulo }]}>Promoções</Text>
           <View style={{ paddingLeft: 15, paddingRight: 15 }}>
             {produtosPromocao.length === 0 ? (
-              <Text style={{ textAlign: "center", color: "#888", fontStyle: "italic" }}>
+              <Text style={{ textAlign: "center", color: "#888", fontStyle: "italic", fontSize: fontSizePromoNome }}>
                 Nenhuma promoção disponível
               </Text>
             ) : (
@@ -156,8 +162,24 @@ export default function ProdutorScreen() {
                   >
                     <Image source={item.imagem} style={styles.produtoImagem} />
                     <View>
-                      <Text style={[styles.produtoNome, { color: colors.text }]}>{item.nome}</Text>
-                      <Text style={[styles.produtoPreco]}>
+                      <Text style={[styles.produtoNome, { color: colors.text, fontSize: fontSizePromoNome }]}>{item.nome}</Text>
+                      {/* Preço antigo riscado */}
+                      {Number(item.preco) > Number(item.preco_promocional) && (
+                        <Text style={{
+                          color: '#B00020',
+                          textDecorationLine: 'line-through',
+                          fontSize: fontSizePrecoRiscado,
+                          marginBottom: 2,
+                        }}>
+                          R$ {Number(item.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </Text>
+                      )}
+                      {/* Preço promocional */}
+                      <Text style={{
+                        color: '#388e3c',
+                        fontWeight: 'bold',
+                        fontSize: fontSizePromocao
+                      }}>
                         R$ {Number(item.preco_promocional).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </Text>
                     </View>
@@ -172,7 +194,7 @@ export default function ProdutorScreen() {
           </View>
 
           {/* Seção Produtos Principais */}
-          <Text style={styles.sectionTitle}>Principais</Text>
+          <Text style={[styles.sectionTitle, { fontSize: fontSizeTitulo }]}>Principais</Text>
           <View style={{ paddingLeft: 15, paddingRight: 15 }}>
             <FlatList
               data={produtosNormais}
@@ -189,9 +211,9 @@ export default function ProdutorScreen() {
                 >
                   <Image source={item.imagem} style={styles.produtoImagem} />
                   <View style={styles.produtoInfo}>
-                    <Text style={[styles.produtoNome, { color: colors.text }]}>{item.nome}</Text>
-                    <Text style={styles.produtoDescricao}>{item.descricao}</Text>
-                    <Text style={styles.produtoPreco}>
+                    <Text style={[styles.produtoNome, { color: colors.text, fontSize: fontSizePromoNome }]}>{item.nome}</Text>
+                    <Text style={[styles.produtoDescricao, { fontSize: fontSizeDescricao }]}>{item.descricao}</Text>
+                    <Text style={[styles.produtoPreco, { fontSize: fontSizePreco }]}>
                       R$ {Number(item.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </Text>
                   </View>
@@ -218,14 +240,14 @@ const styles = StyleSheet.create({
   },
   produtorInfo: { alignItems: "center", padding: 15, borderBottomWidth: 1, borderColor: "#ddd" },
   logo: { width: 90, height: 90, borderRadius: 20, marginBottom: 5 },
-  produtorNome: { fontSize: 18, fontWeight: "bold" },
+  produtorNome: { fontWeight: "bold" }, // fontSize é dinâmico!
   localizacao: { flexDirection: "row", alignItems: "center", marginVertical: 8 },
-  localizacaoText: { fontSize: 14, color: "black" },
+  localizacaoText: { fontSize: fontSizePrecoRiscado, color: "black" },
   produtorDetalhes: { flexDirection: "row", alignItems: "center", gap: 5 },
-  avaliacao: { fontSize: 14, fontWeight: "bold", color: "#4D7E1B" },
-  categoria: { fontSize: 14, fontStyle: "italic", color: "#777" },
-  distancia: { fontSize: 14, color: "#777" },
-  sectionTitle: { fontSize: 18, fontWeight: "bold", fontStyle: "italic", marginVertical: 10, marginLeft: 10, color: '#4D7E1B', textAlign: 'center'},
+  avaliacao: { fontWeight: "bold", color: "#4D7E1B", fontSize: fontSizePrecoRiscado },
+  categoria: { fontSize: fontSizePrecoRiscado, fontStyle: "italic", color: "#777" },
+  distancia: { fontSize: fontSizePrecoRiscado, color: "#777" },
+  sectionTitle: { fontWeight: "bold", fontStyle: "italic", marginVertical: 10, marginLeft: 10, color: '#4D7E1B', textAlign: 'center'},
   promoCard: {
     flexDirection: "row",
     alignItems: "center",
@@ -237,8 +259,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   produtoImagem: { width: 40, height: 40, marginRight: 10 },
-  produtoNome: { fontSize: 14, fontWeight: "bold", fontStyle: "italic" },
-  produtoPreco: { fontSize: 14, color: "#4D7E1B" },
+  produtoNome: { fontWeight: "bold", fontStyle: "italic" }, // fontSize é dinâmico!
+  produtoPreco: { color: "#4D7E1B" }, // fontSize é dinâmico!
   principalCard: {
     flexDirection: "row",
     alignItems: "center",
@@ -249,5 +271,5 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   produtoInfo: { flex: 1 },
-  produtoDescricao: { fontSize: 12, color: "#777" },
+  produtoDescricao: { color: "#777" }, // fontSize é dinâmico!
 });

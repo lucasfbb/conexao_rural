@@ -217,6 +217,7 @@ def listar_produtos_produtor(cpf_cnpj: str, db: Session = Depends(get_db)):
 async def adicionar_produto(
     nome: str = Form(...),  # Nome para busca no catálogo e exibição personalizada
     preco: float = Form(...),
+    preco_promocional: Optional[float] = Form(None),
     quantidade: int = Form(...),
     unidade: str = Form(...),
     descricao: str = Form(None),
@@ -254,6 +255,7 @@ async def adicionar_produto(
     listagem = Listagem(
         produto_id=produto_existente.id,
         preco=preco,
+        preco_promocional=preco_promocional,
         nome_personalizado=nome.strip(),   # <--- Aqui você personaliza!
         estoque=quantidade,
         produtor_cpf_cnpj=current_user.cpf_cnpj,
@@ -285,6 +287,7 @@ async def editar_produto(
     listagem_id: int,
     nome: Optional[str] = Form(None),
     preco: Optional[float] = Form(None),
+    preco_promocional: Optional[float] = Form(None),
     quantidade: Optional[float] = Form(None),
     unidade: Optional[str] = Form(None),
     descricao: Optional[str] = Form(None),
@@ -316,6 +319,8 @@ async def editar_produto(
 
     if preco is not None:
         listagem.preco = preco
+    if preco_promocional is not None:
+        listagem.preco_promocional = preco_promocional
     if quantidade is not None:
         listagem.estoque = quantidade
     if unidade is not None:

@@ -14,11 +14,11 @@ interface ProdutoGlobal {
   categoria?: string;
 }
 
-
 interface ModalAddProdutoProps {
   visible: boolean;
   nome: string;
   preco: string;
+  precoPromocional?: string;
   quantidade: string;
   unidade: string;
   descricao?: string;
@@ -30,6 +30,7 @@ interface ModalAddProdutoProps {
   buscarProdutosGlobais: (termo: string) => void;
   onNomeChange: (nome: string) => void;
   onPrecoChange: (preco: string) => void;
+  onPrecoPromocionalChange: (precoPromocional: string) => void;
   onQuantidadeChange: (qtd: string) => void;
   onUnidadeChange: (unidade: string) => void;
   onDescricaoChange: (desc: string) => void;
@@ -43,6 +44,7 @@ export default function ModalAddProduto({
   nome,
   descricao,
   preco,
+  precoPromocional,
   quantidade,
   unidade,
   imagemProduto,
@@ -53,6 +55,7 @@ export default function ModalAddProduto({
   buscarProdutosGlobais,
   onNomeChange,
   onPrecoChange,
+  onPrecoPromocionalChange,
   onQuantidadeChange,
   onUnidadeChange,
   onEscolherImagem,
@@ -82,8 +85,9 @@ export default function ModalAddProduto({
           
           {/* Autocomplete produto */}
           <View style={{ width: "100%" }}>
+            <Text style={styles.label}>Nome do Produto</Text>
             <TextInput
-              placeholder="Nome do produto"
+              placeholder="Digite o nome do produto"
               style={styles.input}
               value={nome}
               onChangeText={text => {
@@ -131,9 +135,10 @@ export default function ModalAddProduto({
               </View>
             )}
           </View>
-
+          
+          <Text style={styles.label}>Descrição</Text>
           <TextInput
-            placeholder="Descrição"
+            placeholder="Digite uma descrição para o produto"
             style={[styles.input, { minHeight: 60, textAlignVertical: 'top' }]}
             value={descricao}
             onChangeText={onDescricaoChange}
@@ -141,28 +146,47 @@ export default function ModalAddProduto({
             maxLength={200}
           />
           
-          <TextInput
-            placeholder="Preço"
-            style={styles.input}
-            value={preco}
-            onChangeText={onPrecoChange}
-            keyboardType="decimal-pad"
-            inputMode="decimal"
-          />
-
-          <View style={styles.rowInputPicker}>
-            <TextInput
-              placeholder="Quantidade"
-              style={[styles.input, { flex: 1, marginBottom: 0, marginRight: 12 }]}
-              value={quantidade}
-              onChangeText={onQuantidadeChange}
-              keyboardType="numeric"
-              inputMode="numeric"
-            />
-            {/* <View style={styles.pickerBox}> */}
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.label}>Preço</Text>
+              <TextInput
+                placeholder="Preço"
+                style={styles.input}
+                value={preco}
+                onChangeText={onPrecoChange}
+                keyboardType="decimal-pad"
+                inputMode="decimal"
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.label}>Preço promocional</Text>
+              <TextInput
+                placeholder="Preço promocional (opcional)"
+                style={styles.input}
+                value={precoPromocional}
+                onChangeText={onPrecoPromocionalChange}
+                keyboardType="decimal-pad"
+              />
+            </View>
+          </View>
+          
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.label}>Quantidade</Text>
+              <TextInput
+                placeholder="Quantidade"
+                style={[styles.input, { flex: 1, marginBottom: 0, marginRight: 12 }]}
+                value={quantidade}
+                onChangeText={onQuantidadeChange}
+                keyboardType="numeric"
+                inputMode="numeric"
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.label}>Unidade</Text>
               <Picker
                 selectedValue={unidade}
-                style={{ height: height * 0.08, width: 110, color: "#4D7E1B" }}
+                style={{ height: height * 0.08, width: width * 0.3, color: "#4D7E1B" }}
                 onValueChange={onUnidadeChange}
                 dropdownIconColor="#4D7E1B"
               >
@@ -171,7 +195,7 @@ export default function ModalAddProduto({
                 <Picker.Item label="kg" value="kg" />
                 <Picker.Item label="ton" value="ton" />
               </Picker>
-            {/* </View> */}
+            </View>
           </View>
           
           <TouchableOpacity onPress={onEscolherImagem}>
@@ -205,9 +229,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center"
   },
+  label: {
+    fontWeight: 'bold',
+    color: '#4D7E1B',
+    marginBottom: 2,
+    marginTop: 10,
+    fontSize: 15
+  },
   modalContainer: {
     backgroundColor: "#FFF",
-    marginTop: height * 0.15,
+    marginTop: height * 0.08,
     borderRadius: 15,
     width: width * 0.9,
     padding: 20,
