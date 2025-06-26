@@ -15,4 +15,4 @@ class FormaPagamento(Base):
     nome_no_cartao = Column(String, nullable=True)  # Opcional
     criado_em = Column(DateTime, default=datetime.now)
 
-    usuario = relationship("Usuario", backref="formas_pagamento")
+    usuario = relationship("Usuario", back_populates="formas_pagamento")
