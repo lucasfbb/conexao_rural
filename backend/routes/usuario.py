@@ -9,11 +9,11 @@ from schemas.endereco import EnderecoIn, EnderecoOut
 from schemas.usuario import UsuarioCreate, UsuarioOut, UsuarioResponse, UsuarioUpdate
 from crud.usuario import criar_usuario
 from database import get_db
-from models.FormaPagamento import FormaPagamento
-from models.Produto import Produto
-from models.Produtor import Produtor
-from models.Endereco import Endereco
-from models.Usuario import Usuario
+from models.formapagamento import FormaPagamento
+from models.produto import Produto
+from models.produtor import Produtor
+from models.endereco import Endereco
+from models.usuario import Usuario
 
 router = APIRouter()
 

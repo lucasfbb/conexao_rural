@@ -1,8 +1,8 @@
 from fastapi import HTTPException
 from psycopg2 import IntegrityError
 from sqlalchemy.orm import Session
-from models.Produtor import Produtor
-from models.Usuario import Usuario
+from models.produtor import Produtor
+from models.usuario import Usuario
 from schemas.usuario import UsuarioCreate
 from passlib.context import CryptContext
 

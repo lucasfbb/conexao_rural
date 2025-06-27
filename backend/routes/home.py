@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from database import get_db
-from models.Usuario import Usuario
-from models.Produtor import Produtor
+from models.usuario import Usuario
+from models.produtor import Produtor
 from schemas.produtor import ProdutorOut
 
 router = APIRouter()

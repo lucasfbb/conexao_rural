@@ -1,5 +1,5 @@
 
-from models.Usuario import Usuario
+from models.usuario import Usuario
 from fastapi import Depends, HTTPException, status
 from jose import JWTError, jwt
 from fastapi.security import OAuth2PasswordBearer

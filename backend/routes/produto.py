@@ -5,7 +5,7 @@ import shutil
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
 from sqlalchemy.orm import Session
-from models.Produto import Produto
+from models.produto import Produto
 from schemas.produto import ProdutoOut, ProdutoUpdate, ProdutoCreate
 from database import get_db
 
@@ -40,7 +40,7 @@ async def upload_foto_produto(produto_id: int, file: UploadFile = File(...), db:
         shutil.copyfileobj(file.file, buffer)
 
     # Atualize o campo foto no Produto
-    from models.Produto import Produto
+    from models.produto import Produto
     produto = db.query(Produto).get(produto_id)
     if not produto:
         raise HTTPException(status_code=404, detail="Produto não encontrado")
