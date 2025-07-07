@@ -14,6 +14,7 @@ class Produtor(Base):
     nome = Column(String, nullable=True)
 
     listagens = relationship("Listagem", back_populates="produtor")
+    certificados = relationship("Certificado", back_populates="produtor")
 
     usuarios_favoritaram = relationship(
         "Usuario",

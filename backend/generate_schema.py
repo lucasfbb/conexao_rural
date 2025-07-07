@@ -9,7 +9,7 @@ from models.pedido import Pedido
 from models.usuario import Usuario
 from models.endereco import Endereco
 from models.listagem import Listagem
-from models.associacoes import usuarios_produtos_favoritos, usuarios_produtores_favoritos
+from models.associacoes import usuario_produto_favorito, usuario_produtor_favorito
 
 DATABASE_URL = "postgresql://meuusuario:minhasenha@localhost:5432/meubanco"
 
