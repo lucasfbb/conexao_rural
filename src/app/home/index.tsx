@@ -15,33 +15,12 @@ import { useUser } from '@/contexts/UserContext';
 export default function Home(){
     const { width, height } = useWindowDimensions();
     const { isNightMode, colors } = useTema();
-    const [cpf_cnpj_user, setCpfCnpjUser] = useState('');
     const [agricultores, setAgricultores] = useState([]);
     const [banners, setBanners] = useState<string[]>([]);
     const [produtosSazonais, setProdutosSazonais] = useState<string[]>([]);
 
     const base = baseURL.slice(0, -1);
-
-    const { user } = useUser();
-    
-    const imagens = {
-        foto_perfil: require("../../../assets/images/perfil_agricultor.png"),
-    } as const;
-
-    
-    const buscarAgricultores = async () => {
-        try {
-            const response = await api.get(`/home/produtores?exclude_cpf_cnpj=${cpf_cnpj_user}&limit=10`);
-            
-            // USAR PARA DEBUG
-            // const response = await api.get(`/home/produtores`);
-
-            setAgricultores(response.data);
-        } catch (error) {
-            console.error("Erro ao buscar agricultores:", error);
-            Alert.alert("Erro", "Não foi possível carregar os agricultores.");
-        }
-    };
+    const { user, isLoading } = useUser();
     
     const fetchBanners = async () => {
         try {
@@ -67,19 +46,30 @@ export default function Home(){
         } catch (error) {
             console.error("Erro ao buscar produtos sazonais:", error);
         }
-    };
+    };  
 
-    useFocusEffect(
-        useCallback(() => {
-        // Função que você quer rodar sempre que a tela volta pro foco
-            if (user?.cpf_cnpj) {
-                setCpfCnpjUser(user.cpf_cnpj);
+    useEffect(() => {
+        if (isLoading || !user?.cpf_cnpj) {
+            console.log("Esperando carregar usuário...");
+            return;
+        }
+
+        console.log("Usuário carregado:", user?.cpf_cnpj);
+        fetchBanners();
+        fetchProdutosSazonais();
+
+        const buscar = async () => {
+            try {
+                const res = await api.get(`/home/produtores?exclude_cpf_cnpj=${user.cpf_cnpj}&limit=10`);
+                setAgricultores(res.data);
+            } catch (error) {
+                console.error("Erro ao buscar agricultores:", error);
+                Alert.alert("Erro", "Não foi possível carregar os agricultores.");
             }
-            fetchBanners();
-            buscarAgricultores();
-            fetchProdutosSazonais();
-        }, [])
-    );
+        }
+
+        buscar();
+    }, [user?.cpf_cnpj, isLoading]);
 
 const renderAgricultor = ({ item } : { item: ItemHome }) => (
     <TouchableOpacity 
