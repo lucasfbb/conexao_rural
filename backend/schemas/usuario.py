@@ -21,10 +21,15 @@ class UsuarioCreate(UsuarioBase):
     telefone_2: Optional[str] = None
 
 class UsuarioOut(UsuarioBase):
+    nome: str
+    email: EmailStr
+    telefone_1: Optional[str] = None
+    telefone_2: Optional[str] = None
     cpf_cnpj: str
-    foto_perfil: Optional[str]
-    data_nascimento: Optional[date]
-    criado_em: Optional[datetime]
+    e_vendedor: Optional[bool] = None
+    foto_perfil: Optional[str] = None
+    data_nascimento: Optional[date] = None
+    criado_em: Optional[datetime] = None
     class Config:
         from_attributes = True
 

@@ -32,8 +32,8 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !isLoginRoute) {
       await AsyncStorage.removeItem("token");
       Alert.alert("Sessão expirada", "Faça login novamente");
-      router.replace("/login");
     }
+    router.replace("/login");
 
     return Promise.reject(error);
   }

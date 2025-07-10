@@ -44,6 +44,7 @@ export default function PerfilHome() {
                     primeiroTelefone: dados.telefone_1 || "Não informado",
                     segundoTelefone: dados.telefone_2 || "Não informado",
                 });
+
             } catch (error) {
                 console.error("Erro ao buscar perfil:", error);
             }
