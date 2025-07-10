@@ -3,7 +3,7 @@ import { router } from "expo-router";
 import Header from '@/components/header'
 import Card from "@/components/card"; 
 import { AntDesign, Feather } from '@expo/vector-icons'
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import ModalEndereco from '@/components/modais/modalEndereco'
@@ -11,6 +11,7 @@ import ModalPagamento from '@/components/modais/modalPagamento'
 import ModalEditarPerfil from '@/components/modais/modalEditarPerfil'
 import { Item } from '@/types/types'
 import { useTema } from "@/contexts/ThemeContext";
+import { api } from "../../../services/api";
 
 const { width, height } = Dimensions.get("window");
 
@@ -23,16 +24,55 @@ export default function PerfilHome() {
     const { colors, isNightMode } = useTema()
 
     const [cliente, setCliente] = useState({
-        nome: "Teste da Silva Junior",
-        email: "teste@gmail.com",
-        categoria: "Comprador",
-        primeiroTelefone: "(21) 99999-9999",
-        segundoTelefone: "(21) 99999-9988",
+        nome: "",
+        email: "",
+        categoria: "",
+        primeiroTelefone: "",
+        segundoTelefone: "",
     });
 
-    const handleSavePerfil = (dadosAtualizados: { nome: string, email: string, categoria: string, primeiroTelefone: string, segundoTelefone: string}) => {
-        setCliente(prev => ({ ...prev, ...dadosAtualizados }));
-        setModalEditarPerfilVisible(false);
+    useEffect(() => {
+        const fetchPerfil = async () => {
+            try {
+                const response = await api.get("/usuarios/perfil/me");
+                const dados = response.data;
+
+                setCliente({
+                    nome: dados.nome,
+                    email: dados.email,
+                    categoria: dados.e_vendedor ? "Vendedor" : "Comprador",
+                    primeiroTelefone: dados.telefone_1 || "Não informado",
+                    segundoTelefone: dados.telefone_2 || "Não informado",
+                });
+            } catch (error) {
+                console.error("Erro ao buscar perfil:", error);
+            }
+        };
+
+        fetchPerfil();
+    }, []);
+
+
+    const handleSavePerfil = async (dadosAtualizados: {
+        nome: string;
+        email: string;
+        categoria: string;
+        primeiroTelefone: string;
+        segundoTelefone: string;
+    }) => {
+        try {
+            await api.patch("/usuarios/perfil/me", {
+                nome: dadosAtualizados.nome,
+                email: dadosAtualizados.email,
+                telefone_1: dadosAtualizados.primeiroTelefone,
+                telefone_2: dadosAtualizados.segundoTelefone,
+            });
+
+            setCliente(prev => ({ ...prev, ...dadosAtualizados }));
+            setModalEditarPerfilVisible(false);
+        } catch (error) {
+            console.error("Erro ao atualizar perfil:", error);
+        }
     };
 
     const [enderecos, setEnderecos] = useState([

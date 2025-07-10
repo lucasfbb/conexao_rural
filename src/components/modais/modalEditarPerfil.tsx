@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Modal,
   View,
@@ -10,6 +10,8 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useTema } from "@/contexts/ThemeContext";
+import { TextInputMask } from 'react-native-masked-text';
+import { validarCPF, validarEmail } from "../../../services/utils";
 
 const { width } = Dimensions.get("window");
 
@@ -34,11 +36,20 @@ interface ModalEditarPerfilProps {
 
 export default function ModalEditarPerfil({ visible, onClose, onSave, dadosIniciais }: ModalEditarPerfilProps) {
 
-  const [nome, setNome] = useState(dadosIniciais.nome);
-  const [email, setEmail] = useState(dadosIniciais.email);
-  const [categoria, setCategoria] = useState(dadosIniciais.email);
-  const [telefone1, setTelefone1] = useState(dadosIniciais.primeiroTelefone);
-  const [telefone2, setTelefone2] = useState(dadosIniciais.segundoTelefone);
+  const [nome, setNome] = useState("");
+  const [email, setEmail] = useState("");
+  const [categoria, setCategoria] = useState("");
+  const [telefone1, setTelefone1] = useState("");
+  const [telefone2, setTelefone2] = useState("");
+
+  // Atualiza os estados sempre que dadosIniciais mudar
+  useEffect(() => {
+    setNome(dadosIniciais.nome || "");
+    setEmail(dadosIniciais.email || "");
+    setCategoria(dadosIniciais.categoria || "");
+    setTelefone1(dadosIniciais.primeiroTelefone || "");
+    setTelefone2(dadosIniciais.segundoTelefone || "");
+  }, [dadosIniciais]);
 
   const { colors } = useTema()
 
@@ -68,6 +79,7 @@ export default function ModalEditarPerfil({ visible, onClose, onSave, dadosInici
             style={[styles.input, { color: colors.title }]}
             placeholderTextColor={colors.title}
           />
+
           <TextInput
             placeholder="E-mail"
             value={email}
@@ -75,19 +87,31 @@ export default function ModalEditarPerfil({ visible, onClose, onSave, dadosInici
             style={[styles.input, { color: colors.title }]}
             placeholderTextColor={colors.title}
           />
-          <TextInput
+          
+          <TextInputMask
+            type={'cel-phone'}
+            options={{
+              maskType: 'BRL',
+              withDDD: true,
+              dddMask: '(99) '
+            }}
             placeholder="Telefone 1"
             value={telefone1}
-            onChangeText={setTelefone1}
+            onChangeText={text => setTelefone1(text)}
             style={[styles.input, { color: colors.title }]}
-            placeholderTextColor={colors.title}
           />
-          <TextInput
+
+          <TextInputMask
+            type={'cel-phone'}
+            options={{
+              maskType: 'BRL',
+              withDDD: true,
+              dddMask: '(99) '
+            }}
             placeholder="Telefone 2"
             value={telefone2}
-            onChangeText={setTelefone2}
+            onChangeText={text => setTelefone2(text)}
             style={[styles.input, { color: colors.title }]}
-            placeholderTextColor={colors.title}
           />
 
           <TouchableOpacity style={styles.saveButton} onPress={salvar}>
