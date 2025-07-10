@@ -34,7 +34,8 @@ def update_perfil(
     dados: UsuarioUpdate,
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
-):
+):  
+    print("Recebido:", dados)
     # Atualize só os campos informados
     for attr, value in dados.dict(exclude_unset=True).items():
         setattr(current_user, attr, value)

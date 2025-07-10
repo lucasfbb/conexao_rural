@@ -29,13 +29,13 @@ class UsuarioOut(UsuarioBase):
         from_attributes = True
 
 class UsuarioUpdate(BaseModel):
-    email: Optional[EmailStr]
-    nome: Optional[str]
-    categoria: Optional[str]
-    telefone_1: Optional[str]
-    telefone_2: Optional[str]
-    foto_perfil: Optional[str]
-    data_nascimento: Optional[date]
+    email: Optional[EmailStr] = None
+    nome: Optional[str] = None
+    # categoria: Optional[str]
+    telefone_1: Optional[str] = None
+    telefone_2: Optional[str] = None
+    foto_perfil: Optional[str] = None
+    data_nascimento: Optional[date] = None
 
 class UsuarioResponse(UsuarioBase):
     cpf_cnpj: str

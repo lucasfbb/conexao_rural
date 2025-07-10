@@ -26,3 +26,19 @@ export function validarEmail(email: string): boolean {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email.toLowerCase());
 }
+
+export function formatarTelefone(telefone: string) {
+  if (!telefone) return "Não informado";
+
+  // Remove caracteres não numéricos
+  const numeros = telefone.replace(/\D/g, '');
+
+  // Aplica máscara com ou sem DDD
+  if (numeros.length === 11) {
+    return numeros.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+  } else if (numeros.length === 10) {
+    return numeros.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+  } else {
+    return telefone; // Retorna como está se o formato for inesperado
+  }
+}

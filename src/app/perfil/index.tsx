@@ -56,16 +56,17 @@ export default function PerfilHome() {
     const handleSavePerfil = async (dadosAtualizados: {
         nome: string;
         email: string;
-        categoria: string;
+        // categoria: string;
         primeiroTelefone: string;
         segundoTelefone: string;
     }) => {
         try {
+            console.log("Dados atualizados:", dadosAtualizados);
             await api.patch("/usuarios/perfil/me", {
                 nome: dadosAtualizados.nome,
                 email: dadosAtualizados.email,
                 telefone_1: dadosAtualizados.primeiroTelefone,
-                telefone_2: dadosAtualizados.segundoTelefone,
+                telefone_2: dadosAtualizados.segundoTelefone.trim() === "" ? undefined : dadosAtualizados.segundoTelefone
             });
 
             setCliente(prev => ({ ...prev, ...dadosAtualizados }));

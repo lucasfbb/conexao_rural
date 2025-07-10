@@ -21,7 +21,7 @@ interface ModalEditarPerfilProps {
   onSave: (dados: {
     nome: string;
     email: string;
-    categoria: string,
+    // categoria: string,
     primeiroTelefone: string;
     segundoTelefone: string;
   }) => void;
@@ -54,12 +54,18 @@ export default function ModalEditarPerfil({ visible, onClose, onSave, dadosInici
   const { colors } = useTema()
 
   const salvar = () => {
+
+    const tel1 = telefone1.replace(/\D/g, "");
+    const tel2 = telefone2.replace(/\D/g, "");
+
+    console.log(tel1, tel2);
+
     onSave({
       nome: nome,
       email: email,
-      categoria: categoria,
-      primeiroTelefone: telefone1,
-      segundoTelefone: telefone2,
+      // categoria: categoria,
+      primeiroTelefone: tel1,
+      segundoTelefone: tel2,
     });
     onClose();
   };
