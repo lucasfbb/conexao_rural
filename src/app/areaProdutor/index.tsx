@@ -456,8 +456,9 @@ export default function AreaProdutor() {
         </TouchableOpacity>
       </View>
 
+
       {/* Foto de perfil */}
-      <View style={{ alignItems: 'center', marginTop: height * -0.05 }}>
+      <View style={{ alignItems: 'center', marginTop: height * -0.006}}>
         <TouchableOpacity onPress={escolherImagemProdutor}>
           {imagemProdutor ? (
             <Image source={{
@@ -606,7 +607,9 @@ function getStyles(width: number, height: number) {
       width: width * 0.85,
       height: height * 0.13,
       borderRadius: width * 0.025,
-      backgroundColor: "#ccc",
+      borderWidth: 2,           
+      borderColor: 'green',
+      backgroundColor: 'transparent',
       alignItems: 'center',
       justifyContent: 'center',
       marginBottom: height * 0.01,
@@ -621,9 +624,12 @@ function getStyles(width: number, height: number) {
       width: width * 0.33,
       height: width * 0.33,
       borderRadius: width * 0.165,
-      backgroundColor: '#ccc',
+      //backgroundColor: '#ccc',
       justifyContent: 'center',
-      alignItems: 'center'
+      alignItems: 'center',
+      backgroundColor: 'transparent',
+      borderWidth: 2,           
+      borderColor: 'green'
     },
     label: { fontSize: width * 0.035, color: '#333', marginBottom: 8, marginTop: -6 },
     nomeContainer: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: height * 0.01,  marginBottom: height * 0.018 },
