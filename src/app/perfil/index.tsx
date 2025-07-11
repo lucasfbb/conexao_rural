@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity, ScrollView, FlatList, Dimensions, StyleSheet } from "react-native";
+import { View, Text, Image, TouchableOpacity, ScrollView, FlatList, Dimensions, StyleSheet, Alert } from "react-native";
 import { router } from "expo-router";
 import Header from '@/components/header'
 import Card from "@/components/card"; 
@@ -186,6 +186,25 @@ export default function PerfilHome() {
         }
     };
 
+    const handleDeleteEndereco = async (id: number) => {
+        try {
+            await api.delete(`/usuarios/perfil/enderecos/${id}`);
+
+            setEnderecos(prev => {
+                const enderecosAtuais = prev.filter(e => 'id' in e && e.id !== id);
+                const ordenados = enderecosAtuais
+                    .filter((e): e is EnderecoItem & { id: number } => 'id' in e && typeof e.id === 'number')
+                    .sort((a, b) => a.id - b.id);
+
+                return [...ordenados, { addNew: true }];
+            });
+
+            setModalEditarEnderecoVisible(false);
+        } catch (error) {
+            console.error("Erro ao excluir endereço:", error);
+        }
+    };
+
     const [pagamentos, setPagamentos] = useState([
         { title: "Cartão 1", subtitle: "Crédito", details: ["●●●● 9999"] },
         { title: "Cartão 2", subtitle: "Crédito", details: ["●●●● 9999"] },
@@ -236,7 +255,22 @@ export default function PerfilHome() {
                                     handleUpdateEndereco({ ...dadosAtualizados, id: enderecoSelecionado.id });
                                 }
                             }}
-                            onExcluir={() => {}}
+                            onExcluir={() => {
+                            if (enderecoSelecionado?.id) {
+                                Alert.alert(
+                                "Confirmar exclusão",
+                                "Tem certeza que deseja excluir este endereço?",
+                                [
+                                    { text: "Cancelar", style: "cancel" },
+                                    {
+                                    text: "Excluir",
+                                    style: "destructive",
+                                    onPress: () => handleDeleteEndereco(enderecoSelecionado.id)
+                                    }
+                                ]
+                                );
+                            }
+                            }}
                         />
                     )} 
 
