@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Modal, View, Text, StyleSheet, TextInput, TouchableOpacity, Dimensions } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useTema } from "@/contexts/ThemeContext";
+import { TextInputMask } from 'react-native-masked-text';
 import { Picker } from "@react-native-picker/picker";
 
 const { width, height } = Dimensions.get("window");
@@ -58,6 +59,7 @@ export default function ModalEndereco({ visible, dadosIniciais, modoEdicao, onCl
   //     setEstado(dadosIniciais.estado || "");
   //     setCidade(dadosIniciais.cidade || "");
   //   }
+
   // }, [modoEdicao, dadosIniciais]);
 
   // Busca cidades da UF selecionada
@@ -73,6 +75,20 @@ export default function ModalEndereco({ visible, dadosIniciais, modoEdicao, onCl
     }
   }, [estado]);
 
+  async function limparCampos() {
+    setTitulo("");
+    setCep("");
+    setEndereco("");
+    setComplemento("");
+    setReferencia("");
+    setCidade("");
+    setEstado("");
+  }
+
+  useEffect(() => {
+    limparCampos();
+  }, []);
+
   const salvar = () => {
     onSave({
       cep,
@@ -84,11 +100,7 @@ export default function ModalEndereco({ visible, dadosIniciais, modoEdicao, onCl
       titulo
     });
 
-    setTitulo("");
-    setCep("");
-    setEndereco("");
-    setComplemento("");
-    setReferencia("");
+    limparCampos();
     onClose();
   };
 
@@ -105,8 +117,47 @@ export default function ModalEndereco({ visible, dadosIniciais, modoEdicao, onCl
             <TextInput placeholder="Insira um título para o endereço" style={styles.input} value={titulo} onChangeText={setTitulo} placeholderTextColor="#4D7E1B" />
           </View>
           <View style={{ width: "100%" }}>
+            <Text style={styles.label}>Estado:</Text>
+            <Picker
+              selectedValue={estado}
+              onValueChange={(value) => setEstado(value)}
+              selectionColor={"#4D7E1B"}
+              style={[{ color: "#4D7E1B" }]}
+            >
+              <Picker.Item label="Selecione um estado" value="" />
+              {estados.map((e) => (
+                <Picker.Item key={e.sigla} label={e.nome} value={e.sigla} />
+              ))}
+            </Picker>
+          </View>
+          {estado !== "" && (
+            <View style={{ width: "100%" }}>
+              <Text style={styles.label}>Município:</Text>
+              <Picker
+                selectedValue={cidade}
+                onValueChange={(value) => setCidade(value)}
+                selectionColor={"#4D7E1B"}
+                style={[{ color: "#4D7E1B" }]}
+              >
+                <Picker.Item label="Selecione um município" value="" />
+                {cidades.map((nome) => (
+                  <Picker.Item key={nome} label={nome} value={nome} />
+                ))}
+              </Picker>
+            </View>
+          )}
+          <View style={{ width: "100%" }}>
             <Text style={styles.label}>CEP:</Text>
-            <TextInput placeholder="Insira seu CEP" style={styles.input} value={cep} onChangeText={setCep} placeholderTextColor="#4D7E1B" />
+            {/* <TextInput placeholder="Insira seu CEP" style={styles.input} value={cep} onChangeText={setCep} placeholderTextColor="#4D7E1B" /> */}
+            <TextInputMask
+              type={'custom'}
+              options={{ mask: '99999-999' }}
+              value={cep}
+              onChangeText={text => setCep(text)}
+              placeholder="Digite seu CEP"
+              placeholderTextColor={"#4D7E1B"}
+              style={styles.input}
+            />
           </View>
           <View style={{ width: "100%" }}>
             <Text style={styles.label}>Endereço completo (rua, número):</Text>
@@ -121,11 +172,11 @@ export default function ModalEndereco({ visible, dadosIniciais, modoEdicao, onCl
             <TextInput placeholder="Digite uma referência do endereço" style={styles.input} value={referencia} onChangeText={setReferencia} placeholderTextColor="#4D7E1B" />
           </View>
 
-          {/* {modoEdicao && onExcluir && (
+          {modoEdicao && onExcluir && (
             <TouchableOpacity style={[styles.saveButton, { backgroundColor: "#F44336" }]} onPress={onExcluir}>
               <Text style={styles.saveText}>Excluir</Text>
             </TouchableOpacity>
-          )} */}
+          )}
 
           <TouchableOpacity style={styles.saveButton} onPress={salvar}>
             <Text style={styles.saveText}>Salvar</Text>
@@ -183,5 +234,15 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 10,
     right: 10,
-  }
+  },
+  // pickerWrapper: {
+  //   width: "100%",
+  //   borderBottomWidth: 1,
+  //   borderBottomColor: "#4D7E1B",
+  //   marginBottom: 20,
+  // },
+  // picker: {
+  //   height: 40,
+  //   color: "#4D7E1B",
+  // },
 });

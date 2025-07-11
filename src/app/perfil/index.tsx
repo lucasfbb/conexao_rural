@@ -57,8 +57,11 @@ export default function PerfilHome() {
                     id: e.id,
                     title: e.titulo && e.titulo.trim() !== "" ? e.titulo : `Endereço ${e.id}`,
                     subtitle: `${e.rua}`,
-                    details: [e.cep, e.estado, e.cidade, e.complemento]
-                        .filter(Boolean), // remove vazios, null ou undefined
+                    details: [
+                        e.cep,
+                        [e.estado, e.cidade].filter(Boolean).join(" / "),
+                        e.complemento || ""
+                    ].filter(item => item && item.trim() !== ""),
                 }));
 
                 setEnderecos([...enderecosFormatados, { addNew: true }]);
@@ -112,8 +115,11 @@ export default function PerfilHome() {
                 id: enderecoSalvo.id,
                 title: enderecoSalvo.titulo?.trim() || `Endereço ${enderecoSalvo.id}`,
                 subtitle: `${enderecoSalvo.rua}`,
-                details: [enderecoSalvo.cep, enderecoSalvo.estado, enderecoSalvo.cidade, enderecoSalvo.complemento || ""]
-                    .filter(Boolean), // remove vazios, null ou undefined
+                details: [
+                    enderecoSalvo.cep,
+                    [enderecoSalvo.estado, enderecoSalvo.cidade].filter(Boolean).join(" / "),
+                    enderecoSalvo.complemento || ""
+                ].filter(item => item && item.trim() !== ""),
             };
 
             setEnderecos(prev =>
@@ -164,8 +170,10 @@ export default function PerfilHome() {
                     {/* 🔹 Modal de Endereço */}
                     <ModalEndereco
                         visible={modalEnderecoVisible}
+                        modoEdicao={!!enderecoSelecionado}
                         onClose={() => setModalEnderecoVisible(false)}
                         onSave={handleSaveEndereco}
+                        
                         dadosIniciais={
                             enderecoSelecionado
                             ? {

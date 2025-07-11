@@ -24,9 +24,9 @@ export default function Card({ id, title, subtitle, details, isPayment, onPress 
       activeOpacity={0.8}
     >     
       {/* Ícone de edição */}
-      <TouchableOpacity style={styles.editIcon}>
+      {/* <TouchableOpacity style={styles.editIcon}>
         <AntDesign name="edit" size={10} color="green" />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       {/* Conteúdo do Card */}
       <Text style={[styles.title, { color: colors.title }]}>{title}</Text>

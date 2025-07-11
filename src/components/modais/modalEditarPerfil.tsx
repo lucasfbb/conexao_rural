@@ -110,6 +110,7 @@ export default function ModalEditarPerfil({ visible, onClose, onSave, dadosInici
                 dddMask: '(99) '
               }}
               placeholder="Primeiro telefone para contato"
+              placeholderTextColor={'#4D7E1B'}
               value={telefone1}
               onChangeText={text => setTelefone1(text)}
               style={[styles.input, { color: colors.title }]}
@@ -126,6 +127,7 @@ export default function ModalEditarPerfil({ visible, onClose, onSave, dadosInici
                 dddMask: '(99) '
               }}
               placeholder="Insira um segundo telefone para contato"
+              placeholderTextColor={'#4D7E1B'}
               value={telefone2}
               onChangeText={text => setTelefone2(text)}
               style={[styles.input, { color: colors.title }]}
