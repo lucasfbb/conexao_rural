@@ -11,7 +11,7 @@ import {
 import { Feather } from "@expo/vector-icons";
 import { useTema } from "@/contexts/ThemeContext";
 import { TextInputMask } from 'react-native-masked-text';
-import { validarCPF, validarEmail } from "../../../services/utils";
+import { validarCPF, validarEmail } from "../../../../services/utils";
 
 const { width } = Dimensions.get("window");
 

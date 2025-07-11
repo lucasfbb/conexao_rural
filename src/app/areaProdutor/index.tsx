@@ -5,7 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import Header from "@/components/header";
 import { api, baseURL } from "../../../services/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import ModalAddProduto from "@/components/modais/modalAddProduto";
+import ModalAddProduto from "@/components/modais/produtos/modalAddProduto";
 import { ProdutoGlobal } from "@/components/autoComplete";
 
 type Produto = {

@@ -6,10 +6,10 @@ import { AntDesign, Feather } from '@expo/vector-icons'
 import { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import ModalEndereco from '@/components/modais/modalEndereco'
-import ModalPagamento from '@/components/modais/modalPagamento'
-import ModalEditarPerfil from '@/components/modais/modalEditarPerfil'
-import ModalAcoesEndereco from "@/components/modais/ModalAcoesEndereco";
+import ModalEndereco from '@/components/modais/enderecos/modalEndereco'
+import ModalPagamento from '@/components/modais/pagamentos/modalPagamento'
+import ModalEditarPerfil from '@/components/modais/perfil/modalEditarPerfil'
+import ModalEditarEndereco from "@/components/modais/enderecos/modalEditarEndereco";
 import { EnderecoItem, Item } from '@/types/types'
 import { useTema } from "@/contexts/ThemeContext";
 import { api } from "../../../services/api";
@@ -21,7 +21,7 @@ export default function PerfilHome() {
     const [modalEnderecoVisible, setModalEnderecoVisible] = useState(false);
     const [modalPagamentoVisible, setModalPagamentoVisible] = useState(false);
     const [modalEditarPerfilVisible, setModalEditarPerfilVisible] = useState(false);
-    const [modalAcoesEnderecoVisible, setModalAcoesEnderecoVisible] = useState(false);
+    const [modalEditarEnderecoVisible, setModalEditarEnderecoVisible] = useState(false);
     const [enderecoSelecionado, setEnderecoSelecionado] = useState<any>(null);
 
     const { colors, isNightMode } = useTema()
@@ -64,13 +64,16 @@ export default function PerfilHome() {
                     ].filter(item => item && item.trim() !== ""),
                 }));
 
-                setEnderecos([...enderecosFormatados, { addNew: true }]);
+                const somenteEnderecos = enderecosFormatados.filter((e: any) => 'id' in e);
+                const ordenados = [...somenteEnderecos].sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
+                setEnderecos([...ordenados, { addNew: true }]);
 
             } catch (error) {
                 console.error("Erro ao buscar perfil:", error);
             }
         };
-
+        
+        setEnderecoSelecionado(null); // Reseta o endereço selecionado ao carregar o perfil
         fetchPerfil();
     }, []);
 
@@ -122,16 +125,64 @@ export default function PerfilHome() {
                 ].filter(item => item && item.trim() !== ""),
             };
 
-            setEnderecos(prev =>
-                [
-                    ...prev.filter(e => !('addNew' in e)),
-                    novo,
-                    { addNew: true }
-                ]
-            );
+            setEnderecos(prev => {
+                const enderecosSemAddNew = prev.filter(e => !('addNew' in e));
+                const atualizados = [...enderecosSemAddNew, novo];
+
+                const enderecosComId = atualizados.filter((e): e is EnderecoItem & { id: number } => 'id' in e && typeof e.id === 'number');
+                const ordenados = enderecosComId.sort((a, b) => {
+                    return (a.id ?? 0) - (b.id ?? 0);
+                });
+
+                return [...ordenados, { addNew: true }];
+            });
             setModalEnderecoVisible(false);
         } catch (err) {
             console.error("Erro ao salvar endereço:", err);
+        }
+    };
+
+    const handleUpdateEndereco = async (dadosAtualizados: {
+        id: number;
+        cep: string;
+        estado: string;
+        cidade: string;
+        rua: string;
+        complemento?: string;
+        referencia?: string;
+        titulo?: string;
+        }) => {
+        try {
+            const response = await api.patch(`/usuarios/perfil/enderecos/${dadosAtualizados.id}`, dadosAtualizados);
+            const enderecoAtualizado = response.data;
+
+            const formatado = {
+            id: enderecoAtualizado.id,
+            title: enderecoAtualizado.titulo?.trim() || `Endereço ${enderecoAtualizado.id}`,
+            subtitle: `${enderecoAtualizado.rua}`,
+            details: [
+                enderecoAtualizado.cep,
+                [enderecoAtualizado.estado, enderecoAtualizado.cidade].filter(Boolean).join(" / "),
+                enderecoAtualizado.complemento || ""
+            ].filter((item) => item && item.trim() !== ""),
+            };
+
+            setEnderecos(prev => {
+                const enderecosAtualizados = [
+                    ...prev.filter(e => 'id' in e && e.id !== enderecoAtualizado.id),
+                    formatado
+                ];
+
+                const ordenados = enderecosAtualizados
+                    .filter((e): e is EnderecoItem & { id: number } => 'id' in e && typeof e.id === 'number')
+                    .sort((a, b) => a.id - b.id);
+
+                return [...ordenados, { addNew: true }];
+            });
+
+            setModalEditarEnderecoVisible(false);
+        } catch (error) {
+            console.error("Erro ao editar endereço:", error);
         }
     };
 
@@ -173,20 +224,21 @@ export default function PerfilHome() {
                         modoEdicao={!!enderecoSelecionado}
                         onClose={() => setModalEnderecoVisible(false)}
                         onSave={handleSaveEndereco}
-                        
-                        dadosIniciais={
-                            enderecoSelecionado
-                            ? {
-                                cep: enderecoSelecionado.details[0],
-                                estado: enderecoSelecionado.details[1],
-                                cidade: enderecoSelecionado.subtitle.split(", ")[1],
-                                rua: enderecoSelecionado.subtitle,
-                                complemento: enderecoSelecionado.details[2],
-                                titulo: enderecoSelecionado.title,
-                                }
-                            : undefined
-                        }
                     />
+
+                    {enderecoSelecionado && (
+                        <ModalEditarEndereco
+                            visible={modalEditarEnderecoVisible}
+                            dadosIniciais={enderecoSelecionado}
+                            onClose={() => setModalEditarEnderecoVisible(false)}
+                            onSave={(dadosAtualizados) => {
+                                if (enderecoSelecionado?.id) {
+                                    handleUpdateEndereco({ ...dadosAtualizados, id: enderecoSelecionado.id });
+                                }
+                            }}
+                            onExcluir={() => {}}
+                        />
+                    )} 
 
                     {/* 🔹 Modal de Pagamento */}
                     <ModalPagamento
@@ -258,8 +310,17 @@ export default function PerfilHome() {
                                         id={item.id}
                                         isPayment={false}
                                         onPress={() => {
-                                            setEnderecoSelecionado(item);
-                                            setModalEnderecoVisible(true);
+                                            setEnderecoSelecionado({
+                                                id: item.id,
+                                                cep: item.details?.[0] || "",
+                                                estado: item.details?.[1]?.split(" / ")?.[0] || "",
+                                                cidade: item.details?.[1]?.split(" / ")?.[1] || "",
+                                                rua: item.subtitle || "",
+                                                complemento: item.details?.[2] || "",
+                                                referencia: "", // Se tiver referência, adicione no back ou ajuste aqui
+                                                titulo: item.title || ""
+                                            });
+                                            setModalEditarEnderecoVisible(true); // novo state que você precisa controlar
                                         }}
                                     />
                                 )

@@ -53,11 +53,11 @@ export default function Home(){
 
     useEffect(() => {
         if (isLoading || !user?.cpf_cnpj) {
-            console.log("Esperando carregar usuário...");
+            // console.log("Esperando carregar usuário...");
             return;
         }
 
-        console.log("Usuário carregado:", user?.cpf_cnpj);
+        // console.log("Usuário carregado:", user?.cpf_cnpj);
         fetchBanners();
         fetchProdutosSazonais();
 

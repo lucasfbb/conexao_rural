@@ -7,7 +7,7 @@ import { Picker } from "@react-native-picker/picker";
 
 const { width, height } = Dimensions.get("window");
 
-const estados = [
+export const estados = [
   { sigla: "AC", nome: "Acre" }, { sigla: "AL", nome: "Alagoas" }, { sigla: "AM", nome: "Amazonas" }, 
   { sigla: "BA", nome: "Bahia" }, { sigla: "CE", nome: "Ceará" }, { sigla: "DF", nome: "Distrito Federal" },
   { sigla: "ES", nome: "Espírito Santo" }, { sigla: "GO", nome: "Goiás" }, { sigla: "MA", nome: "Maranhão" },
@@ -171,12 +171,6 @@ export default function ModalEndereco({ visible, dadosIniciais, modoEdicao, onCl
             <Text style={styles.label}>Referência:</Text>
             <TextInput placeholder="Digite uma referência do endereço" style={styles.input} value={referencia} onChangeText={setReferencia} placeholderTextColor="#4D7E1B" />
           </View>
-
-          {modoEdicao && onExcluir && (
-            <TouchableOpacity style={[styles.saveButton, { backgroundColor: "#F44336" }]} onPress={onExcluir}>
-              <Text style={styles.saveText}>Excluir</Text>
-            </TouchableOpacity>
-          )}
 
           <TouchableOpacity style={styles.saveButton} onPress={salvar}>
             <Text style={styles.saveText}>Salvar</Text>
