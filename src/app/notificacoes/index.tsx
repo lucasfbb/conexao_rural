@@ -2,11 +2,8 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet, Modal, Alert } from
 import { useState } from "react";
 import { Feather } from "@expo/vector-icons";
 import Header from "@/components/header";
-import { useTema } from '@/contexts/ThemeContext';
 
-const { colors, isNightMode } = useTema()
 export default function Notificacoes() {
-  
   const [notificacoes, setNotificacoes] = useState([
     {
       id: '1',
@@ -28,7 +25,7 @@ export default function Notificacoes() {
     {
       id: '4',
       titulo: 'Produto em Promoção',
-      descricao: 'Tomate está com 20% de desconto hoje.', 
+      descricao: 'Tomate está com 20% de desconto hoje.',
       data: '13/05/2025',
     },{
       id: '5',
@@ -124,8 +121,6 @@ export default function Notificacoes() {
   const [modalVisible, setModalVisible] = useState(false);
   const [notificacaoSelecionada, setNotificacaoSelecionada] = useState<any>(null);
 
-  
-
   const abrirModal = (notificacao: any) => {
     setNotificacaoSelecionada(notificacao);
     setModalVisible(true);
@@ -151,7 +146,7 @@ export default function Notificacoes() {
         <Text style={styles.data}>{item.data}</Text>
       </View>
       <TouchableOpacity onPress={() => excluirNotificacao(item.id)} style={styles.btnDelete}>
-        <Feather name="trash" size={24} color={colors.text} />
+        <Feather name="trash" size={24} color="#B00020" />
       </TouchableOpacity>
     </TouchableOpacity>
   );
@@ -178,7 +173,7 @@ export default function Notificacoes() {
             <Text style={styles.modalDescricao}>{notificacaoSelecionada?.descricao}</Text>
             <Text style={styles.modalData}>{notificacaoSelecionada?.data}</Text>
             <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.fecharBotao}>
-              <Text style={{ color: colors.text , fontWeight: 'bold' }}>Fechar</Text>
+              <Text style={{ color: '#4CAF50', fontWeight: 'bold' }}>Fechar</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -188,14 +183,14 @@ export default function Notificacoes() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: '#fff' },
 
   headerText: {
     fontSize: 22,
     fontWeight: 'bold',
     textAlign: 'center',
     marginVertical: 15,
-    color: colors.text
+    color: '#4D7E1B'
   },
 
   item: {
@@ -207,7 +202,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 1,
-    borderColor: colors.borderCard
+    borderColor: '#4D7E1B'
   },
 
   itemInfo: {
@@ -218,12 +213,12 @@ const styles = StyleSheet.create({
   titulo: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: colors.text
+    color: '#4D7E1B'
   },
 
   data: {
     fontSize: 12,
-    color: colors.text,
+    color: '#777',
     marginTop: 4,
   },
 
@@ -233,13 +228,13 @@ const styles = StyleSheet.create({
 
   modalOverlay: {
     flex: 1,
-    backgroundColor: colors.modalBackground,
+    backgroundColor: '#00000099',
     justifyContent: 'center',
     alignItems: 'center'
   },
 
   modalBox: {
-    backgroundColor: colors.background,
+    backgroundColor: 'white',
     padding: 20,
     borderRadius: 10,
     width: '85%',
@@ -249,17 +244,17 @@ const styles = StyleSheet.create({
   modalTitulo: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: colors.text
+    color: '#4D7E1B'
   },
 
   modalDescricao: {
     fontSize: 14,
-    color: colors.text
+    color: '#555'
   },
 
   modalData: {
     fontSize: 12,
-    color: colors.text
+    color: '#999'
   },
 
   fecharBotao: {
