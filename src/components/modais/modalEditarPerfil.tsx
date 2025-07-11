@@ -78,47 +78,59 @@ export default function ModalEditarPerfil({ visible, onClose, onSave, dadosInici
             <Feather name="x" size={24} color={colors.title} />
           </TouchableOpacity>
 
-          <TextInput
-            placeholder="Nome"
-            value={nome}
-            onChangeText={setNome}
-            style={[styles.input, { color: colors.title }]}
-            placeholderTextColor={colors.title}
-          />
+          <View style={{ width: "100%" }}>
+            <Text style={styles.label}>Nome:</Text>
+            <TextInput
+              placeholder="Digite seu nome completo"
+              value={nome}
+              onChangeText={setNome}
+              style={[styles.input, { color: colors.title }]}
+              placeholderTextColor={colors.title}
+            />
+          </View>
 
-          <TextInput
-            placeholder="E-mail"
-            value={email}
-            onChangeText={setEmail}
-            style={[styles.input, { color: colors.title }]}
-            placeholderTextColor={colors.title}
-          />
+          <View style={{ width: "100%" }}>
+            <Text style={styles.label}>Email:</Text>
+            <TextInput
+              placeholder="Digite seu melhor email"
+              value={email}
+              onChangeText={setEmail}
+              style={[styles.input, { color: colors.title }]}
+              placeholderTextColor={colors.title}
+            />
+          </View>
           
-          <TextInputMask
-            type={'cel-phone'}
-            options={{
-              maskType: 'BRL',
-              withDDD: true,
-              dddMask: '(99) '
-            }}
-            placeholder="Telefone 1"
-            value={telefone1}
-            onChangeText={text => setTelefone1(text)}
-            style={[styles.input, { color: colors.title }]}
-          />
-
-          <TextInputMask
-            type={'cel-phone'}
-            options={{
-              maskType: 'BRL',
-              withDDD: true,
-              dddMask: '(99) '
-            }}
-            placeholder="Telefone 2"
-            value={telefone2}
-            onChangeText={text => setTelefone2(text)}
-            style={[styles.input, { color: colors.title }]}
-          />
+          <View style={{ width: "100%" }}>
+            <Text style={styles.label}>Telefone 1:</Text>
+            <TextInputMask
+              type={'cel-phone'}
+              options={{
+                maskType: 'BRL',
+                withDDD: true,
+                dddMask: '(99) '
+              }}
+              placeholder="Primeiro telefone para contato"
+              value={telefone1}
+              onChangeText={text => setTelefone1(text)}
+              style={[styles.input, { color: colors.title }]}
+            />
+          </View>
+          
+          <View style={{ width: "100%" }}>
+            <Text style={styles.label}>Telefone 2:</Text>
+            <TextInputMask
+              type={'cel-phone'}
+              options={{
+                maskType: 'BRL',
+                withDDD: true,
+                dddMask: '(99) '
+              }}
+              placeholder="Insira um segundo telefone para contato"
+              value={telefone2}
+              onChangeText={text => setTelefone2(text)}
+              style={[styles.input, { color: colors.title }]}
+            />
+          </View>
 
           <TouchableOpacity style={styles.saveButton} onPress={salvar}>
             <Text style={styles.saveText}>Salvar</Text>
@@ -130,6 +142,13 @@ export default function ModalEditarPerfil({ visible, onClose, onSave, dadosInici
 }
 
 const styles = StyleSheet.create({
+  label: {
+    fontWeight: 'bold',
+    color: '#4D7E1B',
+    marginBottom: 2,
+    marginTop: 10,
+    fontSize: 15
+  },
   modalBackground: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",

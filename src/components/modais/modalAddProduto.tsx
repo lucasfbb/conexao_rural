@@ -136,15 +136,17 @@ export default function ModalAddProduto({
             )}
           </View>
           
-          <Text style={styles.label}>Descrição</Text>
-          <TextInput
-            placeholder="Digite uma descrição para o produto"
-            style={[styles.input, { minHeight: 60, textAlignVertical: 'top' }]}
-            value={descricao}
-            onChangeText={onDescricaoChange}
-            multiline
-            maxLength={200}
-          />
+          <View style={{ width: "100%" }}>
+            <Text style={styles.label}>Descrição</Text>
+            <TextInput
+              placeholder="Digite uma descrição para o produto"
+              style={[styles.input, { minHeight: 60, textAlignVertical: 'top' }]}
+              value={descricao}
+              onChangeText={onDescricaoChange}
+              multiline
+              maxLength={200}
+            />
+          </View>
           
           <View style={{ flexDirection: 'row', gap: 12 }}>
             <View style={{ flex: 1 }}>

@@ -9,7 +9,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import ModalEndereco from '@/components/modais/modalEndereco'
 import ModalPagamento from '@/components/modais/modalPagamento'
 import ModalEditarPerfil from '@/components/modais/modalEditarPerfil'
-import { Item } from '@/types/types'
+import ModalAcoesEndereco from "@/components/modais/ModalAcoesEndereco";
+import { EnderecoItem, Item } from '@/types/types'
 import { useTema } from "@/contexts/ThemeContext";
 import { api } from "../../../services/api";
 
@@ -20,6 +21,8 @@ export default function PerfilHome() {
     const [modalEnderecoVisible, setModalEnderecoVisible] = useState(false);
     const [modalPagamentoVisible, setModalPagamentoVisible] = useState(false);
     const [modalEditarPerfilVisible, setModalEditarPerfilVisible] = useState(false);
+    const [modalAcoesEnderecoVisible, setModalAcoesEnderecoVisible] = useState(false);
+    const [enderecoSelecionado, setEnderecoSelecionado] = useState<any>(null);
 
     const { colors, isNightMode } = useTema()
 
@@ -30,6 +33,8 @@ export default function PerfilHome() {
         primeiroTelefone: "",
         segundoTelefone: "",
     });
+
+    const [enderecos, setEnderecos] = useState<EnderecoItem[]>([{ addNew: true }]);
 
     useEffect(() => {
         const fetchPerfil = async () => {
@@ -44,6 +49,19 @@ export default function PerfilHome() {
                     primeiroTelefone: dados.telefone_1 || "Não informado",
                     segundoTelefone: dados.telefone_2 || "Não informado",
                 });
+
+                // Buscar endereços reais do usuário
+                const resEnderecos = await api.get("/usuarios/perfil/enderecos");
+                // console.log("Endereços do usuário:", resEnderecos.data);
+                const enderecosFormatados = resEnderecos.data.map((e: any) => ({
+                    id: e.id,
+                    title: e.titulo && e.titulo.trim() !== "" ? e.titulo : `Endereço ${e.id}`,
+                    subtitle: `${e.rua}`,
+                    details: [e.cep, e.estado, e.cidade, e.complemento]
+                        .filter(Boolean), // remove vazios, null ou undefined
+                }));
+
+                setEnderecos([...enderecosFormatados, { addNew: true }]);
 
             } catch (error) {
                 console.error("Erro ao buscar perfil:", error);
@@ -62,7 +80,7 @@ export default function PerfilHome() {
         segundoTelefone: string;
     }) => {
         try {
-            console.log("Dados atualizados:", dadosAtualizados);
+            // console.log("Dados atualizados:", dadosAtualizados);
             await api.patch("/usuarios/perfil/me", {
                 nome: dadosAtualizados.nome,
                 email: dadosAtualizados.email,
@@ -76,17 +94,39 @@ export default function PerfilHome() {
             console.error("Erro ao atualizar perfil:", error);
         }
     };
-
-    const [enderecos, setEnderecos] = useState([
-        { title: "Nome Endereço 1", subtitle: "Rua teste 134", details: ["Endereço", "000000-000", "bloco H"] },
-        { title: "Nome Endereço 2", subtitle: "Rua teste 134", details: ["Endereço", "000000-000", "bloco H"] },
-        { addNew: true }
-    ]);
     
-    const handleSaveEndereco = (novoEndereco: { title: string; subtitle: string; details: string[] }) => {
-        // Remove o último item (addNew), adiciona o novo endereço, e depois adiciona de novo o addNew
-        setEnderecos(prev => [...prev.slice(0, -1), novoEndereco, { addNew: true }]);
-        setModalEnderecoVisible(false);
+    const handleSaveEndereco = async (novoEndereco: {
+        cep: string;
+        estado: string;
+        cidade: string;
+        rua: string;
+        complemento?: string;
+        referencia?: string;
+        titulo?: string;
+    }) => {
+        try {
+            const response = await api.post("/usuarios/perfil/enderecos", novoEndereco);
+            const enderecoSalvo = response.data;
+
+            const novo = {
+                id: enderecoSalvo.id,
+                title: enderecoSalvo.titulo?.trim() || `Endereço ${enderecoSalvo.id}`,
+                subtitle: `${enderecoSalvo.rua}`,
+                details: [enderecoSalvo.cep, enderecoSalvo.estado, enderecoSalvo.cidade, enderecoSalvo.complemento || ""]
+                    .filter(Boolean), // remove vazios, null ou undefined
+            };
+
+            setEnderecos(prev =>
+                [
+                    ...prev.filter(e => !('addNew' in e)),
+                    novo,
+                    { addNew: true }
+                ]
+            );
+            setModalEnderecoVisible(false);
+        } catch (err) {
+            console.error("Erro ao salvar endereço:", err);
+        }
     };
 
     const [pagamentos, setPagamentos] = useState([
@@ -126,6 +166,18 @@ export default function PerfilHome() {
                         visible={modalEnderecoVisible}
                         onClose={() => setModalEnderecoVisible(false)}
                         onSave={handleSaveEndereco}
+                        dadosIniciais={
+                            enderecoSelecionado
+                            ? {
+                                cep: enderecoSelecionado.details[0],
+                                estado: enderecoSelecionado.details[1],
+                                cidade: enderecoSelecionado.subtitle.split(", ")[1],
+                                rua: enderecoSelecionado.subtitle,
+                                complemento: enderecoSelecionado.details[2],
+                                titulo: enderecoSelecionado.title,
+                                }
+                            : undefined
+                        }
                     />
 
                     {/* 🔹 Modal de Pagamento */}
@@ -186,11 +238,23 @@ export default function PerfilHome() {
                         <FlatList
                             data={enderecos} 
                             renderItem={({ item }) =>
-                                item.addNew ? (
+                                'addNew' in item ? (
                                     <TouchableOpacity style={styles.addCard} onPress={() => setModalEnderecoVisible(true)}>
-                                        <Feather name="plus" size={30} color="green" />
+                                    <Feather name="plus" size={30} color="green" />
                                     </TouchableOpacity>
-                                ) : (renderItem({ item }))
+                                ) : (
+                                    <Card
+                                        title={item.title}
+                                        subtitle={item.subtitle}
+                                        details={item.details}
+                                        id={item.id}
+                                        isPayment={false}
+                                        onPress={() => {
+                                            setEnderecoSelecionado(item);
+                                            setModalEnderecoVisible(true);
+                                        }}
+                                    />
+                                )
                             }
                             keyExtractor={(item, index) => index.toString()}
                             numColumns={3}

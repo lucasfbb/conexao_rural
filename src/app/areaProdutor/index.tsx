@@ -258,7 +258,7 @@ export default function AreaProdutor() {
   const buscarProdutos = async () => {
     try {
       const res = await api.get(`/produtores/${perfil.cpf_cnpj}/produtos`);
-      console.log("Produtos do produtor:", res.data);
+      // console.log("Produtos do produtor:", res.data);
       
       // Ajusta o array para o formato esperado na FlatList
       const produtosTratados = res.data.map((produto: any) => ({

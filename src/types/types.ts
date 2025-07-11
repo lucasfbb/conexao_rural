@@ -33,3 +33,14 @@ export type Produtor = {
   email?: string;
 }
 
+export type EnderecoItem =
+  | {
+      id: number;
+      title: string;
+      subtitle: string;
+      details: string[];
+    }
+  | {
+      addNew: true;
+    };
+

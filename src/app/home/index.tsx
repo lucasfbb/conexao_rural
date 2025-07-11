@@ -8,7 +8,7 @@ import { router, useFocusEffect } from 'expo-router'
 import { useTema } from '@/contexts/ThemeContext';
 
 import Header from '@/components/header'
-import ProtectedRoute from "@/components/protectedRoute";
+// import ProtectedRoute from "@/components/protectedRoute";
 
 import { api, baseURL } from '../../../services/api';
 import { ItemHome } from '@/types/types';
@@ -101,7 +101,7 @@ const renderAgricultor = ({ item } : { item: ItemHome }) => (
     return (
         
         <>  
-            <ProtectedRoute>
+            {/* <ProtectedRoute> */}
                 <SafeAreaView
                     edges={["top"]}
                     style={{ backgroundColor: '#4D7E1B' }} 
@@ -184,7 +184,7 @@ const renderAgricultor = ({ item } : { item: ItemHome }) => (
                         </ScrollView>
                     </View>
                 </SafeAreaView>
-            </ProtectedRoute>
+            {/* </ProtectedRoute> */}
         </>
     );
 }
