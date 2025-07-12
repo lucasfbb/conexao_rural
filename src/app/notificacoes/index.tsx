@@ -4,8 +4,10 @@ import { Feather } from "@expo/vector-icons";
 import Header from "@/components/header";
 import { api } from '../../../services/api';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTema } from '@/contexts/ThemeContext';
 
 export default function Notificacoes() {
+  const { isNightMode, colors } = useTema();
   const [notificacoes, setNotificacoes] = useState<any[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [notificacaoSelecionada, setNotificacaoSelecionada] = useState<any>(null);
@@ -15,6 +17,7 @@ export default function Notificacoes() {
   }, []);
 
   const buscarNotificacoes = async () => {
+    
     try {
       const token = await AsyncStorage.getItem("token");
       const res = await api.get("/notificacoes", {
@@ -62,10 +65,10 @@ export default function Notificacoes() {
   };
 
   const renderItem = ({ item }: any) => (
-    <TouchableOpacity style={styles.item} onPress={() => abrirModal(item)}>
+    <TouchableOpacity style={[styles.item, { backgroundColor: colors.background }]} onPress={() => abrirModal(item)}>
       <View style={styles.itemInfo}>
-        <Text style={styles.titulo}>{item.titulo}</Text>
-        <Text style={styles.data}>{item.data}</Text>
+        <Text style={[styles.titulo, { color: colors.text }]}>{item.titulo}</Text>
+        <Text style={[styles.data, { color: colors.text }]}>{item.data}</Text>
       </View>
       <TouchableOpacity onPress={() => excluirNotificacao(item.id)} style={styles.btnDelete}>
         <Feather name="trash" size={24} color="#B00020" />
@@ -74,9 +77,9 @@ export default function Notificacoes() {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header />
-      <Text style={styles.headerText}>Notificações</Text>
+      <Text style={[styles.headerText, { color: colors.text }]}>Notificações</Text>
 
       <FlatList
         data={notificacoes}
@@ -86,7 +89,7 @@ export default function Notificacoes() {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={{ padding: 20, alignItems: 'center' }}>
-            <Text style={{ fontSize: 16, color: '#777' }}>Nenhuma notificação encontrada.</Text>
+            <Text style={{ fontSize: 16, color: colors.text  }}>Nenhuma notificação encontrada.</Text>
           </View>
         }
       />
@@ -94,10 +97,10 @@ export default function Notificacoes() {
       {/* Modal Detalhes */}
       <Modal visible={modalVisible} transparent animationType="fade">
         <View style={styles.modalOverlay}>
-          <View style={styles.modalBox}>
-            <Text style={styles.modalTitulo}>{notificacaoSelecionada?.titulo}</Text>
-            <Text style={styles.modalDescricao}>{notificacaoSelecionada?.descricao}</Text>
-            <Text style={styles.modalData}>{notificacaoSelecionada?.data}</Text>
+          <View style={[styles.modalBox, { backgroundColor: colors.background }]}>
+            <Text style={[styles.modalTitulo, { color: colors.text }]}>{notificacaoSelecionada?.titulo}</Text>
+            <Text style={[styles.modalDescricao, { color: colors.text }]}>{notificacaoSelecionada?.descricao}</Text>
+            <Text style={[styles.modalData, { color: colors.text }]}>{notificacaoSelecionada?.data}</Text>
             <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.fecharBotao}>
               <Text style={{ color: '#4CAF50', fontWeight: 'bold' }}>Fechar</Text>
             </TouchableOpacity>
