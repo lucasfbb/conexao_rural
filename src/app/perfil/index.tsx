@@ -13,6 +13,7 @@ import ModalEditarEndereco from "@/components/modais/enderecos/modalEditarEndere
 import { EnderecoItem, Item } from '@/types/types'
 import { useTema } from "@/contexts/ThemeContext";
 import { api } from "../../../services/api";
+import ModalEditarPagamento from "@/components/modais/pagamentos/modalEditarPagamento";
 
 const { width, height } = Dimensions.get("window");
 
@@ -23,6 +24,10 @@ export default function PerfilHome() {
     const [modalEditarPerfilVisible, setModalEditarPerfilVisible] = useState(false);
     const [modalEditarEnderecoVisible, setModalEditarEnderecoVisible] = useState(false);
     const [enderecoSelecionado, setEnderecoSelecionado] = useState<any>(null);
+    const [modalEditarPagamentoVisible, setModalEditarPagamentoVisible] = useState(false);
+    const [pagamentoSelecionado, setPagamentoSelecionado] = useState<any>(null);
+    const [pagamentos, setPagamentos] = useState<any[]>([{ addNew: true }]);
+    const [enderecos, setEnderecos] = useState<EnderecoItem[]>([{ addNew: true }]);
 
     const { colors, isNightMode } = useTema()
 
@@ -34,7 +39,6 @@ export default function PerfilHome() {
         segundoTelefone: "",
     });
 
-    const [enderecos, setEnderecos] = useState<EnderecoItem[]>([{ addNew: true }]);
 
     useEffect(() => {
         const fetchPerfil = async () => {
@@ -67,6 +71,20 @@ export default function PerfilHome() {
                 const somenteEnderecos = enderecosFormatados.filter((e: any) => 'id' in e);
                 const ordenados = [...somenteEnderecos].sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
                 setEnderecos([...ordenados, { addNew: true }]);
+
+                // Buscar pagamentos reais do usuário
+                const resPagamentos = await api.get("/usuarios/perfil/pagamentos");
+                // console.log("Pagamentos do usuário:", resPagamentos.data);
+                const pagamentosFormatados = resPagamentos.data.map((p: any) => ({
+                    id: p.id,
+                    title: p.nome_cartao || "Cartão",
+                    subtitle: p.bandeira || "Tipo desconhecido",
+                    details: [`●●●● ${p.final_cartao}`],
+                    isPayment: true,
+                    titular: p.nome_impresso || "Não informado"
+                }));
+
+                setPagamentos([...pagamentosFormatados, { addNew: true }]);
 
             } catch (error) {
                 console.error("Erro ao buscar perfil:", error);
@@ -205,24 +223,134 @@ export default function PerfilHome() {
         }
     };
 
-    const [pagamentos, setPagamentos] = useState([
-        { title: "Cartão 1", subtitle: "Crédito", details: ["●●●● 9999"] },
-        { title: "Cartão 2", subtitle: "Crédito", details: ["●●●● 9999"] },
-        { addNew: true }
-    ]);
 
-    const handleSavePagamento = (novoPagamento: { title: string; subtitle: string; details: string[] }) => {
-        // Remove o último item (addNew), adiciona o novo pagamento, e depois adiciona de novo o addNew
-        setPagamentos(prev => [...prev.slice(0, -1), novoPagamento, { addNew: true }]);
-        setModalPagamentoVisible(false);
+    const handleSavePagamento = async (dados: {
+        nome_impresso: string;
+        nome_cartao: string;
+        bandeira: string;
+        final_cartao: string;
+        token_gateway: string;
+        gateway: string;
+    }) => {
+        try {
+            const response = await api.post("usuarios/perfil/pagamentos", dados);
+            const pagamentoSalvo = response.data;
+            // console.log("Pagamento salvo:", pagamentoSalvo);
+
+            const novo = {
+                id: pagamentoSalvo.id,
+                title: pagamentoSalvo.nome_cartao || "Cartão",
+                subtitle: pagamentoSalvo.bandeira || "Tipo desconhecido",
+                details: [`●●●● ${pagamentoSalvo.final_cartao}`],
+                titular: pagamentoSalvo.nome_impresso || "Titular não informado",
+                isPayment: true
+            };
+
+            setPagamentos(prev => [...prev.slice(0, -1), novo, { addNew: true }]);
+            setModalPagamentoVisible(false);
+        } catch (error) {
+            console.error("Erro ao salvar forma de pagamento:", error);
+        }
     };
+
+    const handleUpdatePagamento = async (dados: {
+        id: number;
+        nome_impresso: string;
+        nome_cartao: string;
+        bandeira: string;
+        final_cartao: string;
+        token_gateway: string;
+        gateway: string;
+    }) => {
+            try {
+                const response = await api.patch(`usuarios/perfil/pagamentos/${dados.id}`, dados);
+
+                const pagamentoAtualizado = response.data;
+                const atualizado = {
+                    id: pagamentoAtualizado.id,
+                    title: pagamentoAtualizado.nome_cartao || "Cartão",
+                    subtitle: pagamentoAtualizado.bandeira || "Tipo desconhecido",
+                    details: [`●●●● ${pagamentoAtualizado.final_cartao}`],
+                    isPayment: true,
+                    titular: pagamentoAtualizado.nome_impresso || "Não informado"
+                };
+
+                setPagamentos(prev => {
+                    const atualizados = [
+                        ...prev.filter(p => p.id !== dados.id),
+                        atualizado
+                    ];
+
+                    const ordenados = atualizados
+                        .filter(p => 'id' in p)
+                        .sort((a, b) => a.id - b.id);
+
+                    return [...ordenados, { addNew: true }];
+                });
+
+                setModalEditarPagamentoVisible(false);
+            } catch (error) {
+                console.error("Erro ao atualizar forma de pagamento:", error);
+            }
+    };
+
+    const handleDeletePagamento = async (id: number) => {
+        Alert.alert(
+            "Confirmar exclusão",
+            "Tem certeza que deseja excluir esta forma de pagamento?",
+            [
+                { text: "Cancelar", style: "cancel" },
+                {
+                    text: "Excluir",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            await api.delete(`usuarios/perfil/pagamentos/${id}`);
+
+                            setPagamentos(prev => {
+                                const atualizados = prev.filter(p => 'id' in p && p.id !== id);
+                                const ordenados = atualizados
+                                    .filter(p => 'id' in p && typeof p.id === 'number')
+                                    .sort((a, b) => a.id - b.id);
+
+                                return [...ordenados, { addNew: true }];
+                            });
+
+                            setModalEditarPagamentoVisible(false);
+                        } catch (error) {
+                            console.error("Erro ao remover pagamento:", error);
+                        }
+                    }
+                }
+            ]
+        );
+    };
+
 
     const produtos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
     const ultimosPedidos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
     const agricultoresFavoritos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
 
-    const renderItem = ({ item }: { item: any }) => (
-        <Card title={item.title} subtitle={item.subtitle} details={item.details} isPayment={item.isPayment} />
+    const renderItemPagamento = ({ item }: { item: any }) => (
+        <Card 
+            title={item.title} 
+            subtitle={item.subtitle} 
+            details={item.details} 
+            titular={item.titular} 
+            isPayment={item.isPayment} 
+              onPress={() => {
+                setPagamentoSelecionado({
+                    id: item.id,
+                    nome_cartao: item.title,
+                    nome_impresso: item.titular,
+                    bandeira: item.subtitle,
+                    final_cartao: item.details?.[0]?.slice(-4),
+                    token_gateway: "", // opcional
+                    gateway: "manual"
+                });
+                setModalEditarPagamentoVisible(true);
+            }}
+        />
     );
 
     return (
@@ -280,6 +408,16 @@ export default function PerfilHome() {
                         onClose={() => setModalPagamentoVisible(false)}
                         onSave={handleSavePagamento}
                     />
+
+                    {pagamentoSelecionado && (
+                        <ModalEditarPagamento
+                            visible={modalEditarPagamentoVisible}
+                            dadosIniciais={pagamentoSelecionado}
+                            onClose={() => setModalEditarPagamentoVisible(false)}
+                            onSave={handleUpdatePagamento}
+                            onExcluir={() => handleDeletePagamento(pagamentoSelecionado.id)}
+                        />
+                    )}
                     
                     {/* 🔹 Modal de Editar perfil do usuuário */}
                     <ModalEditarPerfil
@@ -374,7 +512,7 @@ export default function PerfilHome() {
                                     <TouchableOpacity style={styles.addCard} onPress={() => setModalPagamentoVisible(true)}>
                                         <Feather name="plus" size={30} color="green" />
                                     </TouchableOpacity>
-                                ) : (renderItem({ item }))
+                                ) : (renderItemPagamento({ item }))
                             }
                             keyExtractor={(item, index) => index.toString()}
                             numColumns={3}

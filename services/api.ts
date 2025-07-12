@@ -1,6 +1,6 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Alert } from "react-native";
+import { Alert, Platform } from "react-native";
 import { router } from "expo-router";
 
 // 🔹 Substitua pelo IP local ou URL da API
@@ -32,8 +32,8 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !isLoginRoute) {
       await AsyncStorage.removeItem("token");
       Alert.alert("Sessão expirada", "Faça login novamente");
+      router.replace("/login");
     }
-    router.replace("/login");
 
     return Promise.reject(error);
   }

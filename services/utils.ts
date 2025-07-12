@@ -42,3 +42,10 @@ export function formatarTelefone(telefone: string) {
     return telefone; // Retorna como está se o formato for inesperado
   }
 }
+
+export const formatarNumeroCartao = (numero: string) => {
+  return numero
+    .replace(/\D/g, "")                // remove tudo que não é número
+    .slice(0, 16)                      // máximo de 16 dígitos
+    .replace(/(\d{4})(?=\d)/g, "$1 "); // insere espaço a cada 4 dígitos
+};

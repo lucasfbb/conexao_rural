@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { AntDesign } from "@expo/vector-icons"; // Ícone do lápis para edição
 
@@ -8,14 +8,20 @@ interface CardProps {
   subtitle: string;
   details: string[];
   isPayment?: boolean;
+  titular?: string; // Para cartões de pagamento
   onPress?: () => void;
 }
 
 import { styles } from "./styles";
 import { useTema } from "@/contexts/ThemeContext";
 
-export default function Card({ id, title, subtitle, details, isPayment, onPress }: CardProps) {
+export default function Card({ id, title, subtitle, details, isPayment, titular, onPress }: CardProps) {
   const { colors } = useTema()
+  
+  // useEffect(() => {
+  //   // Log para verificar se o componente está recebendo os dados corretamente
+  //   console.log("Card props:", { id, title, subtitle, details, isPayment, titular });
+  // }, [id, title, subtitle, details, isPayment, titular]);
 
   return (
     <TouchableOpacity
@@ -37,7 +43,7 @@ export default function Card({ id, title, subtitle, details, isPayment, onPress 
       ))}
 
       {/* Se for pagamento, mostra o nome do titular */}
-      {isPayment && <Text style={styles.detail}>Titular Cartão</Text>}
+      {isPayment && <Text style={styles.detail}>{titular}</Text>}
     </TouchableOpacity>
   );
 }

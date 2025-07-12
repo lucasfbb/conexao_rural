@@ -12,7 +12,8 @@ class FormaPagamento(Base):
     token_gateway = Column(String, nullable=False)  # o token recebido do gateway
     bandeira = Column(String, nullable=True)        # Ex: "Visa", "Master"
     final_cartao = Column(String, nullable=True)    # Ex: "1234"
-    nome_no_cartao = Column(String, nullable=True)  # Opcional
+    nome_impresso = Column(String, nullable=True)  # Opcional
+    nome_cartao = Column(String, nullable=True)  # Opcional
     criado_em = Column(DateTime, default=datetime.now)
 
     usuario = relationship("Usuario", back_populates="formas_pagamento")

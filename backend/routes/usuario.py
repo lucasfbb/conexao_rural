@@ -100,6 +100,19 @@ def remover_pagamento(id: int, db: Session = Depends(get_db), current_user: Usua
     db.commit()
     return {"detail": "Pagamento removido"}
 
+@router.patch("/perfil/pagamentos/{id}", response_model=FormaPagamentoOut)
+def editar_pagamento(id: int, dados: FormaPagamentoIn, db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
+    pagamento = db.query(FormaPagamento).filter_by(id=id, usuario_cpf_cnpj=current_user.cpf_cnpj).first()
+    if not pagamento:
+        raise HTTPException(404, detail="Pagamento não encontrado")
+
+    for key, value in dados.dict().items():
+        setattr(pagamento, key, value)
+
+    db.commit()
+    db.refresh(pagamento)
+    return pagamento
+
 ### PRODUTOS FAVORITOS
 
 @router.get("/perfil/produtos-favoritos", response_model=List[ProdutoOut])
