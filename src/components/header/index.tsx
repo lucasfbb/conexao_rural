@@ -4,15 +4,28 @@ import { styles } from './styles';
 import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
 import { AntDesign, Fontisto } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useFavoritos } from "@/contexts/FavoritosContext";
+import { useTema } from "@/contexts/ThemeContext";
 
 interface HeaderProps {
     showFavoriteicon?: boolean;
     showGoBack?: boolean
+    cpf_cnpj?: string;
 }
 
-export default function Header({ showFavoriteicon = false, showGoBack = false }: HeaderProps) {
+export default function Header({ showFavoriteicon = false, showGoBack = false, cpf_cnpj }: HeaderProps) {
+
+    const { isFavorito, adicionarFavorito, removerFavorito } = useFavoritos();
 
     const router = useRouter();
+    const { colors } = useTema();
+
+    const favorito = cpf_cnpj ? isFavorito(cpf_cnpj) : false;
+
+    const toggleFavorito = () => {
+        if (!cpf_cnpj) return;
+        favorito ? removerFavorito(cpf_cnpj) : adicionarFavorito(cpf_cnpj);
+    };
     
     return (
         
@@ -57,11 +70,15 @@ export default function Header({ showFavoriteicon = false, showGoBack = false }:
                
                 {/* ícone de save ou espaço vazio */}
 
-                {showFavoriteicon ? (
-                    <View style={styles.save}>
-                        <Text><Fontisto name="favorite" color={'white'} size={25}/></Text>
-                    </View>
-
+                {/* Ícone de favorito */}
+                {showFavoriteicon && cpf_cnpj ? (
+                    <TouchableOpacity style={styles.save} onPress={toggleFavorito}>
+                        {favorito ? (
+                            <Fontisto name="favorite" size={20} color={'white'} />
+                        ) : (
+                            <Fontisto name="bookmark" size={20} />
+                        )}
+                    </TouchableOpacity>
                 ) : (
                     <View style={{ width: 40 }} />
                 )}

@@ -139,24 +139,24 @@ def desfavoritar_produto(produto_id: int, db: Session = Depends(get_db), current
 
 ### AGRICULTORES FAVORITOS
 
-@router.get("/perfil/agricultores-favoritos", response_model=List[ProdutorOut])
-def listar_agricultores_favoritos(current_user: Usuario = Depends(get_current_user)):
+@router.get("/perfil/produtores-favoritos", response_model=List[ProdutorOut])
+def listar_produtores_favoritos(current_user: Usuario = Depends(get_current_user)):
     return current_user.produtores_favoritos
 
-@router.post("/perfil/agricultores-favoritos/{produtor_cpf_cnpj}")
-def favoritar_agricultor(produtor_cpf_cnpj: str, db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
+@router.post("/perfil/produtores-favoritos/{produtor_cpf_cnpj}")
+def favoritar_produtor(produtor_cpf_cnpj: str, db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
     produtor = db.query(Produtor).get(produtor_cpf_cnpj)
     if not produtor:
         raise HTTPException(404)
     current_user.produtores_favoritos.append(produtor)
     db.commit()
-    return {"detail": "Agricultor favoritado"}
+    return {"detail": "Produtor favoritado"}
 
-@router.delete("/perfil/agricultores-favoritos/{produtor_cpf_cnpj}")
-def desfavoritar_agricultor(produtor_cpf_cnpj: str, db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
+@router.delete("/perfil/produtores-favoritos/{produtor_cpf_cnpj}")
+def desfavoritar_produtor(produtor_cpf_cnpj: str, db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
     produtor = db.query(Produtor).get(produtor_cpf_cnpj)
     if not produtor:
         raise HTTPException(404)
     current_user.produtores_favoritos.remove(produtor)
     db.commit()
-    return {"detail": "Agricultor removido dos favoritos"}
+    return {"detail": "Produtor removido dos favoritos"}

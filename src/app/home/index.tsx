@@ -6,14 +6,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useFocusEffect } from 'expo-router'
 
 import { useTema } from '@/contexts/ThemeContext';
+import { useUser } from '@/contexts/UserContext';
+import { useFavoritos } from "@/contexts/FavoritosContext";
 
 import Header from '@/components/header'
-// import ProtectedRoute from "@/components/protectedRoute";
 
 import { api, baseURL } from '../../../services/api';
 import { ItemHome } from '@/types/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useUser } from '@/contexts/UserContext';
 
 export default function Home(){
     const { width, height } = useWindowDimensions();
@@ -21,6 +21,8 @@ export default function Home(){
     const [agricultores, setAgricultores] = useState([]);
     const [banners, setBanners] = useState<string[]>([]);
     const [produtosSazonais, setProdutosSazonais] = useState<string[]>([]);
+
+    const { isFavorito, adicionarFavorito, removerFavorito } = useFavoritos();
 
     const base = baseURL.slice(0, -1);
     const { user, isLoading } = useUser();
@@ -74,8 +76,8 @@ export default function Home(){
         buscar();
     }, [user?.cpf_cnpj, isLoading]);
 
-const renderAgricultor = ({ item } : { item: ItemHome }) => (
-    <TouchableOpacity 
+    const renderAgricultor = ({ item } : { item: ItemHome }) => (
+        <TouchableOpacity 
             style={styles.agricultorItem} 
             onPress={() => router.push({ pathname: "/home/produtorProfile", params: { cpf_cnpj: String(item.cpf_cnpj) }})}
         >
@@ -92,8 +94,22 @@ const renderAgricultor = ({ item } : { item: ItemHome }) => (
                     <Text style={[styles.endereco, { color: colors.endereco }]}>{item.endereco} - {item.distancia} km</Text>
                 }
             </View>
-            <TouchableOpacity style={styles.bookmarkIcon}>
-                <Text><Fontisto name="favorite" size={20} color={colors.title} style={styles.icon} /> </Text>{/* Ícone de salvar */}
+            {/* <TouchableOpacity style={styles.bookmarkIcon}>
+                <Text><Fontisto name="favorite" size={20} color={colors.title} style={styles.icon} /> </Text>
+            </TouchableOpacity> */}
+            <TouchableOpacity
+                style={styles.bookmarkIcon}
+                onPress={() => {
+                    isFavorito(item.cpf_cnpj)
+                    ? removerFavorito(item.cpf_cnpj)
+                    : adicionarFavorito(item.cpf_cnpj);
+                }}
+                >
+                {isFavorito(item.cpf_cnpj) ? (
+                    <Fontisto name="favorite" size={20} color={colors.title} />
+                ) : (
+                    <Fontisto name="bookmark" size={20}/>
+                )}
             </TouchableOpacity>
         </TouchableOpacity>
     );

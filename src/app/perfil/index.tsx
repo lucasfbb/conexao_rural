@@ -1,9 +1,10 @@
-import { View, Text, Image, TouchableOpacity, ScrollView, FlatList, Dimensions, StyleSheet, Alert } from "react-native";
+import { View, Text, Image, TouchableOpacity, ScrollView, FlatList, Dimensions, StyleSheet, Alert, ActivityIndicator } from "react-native";
 import { router } from "expo-router";
 import Header from '@/components/header'
 import Card from "@/components/card"; 
 import { AntDesign, Feather } from '@expo/vector-icons'
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import ModalEndereco from '@/components/modais/enderecos/modalEndereco'
@@ -18,6 +19,7 @@ import ModalEditarPagamento from "@/components/modais/pagamentos/modalEditarPaga
 const { width, height } = Dimensions.get("window");
 
 export default function PerfilHome() {
+    const [loading, setLoading] = useState(true);
 
     const [modalEnderecoVisible, setModalEnderecoVisible] = useState(false);
     const [modalPagamentoVisible, setModalPagamentoVisible] = useState(false);
@@ -28,6 +30,7 @@ export default function PerfilHome() {
     const [pagamentoSelecionado, setPagamentoSelecionado] = useState<any>(null);
     const [pagamentos, setPagamentos] = useState<any[]>([{ addNew: true }]);
     const [enderecos, setEnderecos] = useState<EnderecoItem[]>([{ addNew: true }]);
+    const [agricultoresFavoritos, setAgricultoresFavoritos] = useState<any[]>([]);
 
     const { colors, isNightMode } = useTema()
 
@@ -40,60 +43,75 @@ export default function PerfilHome() {
     });
 
 
-    useEffect(() => {
-        const fetchPerfil = async () => {
-            try {
-                const response = await api.get("/usuarios/perfil/me");
-                const dados = response.data;
+    useFocusEffect(
+        useCallback(() => {
+            const fetchPerfil = async () => {
+                try {
+                    const response = await api.get("/usuarios/perfil/me");
+                    const dados = response.data;
 
-                setCliente({
-                    nome: dados.nome,
-                    email: dados.email,
-                    categoria: dados.e_vendedor ? "Vendedor" : "Comprador",
-                    primeiroTelefone: dados.telefone_1 || "Não informado",
-                    segundoTelefone: dados.telefone_2 || "Não informado",
-                });
+                    setCliente({
+                        nome: dados.nome,
+                        email: dados.email,
+                        categoria: dados.e_vendedor ? "Vendedor" : "Comprador",
+                        primeiroTelefone: dados.telefone_1 || "Não informado",
+                        segundoTelefone: dados.telefone_2 || "Não informado",
+                    });
 
-                // Buscar endereços reais do usuário
-                const resEnderecos = await api.get("/usuarios/perfil/enderecos");
-                // console.log("Endereços do usuário:", resEnderecos.data);
-                const enderecosFormatados = resEnderecos.data.map((e: any) => ({
-                    id: e.id,
-                    title: e.titulo && e.titulo.trim() !== "" ? e.titulo : `Endereço ${e.id}`,
-                    subtitle: `${e.rua}`,
-                    details: [
-                        e.cep,
-                        [e.estado, e.cidade].filter(Boolean).join(" / "),
-                        e.complemento || ""
-                    ].filter(item => item && item.trim() !== ""),
-                }));
+                    // Buscar endereços reais do usuário
+                    const resEnderecos = await api.get("/usuarios/perfil/enderecos");
+                    // console.log("Endereços do usuário:", resEnderecos.data);
+                    const enderecosFormatados = resEnderecos.data.map((e: any) => ({
+                        id: e.id,
+                        title: e.titulo && e.titulo.trim() !== "" ? e.titulo : `Endereço ${e.id}`,
+                        subtitle: `${e.rua}`,
+                        details: [
+                            e.cep,
+                            [e.estado, e.cidade].filter(Boolean).join(" / "),
+                            e.complemento || ""
+                        ].filter(item => item && item.trim() !== ""),
+                    }));
 
-                const somenteEnderecos = enderecosFormatados.filter((e: any) => 'id' in e);
-                const ordenados = [...somenteEnderecos].sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
-                setEnderecos([...ordenados, { addNew: true }]);
+                    const somenteEnderecos = enderecosFormatados.filter((e: any) => 'id' in e);
+                    const ordenados = [...somenteEnderecos].sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
+                    setEnderecos([...ordenados, { addNew: true }]);
 
-                // Buscar pagamentos reais do usuário
-                const resPagamentos = await api.get("/usuarios/perfil/pagamentos");
-                // console.log("Pagamentos do usuário:", resPagamentos.data);
-                const pagamentosFormatados = resPagamentos.data.map((p: any) => ({
-                    id: p.id,
-                    title: p.nome_cartao || "Cartão",
-                    subtitle: p.bandeira || "Tipo desconhecido",
-                    details: [`●●●● ${p.final_cartao}`],
-                    isPayment: true,
-                    titular: p.nome_impresso || "Não informado"
-                }));
+                    // Buscar pagamentos reais do usuário
+                    const resPagamentos = await api.get("/usuarios/perfil/pagamentos");
+                    // console.log("Pagamentos do usuário:", resPagamentos.data);
+                    const pagamentosFormatados = resPagamentos.data.map((p: any) => ({
+                        id: p.id,
+                        title: p.nome_cartao || "Cartão",
+                        subtitle: p.bandeira || "Tipo desconhecido",
+                        details: [`●●●● ${p.final_cartao}`],
+                        isPayment: true,
+                        titular: p.nome_impresso || "Não informado"
+                    }));
 
-                setPagamentos([...pagamentosFormatados, { addNew: true }]);
+                    setPagamentos([...pagamentosFormatados, { addNew: true }]);
+                    
+                    setLoading(true); // loading para dados que podem mudar na tela
 
-            } catch (error) {
-                console.error("Erro ao buscar perfil:", error);
-            }
-        };
-        
-        setEnderecoSelecionado(null); // Reseta o endereço selecionado ao carregar o perfil
-        fetchPerfil();
-    }, []);
+                    // Buscar agricultores favoritos do usuário
+                    const resProdutoresFavoritos = await api.get("/usuarios/perfil/produtores-favoritos");
+                    setAgricultoresFavoritos(resProdutoresFavoritos.data);
+                    
+                    // TODO: outros dados
+
+                    setLoading(false); // fechamento do laoding após buscar os dados
+
+                } catch (error) {
+                    console.error("Erro ao buscar perfil:", error);
+                } finally {
+                    setLoading(false);
+                }
+                
+            };
+            
+            setEnderecoSelecionado(null); // Reseta o endereço selecionado ao carregar o perfil
+            fetchPerfil();
+        }, [])
+    );
 
 
     const handleSavePerfil = async (dadosAtualizados: {
@@ -329,7 +347,7 @@ export default function PerfilHome() {
 
     const produtos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
     const ultimosPedidos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
-    const agricultoresFavoritos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
+    // const agricultoresFavoritos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
 
     const renderItemPagamento = ({ item }: { item: any }) => (
         <Card 
@@ -364,7 +382,7 @@ export default function PerfilHome() {
                 <View style={{ flex: 1 }}>
 
                     <Header />
-
+                    
                     {/* 🔹 Modal de Endereço */}
                     <ModalEndereco
                         visible={modalEnderecoVisible}
@@ -543,11 +561,32 @@ export default function PerfilHome() {
                         {/* 🔹 Agricultores favoritos */}
                         <Text style={[styles.sectionTitle, { marginBottom: height * 0.005, color: colors.text }]}>Agricultores favoritos</Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
-                            {agricultoresFavoritos.map((produto, index) => (
-                                <TouchableOpacity key={index} style={[styles.productItem, { backgroundColor: colors.profileCard, borderColor: colors.borderCard }]}>
-                                    <Text style={[styles.productText, { color: colors.text }]}>{produto}</Text>
-                                </TouchableOpacity>
-                            ))}
+                        {loading ? (
+                            <View style={{ marginLeft: 10, paddingVertical: 10 }}>
+                                <ActivityIndicator size="small" color="#4D7E1B" />
+                                <Text style={{ color: colors.text, marginTop: 5 }}>Carregando favoritos...</Text>
+                            </View>
+                        ) : (
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
+                                {agricultoresFavoritos.length === 0 ? (
+                                    <Text style={[styles.productText, { marginLeft: 10, color: colors.text }]}>
+                                        Você ainda não adicionou nenhum agricultor aos favoritos.
+                                    </Text>
+                                ) : (
+                                    agricultoresFavoritos.map((produtor, index) => (
+                                        <TouchableOpacity
+                                            key={produtor.cpf_cnpj || index}
+                                            style={[styles.productItem, { backgroundColor: colors.profileCard, borderColor: colors.borderCard }]}
+                                            onPress={() => router.push(`/home/produtorProfile?cpf_cnpj=${produtor.cpf_cnpj}`)}
+                                        >
+                                            <Text style={[styles.productText, { color: colors.text }]}>
+                                                {produtor.nome || "Produtor"}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))
+                                )}
+                            </ScrollView>
+                        )}
                         </ScrollView>
 
                     </ScrollView>

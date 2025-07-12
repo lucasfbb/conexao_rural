@@ -5,7 +5,9 @@ import { Feather, MaterialIcons } from "@expo/vector-icons";
 
 import Header from "@/components/header";
 import ModalProduto from "@/components/modais/produtos/modalProduto";
+
 import { useTema } from "@/contexts/ThemeContext";
+
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api, baseURL } from "../../../services/api";
 import { Produtor } from "@/types/types";
@@ -96,7 +98,7 @@ export default function ProdutorScreen() {
     <>
       <SafeAreaView edges={["top"]} style={{ backgroundColor: '#4D7E1B' }} />
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["left", "right" ]}>
-        <Header showFavoriteicon={true} showGoBack={true} />
+        <Header showFavoriteicon={true} showGoBack={true} cpf_cnpj={String(cpf_cnpj)} />
 
         <ScrollView style={[styles.container, { backgroundColor: colors.background }]} bounces={false}> 
 
