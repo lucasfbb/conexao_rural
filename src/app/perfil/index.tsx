@@ -47,12 +47,13 @@ export default function PerfilHome() {
 
     const { colors, isNightMode } = useTema()
 
-    const [cliente, setCliente] = useState({
+    const [usuario, setUsuario] = useState({
         nome: "",
         email: "",
         categoria: "",
         primeiroTelefone: "",
         segundoTelefone: "",
+        foto_perfil: "",
     });
 
     const escolherImagemUsuario = async () => {
@@ -85,7 +86,7 @@ export default function PerfilHome() {
                 const response = await api.post("usuarios/perfil/foto/upload", formData, {
                     headers: { "Content-Type": "multipart/form-data" },
                 });
-                setImagemUsuario(response.data.foto);  // ✅ Atualiza localmente
+                setImagemUsuario(response.data.foto);
                 Alert.alert("Sucesso", "Foto de perfil atualizada com sucesso!");
                 } catch (err: any) {
                     console.error("Erro no upload:", JSON.stringify(err, null, 2));
@@ -117,13 +118,16 @@ export default function PerfilHome() {
                     const dados = response.data;
                     // console.log("Dados do perfil:", dados);
 
-                    setCliente({
+                    setUsuario({
                         nome: dados.nome,
                         email: dados.email,
                         categoria: dados.e_vendedor ? "Vendedor" : "Comprador",
                         primeiroTelefone: dados.telefone_1 || "Não informado",
                         segundoTelefone: dados.telefone_2 || "Não informado",
+                        foto_perfil: dados.foto_perfil || "",
                     });
+
+                    setImagemUsuario(dados.foto_perfil || null);
 
                     // Buscar endereços reais do usuário
                     const resEnderecos = await api.get("/usuarios/perfil/enderecos");
@@ -204,7 +208,7 @@ export default function PerfilHome() {
                 telefone_2: dadosAtualizados.segundoTelefone.trim() === "" ? undefined : dadosAtualizados.segundoTelefone
             });
 
-            setCliente(prev => ({ ...prev, ...dadosAtualizados }));
+            setUsuario(prev => ({ ...prev, ...dadosAtualizados }));
             setModalEditarPerfilVisible(false);
         } catch (error) {
             console.error("Erro ao atualizar perfil:", error);
@@ -516,7 +520,7 @@ export default function PerfilHome() {
                         visible={modalEditarPerfilVisible}
                         onClose={() => setModalEditarPerfilVisible(false)}
                         onSave={handleSavePerfil}
-                        dadosIniciais={cliente}
+                        dadosIniciais={usuario}
                     />
 
                     {/* 🔹 Modal de detalhes do produto */}
@@ -534,7 +538,7 @@ export default function PerfilHome() {
                         <View style={[styles.profile, { backgroundColor: colors.profileCard, borderColor: colors.borderCard }]}>
                             <View style={styles.profileContent}>
                                 <View style={styles.profileInfo}>
-                                    <Text style={[styles.informacao, { color: colors.text }]}>{cliente.categoria}</Text>
+                                    <Text style={[styles.informacao, { color: colors.text }]}>{usuario.categoria}</Text>
                                     <Text style={[styles.label, { color: colors.text }]}>Categoria</Text>
                                     
                                     {/* 
@@ -573,13 +577,13 @@ export default function PerfilHome() {
                                     
                                 </View>
                                 <View>
-                                    <Text style={[styles.informacao, { color: colors.text }]}>{cliente.nome}</Text>
+                                    <Text style={[styles.informacao, { color: colors.text }]}>{usuario.nome}</Text>
                                     <Text style={[styles.label, { color: colors.text }]}>Nome Completo</Text>
-                                    <Text style={[styles.informacao, { color: colors.text }]}>{cliente.email}</Text>
+                                    <Text style={[styles.informacao, { color: colors.text }]}>{usuario.email}</Text>
                                     <Text style={[styles.label, { color: colors.text }]}>E-mail de contato</Text>
-                                    <Text style={[styles.informacao, { color: colors.text }]}>{cliente.primeiroTelefone}</Text>
+                                    <Text style={[styles.informacao, { color: colors.text }]}>{usuario.primeiroTelefone}</Text>
                                     <Text style={[styles.label, { color: colors.text }]}>Primeiro Telefone</Text>
-                                    <Text style={[styles.informacao, { color: colors.text }]}>{cliente.segundoTelefone}</Text>
+                                    <Text style={[styles.informacao, { color: colors.text }]}>{usuario.segundoTelefone}</Text>
                                     <Text style={[styles.label, { color: colors.text }]}>Segundo telefone</Text>
                                 </View>
                                 <TouchableOpacity style={styles.editIcon} onPress={() => setModalEditarPerfilVisible(true)}>
@@ -796,8 +800,8 @@ const styles = StyleSheet.create({
         width: 100,
         height: 100,
         borderRadius: 25, // círculo
-        borderWidth: 1,
-        borderColor: '#4D7E1B',
+        // borderWidth: 1,
+        // borderColor: '#4D7E1B',
         marginVertical: 10,
     },
 
