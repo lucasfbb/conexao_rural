@@ -9,6 +9,7 @@ from schemas.endereco import EnderecoIn, EnderecoOut
 from schemas.usuario import UsuarioCreate, UsuarioOut, UsuarioResponse, UsuarioUpdate
 from crud.usuario import criar_usuario
 from database import get_db
+from models.pedido import Pedido
 from models.formapagamento import FormaPagamento
 from models.produto import Produto
 from models.produtor import Produtor
@@ -160,3 +161,19 @@ def desfavoritar_produtor(produtor_cpf_cnpj: str, db: Session = Depends(get_db),
     current_user.produtores_favoritos.remove(produtor)
     db.commit()
     return {"detail": "Produtor removido dos favoritos"}
+
+@router.get("/perfil/ultimos-pedidos")
+def listar_ultimos_pedidos(cpf_usuario: str, db: Session = Depends(get_db)):
+    usuario = db.query(Usuario).filter_by(cpf_cnpj=cpf_usuario).first()
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+
+    pedidos = (
+        db.query(Pedido)
+        .filter(Pedido.cpf_usuario == cpf_usuario)
+        .order_by(Pedido.momento_compra.desc())
+        .limit(5)
+        .all()
+    )
+    
+    return [p.to_dict() for p in pedidos]

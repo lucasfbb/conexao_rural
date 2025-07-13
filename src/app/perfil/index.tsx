@@ -38,6 +38,7 @@ export default function PerfilHome() {
 
     const [produtosFavoritos, setProdutosFavoritos] = useState<any[]>([]);
     const [agricultoresFavoritos, setAgricultoresFavoritos] = useState<any[]>([]);
+    const [ultimosPedidos, setUltimosPedidos] = useState<any[]>([]);
 
     const { colors, isNightMode } = useTema()
 
@@ -133,6 +134,9 @@ export default function PerfilHome() {
                     // Buscar produtos favoritos do usuário
                     const resProdutosFavoritos = await api.get(`/favoritos/produto?cpf_usuario=${dados.cpf_cnpj}`);
                     setProdutosFavoritos(resProdutosFavoritos.data);
+
+                    const resUltimosPedidos = await api.get(`/usuarios/perfil/ultimos-pedidos?cpf_usuario=${dados.cpf_cnpj}`);
+                    setUltimosPedidos(resUltimosPedidos.data);
                     
                     // TODO: outros dados
 
@@ -383,8 +387,8 @@ export default function PerfilHome() {
     };
 
 
-    const produtos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
-    const ultimosPedidos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
+    // const produtos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
+    // const ultimosPedidos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
     // const agricultoresFavoritos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
 
     const renderItemPagamento = ({ item }: { item: any }) => (
@@ -626,18 +630,35 @@ export default function PerfilHome() {
                         {/* 🔹 Últimos pedidos */}
                         <Text style={[styles.sectionTitle, { marginBottom: height * 0.005, color: colors.text }]}>Últimos pedidos</Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
-                            {ultimosPedidos.map((produto, index) => (
-                                <TouchableOpacity key={index} style={[styles.productItem, { backgroundColor: colors.profileCard, borderColor: colors.borderCard }]}>
-                                    <Text style={[styles.productText, { color: colors.text }]}>{produto}</Text>
-                                </TouchableOpacity>
-                            ))}
+                            {ultimosPedidos.length === 0 ? (
+                                <Text style={[styles.productText, { marginLeft: 10, color: colors.text }]}>
+                                    Você ainda não fez nenhum pedido.
+                                </Text>
+                            ) : (
+                                ultimosPedidos.map((pedido, index) => (
+                                    <TouchableOpacity
+                                    key={pedido.id || index}
+                                    style={[styles.productItem, { backgroundColor: colors.profileCard, borderColor: colors.borderCard }]}
+                                    onPress={() => {
+                                        // Exibir detalhes do pedido? Navegar para tela de pedido?
+                                    }}
+                                    >
+                                    <Text style={[styles.productText, { color: colors.text }]}>
+                                        {pedido.produto?.nome || "Produto"} - {pedido.quantidade}x
+                                    </Text>
+                                    <Text style={[styles.productText, { fontSize: 12, color: "gray" }]}>
+                                        {new Date(pedido.criado_em).toLocaleDateString("pt-BR")}
+                                    </Text>
+                                    </TouchableOpacity>
+                                ))
+                            )}
                         </ScrollView>
                         
                         {/* 🔹 Agricultores favoritos */}
-                        <Text style={[styles.sectionTitle, { marginBottom: height * 0.005, color: colors.text }]}>Agricultores favoritos</Text>
+                        <Text style={[styles.sectionTitle, { color: colors.text }]}>Agricultores favoritos</Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
                         {loading ? (
-                            <View style={{ marginLeft: 10, paddingVertical: 10 }}>
+                            <View style={{ marginLeft: 10, paddingVertical: 6 }}>
                                 <ActivityIndicator size="small" color="#4D7E1B" />
                                 {/* <Text style={{ color: colors.text, marginTop: 5 }}>Carregando favoritos...</Text> */}
                             </View>
@@ -709,7 +730,7 @@ const styles = StyleSheet.create({
         margin: width * 0.013,
     },
 
-    productScroll: { flexDirection: "row", marginVertical: 10 },
+    productScroll: { flexDirection: "row", marginVertical: 6 },
 
     productItem: { padding: 10, borderWidth: 1, borderRadius: 10, marginHorizontal: 5, borderColor: '#4D7E1B' },
 
