@@ -74,7 +74,7 @@ export default function AreaProdutor() {
   const [modalNome, setModalNome] = useState(false);
   const [novoNome, setNovoNome] = useState(perfil.nome);
 
-  // Produtos (mock ainda)
+  // Produtos
   const [produtos, setProdutos] = useState<Produto[]>([]);
 
   // Modal de novo produto

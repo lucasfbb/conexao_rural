@@ -1,6 +1,9 @@
+import os
+import shutil
+import time
 from typing import List
 from auth.auth_utils import get_current_user
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 from schemas.produtor import ProdutorOut
 from schemas.produto import ProdutoOut
@@ -17,6 +20,9 @@ from models.endereco import Endereco
 from models.usuario import Usuario
 
 router = APIRouter()
+
+UPLOAD_PERFIS_USUARIO_DIR = "uploads/perfilUsuario"
+os.makedirs(UPLOAD_PERFIS_USUARIO_DIR, exist_ok=True)
 
 ### CADASTRO
 
@@ -177,3 +183,45 @@ def listar_ultimos_pedidos(cpf_usuario: str, db: Session = Depends(get_db)):
     )
     
     return [p.to_dict() for p in pedidos]
+
+@router.post("/perfil/foto/upload")
+async def upload_foto_perfil(
+    file: UploadFile = File(...),
+    current_user: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    print("==> RECEBIDO UPLOAD FOTO", file.filename, file.content_type)
+    ext = file.filename.split('.')[-1]
+    filename = f"foto_perfil_{current_user.cpf_cnpj}_{int(time.time())}.{ext}"
+    file_path = os.path.join(UPLOAD_PERFIS_USUARIO_DIR, filename)
+
+    # Tenta deletar o arquivo anterior, se existir
+    try:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+    except Exception as e:
+        print(f"Não foi possível remover a foto anterior: {e}")
+
+    try:
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        usuario = db.query(Usuario).filter(Usuario.cpf_cnpj == current_user.cpf_cnpj).first()
+        if usuario:
+            if usuario.foto_perfil and os.path.exists(usuario.foto_perfil[1:]):  # Remove a barra inicial
+                try:
+                    os.remove(usuario.foto_perfil[1:])
+                except Exception:
+                    pass
+
+            usuario.foto_perfil = f"/uploads/perfilUsuario/{filename}"
+            db.commit()
+            db.refresh(usuario)
+
+            # # atualizando o caminho da nova foto no banco
+            # produtor.foto = f"/uploads/perfilProdutor/{filename}"
+            # db.commit()
+            # db.refresh(produtor)
+        return {"foto": f"/uploads/perfilUsuario/{filename}"}
+    except Exception as e:
+        print("ERRO AO SALVAR FOTO:", e)
+        raise HTTPException(status_code=500, detail="Erro ao salvar a foto")

@@ -2,6 +2,7 @@ import { View, Text, Image, TouchableOpacity, ScrollView, FlatList, Dimensions, 
 import { router, useRouter } from "expo-router";
 import Header from '@/components/header'
 import Card from "@/components/card"; 
+import * as ImagePicker from 'expo-image-picker';
 import { AntDesign, Feather } from '@expo/vector-icons'
 import { useEffect, useState, useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native";
@@ -13,7 +14,7 @@ import ModalEditarPerfil from '@/components/modais/perfil/modalEditarPerfil'
 import ModalEditarEndereco from "@/components/modais/enderecos/modalEditarEndereco";
 import { EnderecoItem, Item } from '@/types/types'
 import { useTema } from "@/contexts/ThemeContext";
-import { api } from "../../../services/api";
+import { api, baseURL } from "../../../services/api";
 import ModalEditarPagamento from "@/components/modais/pagamentos/modalEditarPagamento";
 import ModalDetalhesProduto from "@/components/modais/produtos/modalDetalhesProduto";
 
@@ -23,6 +24,8 @@ export default function PerfilHome() {
     const [loading, setLoading] = useState(true);
 
     const router = useRouter();
+
+    const base = baseURL.slice(0, -1);
 
     const [modalEnderecoVisible, setModalEnderecoVisible] = useState(false);
     const [modalPagamentoVisible, setModalPagamentoVisible] = useState(false);
@@ -40,6 +43,8 @@ export default function PerfilHome() {
     const [agricultoresFavoritos, setAgricultoresFavoritos] = useState<any[]>([]);
     const [ultimosPedidos, setUltimosPedidos] = useState<any[]>([]);
 
+    const [imagemUsuario, setImagemUsuario] = useState<string | null>(null);
+
     const { colors, isNightMode } = useTema()
 
     const [cliente, setCliente] = useState({
@@ -50,32 +55,58 @@ export default function PerfilHome() {
         segundoTelefone: "",
     });
 
-    const handleProdutoFavoritadoClick = (produto: any, setProdutoSelecionado: Function, setModalProdutoVisivel: Function) => {
-        Alert.alert(
-            "O que deseja fazer?",
-            produto.nome,
-            [
-            {
-                text: "Ver detalhes",
-                onPress: () => {
-                setProdutoSelecionado({
-                    ...produto,
-                    preco: produto.preco_promocional
-                    ? `R$ ${Number(produto.preco_promocional).toFixed(2)}`
-                    : `R$ ${Number(produto.preco).toFixed(2)}`
+    const escolherImagemUsuario = async () => {
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            quality: 0.8,
+        });
+
+        if (!result.canceled) {
+            const asset = result.assets[0];
+            const localUri = asset.uri;
+            const filename = localUri.split('/').pop() || "foto.jpg";
+            const match = /\.(\w+)$/.exec(filename.toLowerCase());
+            const ext = match?.[1];
+
+            // Definir tipo MIME corretamente
+            let mimeType = "image/jpeg"; // fallback
+            if (ext === "png") mimeType = "image/png";
+            else if (ext === "jpg" || ext === "jpeg") mimeType = "image/jpeg";
+            else if (ext === "webp") mimeType = "image/webp";
+
+            const formData = new FormData();
+            formData.append("file", {
+                uri: localUri,
+                name: filename,
+                type: mimeType,
+            } as any);
+
+            try {
+                const response = await api.post("usuarios/perfil/foto/upload", formData, {
+                    headers: { "Content-Type": "multipart/form-data" },
                 });
-                setModalProdutoVisivel(true);
+                setImagemUsuario(response.data.foto);  // ✅ Atualiza localmente
+                Alert.alert("Sucesso", "Foto de perfil atualizada com sucesso!");
+                } catch (err: any) {
+                    console.error("Erro no upload:", JSON.stringify(err, null, 2));
+
+                    if (err.response) {
+                        // Requisição foi feita e o servidor respondeu com um status diferente de 2xx
+                        console.log("❗Erro de resposta:", err.response.data);
+                        console.log("Status:", err.response.status);
+                        console.log("Headers:", err.response.headers);
+                        Alert.alert("Erro", `Erro ${err.response.status}: ${err.response.data.detail || 'Servidor retornou erro.'}`);
+                    } else if (err.request) {
+                        // Requisição foi feita mas não houve resposta
+                        console.log("❗Erro de requisição:", err.request);
+                        Alert.alert("Erro", "O servidor não respondeu. Verifique sua conexão ou se o backend está online.");
+                    } else {
+                        // Algo deu errado ao montar a requisição
+                        console.log("❗Erro desconhecido:", err.message);
+                        Alert.alert("Erro", `Erro inesperado: ${err.message}`);
+                    }
                 }
-            },
-            {
-                text: "Ver produtor",
-                onPress: () => {
-                router.push(`/home/produtorProfile?cpf_cnpj=${produto.produtor?.cpf_cnpj}`);
-                }
-            },
-            { text: "Cancelar", style: "cancel" }
-            ]
-        );
+        }
     };
 
     useFocusEffect(
@@ -84,6 +115,7 @@ export default function PerfilHome() {
                 try {
                     const response = await api.get("/usuarios/perfil/me");
                     const dados = response.data;
+                    // console.log("Dados do perfil:", dados);
 
                     setCliente({
                         nome: dados.nome,
@@ -505,6 +537,7 @@ export default function PerfilHome() {
                                     <Text style={[styles.informacao, { color: colors.text }]}>{cliente.categoria}</Text>
                                     <Text style={[styles.label, { color: colors.text }]}>Categoria</Text>
                                     
+                                    {/* 
                                     { isNightMode ? 
                                         <Image 
                                             source={require("../../../assets/images/perfil-de-usuario-branco.png")}
@@ -516,6 +549,27 @@ export default function PerfilHome() {
                                             style={styles.profileImage}
                                         />
                                     }
+                                    */}
+
+                                <TouchableOpacity onPress={escolherImagemUsuario}>
+                                    {imagemUsuario ? (
+                                        <Image 
+                                            source={{ uri: `${base}${imagemUsuario}` }}
+                                            style={styles.profilePhoto}
+                                            resizeMode="cover"
+                                        />
+                                    ) : (
+                                        <Image 
+                                            source={
+                                                isNightMode 
+                                                ? require("../../../assets/images/perfil-de-usuario-branco.png")
+                                                : require("../../../assets/images/perfil-de-usuario.png")
+                                            }
+                                            style={styles.profilePhoto}
+                                            resizeMode="contain"
+                                        />
+                                    )}
+                                </TouchableOpacity>
                                     
                                 </View>
                                 <View>
@@ -718,6 +772,14 @@ const styles = StyleSheet.create({
 
     sectionTitle: { fontSize: 18, fontWeight: "bold", fontStyle: "italic", marginTop: height * 0.02, marginLeft: 7, color: '#4D7E1B' },
 
+    bannerImg: {
+      width: width * 0.85,
+      height: height * 0.13,
+      borderRadius: width * 0.025,
+      marginBottom: height * 0.01,
+      backgroundColor: "#eee"
+    },
+
     addCard: {
         flex: 1,
         borderWidth: 1.5,
@@ -728,6 +790,15 @@ const styles = StyleSheet.create({
         width: "48%",
         minHeight: 120,
         margin: width * 0.013,
+    },
+
+    profilePhoto: {
+        width: 100,
+        height: 100,
+        borderRadius: 25, // círculo
+        borderWidth: 1,
+        borderColor: '#4D7E1B',
+        marginVertical: 10,
     },
 
     productScroll: { flexDirection: "row", marginVertical: 6 },
