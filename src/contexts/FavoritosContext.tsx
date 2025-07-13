@@ -4,18 +4,26 @@ import { useUser } from "./UserContext";
 
 type FavoritosContextType = {
   favoritos: string[];
+  produtosFavoritos: number[];
   carregarFavoritos: () => void;
   adicionarFavorito: (cpfProdutor: string) => void;
   removerFavorito: (cpfProdutor: string) => void;
   isFavorito: (cpfProdutor: string) => boolean;
+  favoritarProduto: (id: number) => void;
+  desfavoritarProduto: (id: number) => void;
+  isProdutoFavorito: (id: number) => boolean;
 };
 
 const FavoritosContext = createContext<FavoritosContextType>({
   favoritos: [],
+  produtosFavoritos: [],
   carregarFavoritos: () => {},
   adicionarFavorito: () => {},
   removerFavorito: () => {},
   isFavorito: () => false,
+  favoritarProduto: () => {},
+  desfavoritarProduto: () => {},
+  isProdutoFavorito: () => false,
 });
 
 export const useFavoritos = () => useContext(FavoritosContext);
@@ -23,12 +31,18 @@ export const useFavoritos = () => useContext(FavoritosContext);
 export const FavoritosProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useUser();
   const [favoritos, setFavoritos] = useState<string[]>([]);
+  const [produtosFavoritos, setProdutosFavoritos] = useState<number[]>([]);
 
   const carregarFavoritos = async () => {
     if (!user?.cpf_cnpj) return;
     try {
-      const res = await api.get(`/favoritos/produtor?cpf_usuario=${user.cpf_cnpj}`);
-      setFavoritos(res.data || []);
+      const [resProdutores, resProdutos] = await Promise.all([
+        api.get(`/favoritos/produtor?cpf_usuario=${user.cpf_cnpj}`),
+        api.get(`/favoritos/produto?cpf_usuario=${user.cpf_cnpj}`),
+      ]);
+
+      setFavoritos(resProdutores.data || []);
+      setProdutosFavoritos((resProdutos.data || []).map((p: any) => p.id));
     } catch (err) {
       console.error("Erro ao carregar favoritos:", err);
     }
@@ -64,7 +78,40 @@ export const FavoritosProvider = ({ children }: { children: React.ReactNode }) =
     }
   };
 
+  const favoritarProduto = async (id: number) => {
+    if (!user?.cpf_cnpj || produtosFavoritos.includes(id)) return;
+
+    try {
+      await api.post(`/favoritos/produto`, null, {
+        params: {
+          cpf_usuario: user.cpf_cnpj,
+          id_produto: id,
+        },
+      });
+      setProdutosFavoritos((prev) => [...prev, id]);
+    } catch (err) {
+      console.error("Erro ao favoritar produto:", err);
+    }
+  };
+
+  const desfavoritarProduto = async (id: number) => {
+    if (!user?.cpf_cnpj) return;
+
+    try {
+      await api.delete(`/favoritos/produto`, {
+        params: {
+          cpf_usuario: user.cpf_cnpj,
+          id_produto: id,
+        },
+      });
+      setProdutosFavoritos((prev) => prev.filter((pid) => pid !== id));
+    } catch (err) {
+      console.error("Erro ao desfavoritar produto:", err);
+    }
+  };
+
   const isFavorito = (cpfProdutor: string) => favoritos.includes(cpfProdutor);
+  const isProdutoFavorito = (id: number) => produtosFavoritos.includes(id);
 
   useEffect(() => {
     carregarFavoritos();
@@ -72,7 +119,17 @@ export const FavoritosProvider = ({ children }: { children: React.ReactNode }) =
 
   return (
     <FavoritosContext.Provider
-      value={{ favoritos, carregarFavoritos, adicionarFavorito, removerFavorito, isFavorito }}
+      value={{
+        favoritos,
+        produtosFavoritos,
+        carregarFavoritos,
+        adicionarFavorito,
+        removerFavorito,
+        isFavorito,
+        favoritarProduto,
+        desfavoritarProduto,
+        isProdutoFavorito,
+      }}
     >
       {children}
     </FavoritosContext.Provider>

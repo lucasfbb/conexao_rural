@@ -7,6 +7,7 @@ import Header from "@/components/header";
 import ModalProduto from "@/components/modais/produtos/modalProduto";
 
 import { useTema } from "@/contexts/ThemeContext";
+import { useFavoritos } from "@/contexts/FavoritosContext";
 
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api, baseURL } from "../../../services/api";
@@ -35,6 +36,7 @@ export default function ProdutorScreen() {
   const params = useLocalSearchParams();
   const { cpf_cnpj } = params;
   const { colors } = useTema();
+  const { favoritarProduto, desfavoritarProduto, isProdutoFavorito } = useFavoritos();
 
   const base = baseURL.slice(0, -1);
 
@@ -152,40 +154,56 @@ export default function ProdutorScreen() {
               <FlatList
                 data={produtosPromocao}
                 renderItem={({ item }) => (
-                  <TouchableOpacity
-                    style={styles.promoCard}
-                    onPress={() => {
-                      setProdutoSelecionado({
-                        ...item,
-                        preco: `R$ ${Number(item.preco_promocional).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
-                      });
-                      setModalProdutoVisivel(true);
-                    }}
-                  >
-                    <Image source={item.imagem} style={styles.produtoImagem} />
-                    <View>
-                      <Text style={[styles.produtoNome, { color: colors.text, fontSize: fontSizePromoNome }]}>{item.nome}</Text>
-                      {/* Preço antigo riscado */}
-                      {Number(item.preco) > Number(item.preco_promocional) && (
+                  <View style={styles.promoCard}>
+                    <TouchableOpacity
+                      style={{ flexDirection: "row", flex: 1, alignItems: "center" }}
+                      onPress={() => {
+                        setProdutoSelecionado({
+                          ...item,
+                          preco: `R$ ${Number(item.preco_promocional).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                        });
+                        setModalProdutoVisivel(true);
+                      }}
+                    >
+                      <Image source={item.imagem} style={styles.produtoImagem} />
+                      <View style={{ flex: 1 }}>
+                        <Text style={[styles.produtoNome, { color: colors.text, fontSize: fontSizePromoNome }]}>{item.nome}</Text>
+                        {Number(item.preco) > Number(item.preco_promocional) && (
+                          <Text style={{
+                            color: '#B00020',
+                            textDecorationLine: 'line-through',
+                            fontSize: fontSizePrecoRiscado,
+                            marginBottom: 2,
+                          }}>
+                            R$ {Number(item.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </Text>
+                        )}
                         <Text style={{
-                          color: '#B00020',
-                          textDecorationLine: 'line-through',
-                          fontSize: fontSizePrecoRiscado,
-                          marginBottom: 2,
+                          color: '#388e3c',
+                          fontWeight: 'bold',
+                          fontSize: fontSizePromocao
                         }}>
-                          R$ {Number(item.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          R$ {Number(item.preco_promocional).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </Text>
-                      )}
-                      {/* Preço promocional */}
-                      <Text style={{
-                        color: '#388e3c',
-                        fontWeight: 'bold',
-                        fontSize: fontSizePromocao
-                      }}>
-                        R$ {Number(item.preco_promocional).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
+                      </View>
+                    </TouchableOpacity>
+
+                    {/* Botão de favoritar fora do Touchable principal */}
+                    <TouchableOpacity
+                      onPress={() => {
+                        isProdutoFavorito(Number(item.id))
+                          ? desfavoritarProduto(Number(item.id))
+                          : favoritarProduto(Number(item.id));
+                      }}
+                      style={{ padding: 5 }}
+                    >
+                      <Feather
+                        name="heart"
+                        size={20}
+                        color={isProdutoFavorito(Number(item.id)) ? "#E15610" : "#999"}
+                      />
+                    </TouchableOpacity>
+                  </View>
                 )}
                 keyExtractor={item => item.id}
                 numColumns={2}
@@ -201,25 +219,44 @@ export default function ProdutorScreen() {
             <FlatList
               data={produtosNormais}
               renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.principalCard}
-                  onPress={() => {
-                    setProdutoSelecionado({
-                      ...item,
-                      preco: `R$ ${Number(item.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
-                    });
-                    setModalProdutoVisivel(true);
-                  }}
-                >
-                  <Image source={item.imagem} style={styles.produtoImagem} />
-                  <View style={styles.produtoInfo}>
-                    <Text style={[styles.produtoNome, { color: colors.text, fontSize: fontSizePromoNome }]}>{item.nome}</Text>
-                    <Text style={[styles.produtoDescricao, { fontSize: fontSizeDescricao }]}>{item.descricao}</Text>
-                    <Text style={[styles.produtoPreco, { fontSize: fontSizePreco }]}>
-                      R$ {Number(item.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
+                <View style={[styles.principalCard, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
+                  
+                  {/* TOCAR NO CARD ABRE O MODAL */}
+                  <TouchableOpacity
+                    style={{ flexDirection: 'row', flex: 1, alignItems: 'center' }}
+                    onPress={() => {
+                      setProdutoSelecionado({
+                        ...item,
+                        preco: `R$ ${Number(item.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                      });
+                      setModalProdutoVisivel(true);
+                    }}
+                  >
+                    <Image source={item.imagem} style={styles.produtoImagem} />
+                    <View style={styles.produtoInfo}>
+                      <Text style={[styles.produtoNome, { color: colors.text, fontSize: fontSizePromoNome }]}>{item.nome}</Text>
+                      <Text style={[styles.produtoDescricao, { fontSize: fontSizeDescricao }]}>{item.descricao}</Text>
+                      <Text style={[styles.produtoPreco, { fontSize: fontSizePreco }]}>
+                        R$ {Number(item.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+
+                  {/* BOTÃO DE FAVORITAR */}
+                  <TouchableOpacity
+                    onPress={() => {
+                      isProdutoFavorito(Number(item.id))
+                        ? desfavoritarProduto(Number(item.id))
+                        : favoritarProduto(Number(item.id));
+                    }}
+                  >
+                    <Feather
+                      name={isProdutoFavorito(Number(item.id)) ? "heart" : "heart"}
+                      size={20}
+                      color={isProdutoFavorito(Number(item.id)) ? "#E15610" : "#999"}
+                    />
+                  </TouchableOpacity>
+                </View>
               )}
               keyExtractor={item => item.id}
               scrollEnabled={false}
@@ -253,11 +290,12 @@ const styles = StyleSheet.create({
   promoCard: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     padding: 10,
     borderWidth: 1,
     borderColor: "#4D7E1B",
     borderRadius: 10,
-    width: "48%",
+    width: "100%", // use 100% no FlatList horizontal ou 48% no grid
     marginBottom: 10,
   },
   produtoImagem: { width: 40, height: 40, marginRight: 10 },

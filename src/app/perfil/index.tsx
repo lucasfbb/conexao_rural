@@ -1,5 +1,5 @@
 import { View, Text, Image, TouchableOpacity, ScrollView, FlatList, Dimensions, StyleSheet, Alert, ActivityIndicator } from "react-native";
-import { router } from "expo-router";
+import { router, useRouter } from "expo-router";
 import Header from '@/components/header'
 import Card from "@/components/card"; 
 import { AntDesign, Feather } from '@expo/vector-icons'
@@ -15,11 +15,14 @@ import { EnderecoItem, Item } from '@/types/types'
 import { useTema } from "@/contexts/ThemeContext";
 import { api } from "../../../services/api";
 import ModalEditarPagamento from "@/components/modais/pagamentos/modalEditarPagamento";
+import ModalDetalhesProduto from "@/components/modais/produtos/modalDetalhesProduto";
 
 const { width, height } = Dimensions.get("window");
 
 export default function PerfilHome() {
     const [loading, setLoading] = useState(true);
+
+    const router = useRouter();
 
     const [modalEnderecoVisible, setModalEnderecoVisible] = useState(false);
     const [modalPagamentoVisible, setModalPagamentoVisible] = useState(false);
@@ -30,6 +33,10 @@ export default function PerfilHome() {
     const [pagamentoSelecionado, setPagamentoSelecionado] = useState<any>(null);
     const [pagamentos, setPagamentos] = useState<any[]>([{ addNew: true }]);
     const [enderecos, setEnderecos] = useState<EnderecoItem[]>([{ addNew: true }]);
+    const [produtoSelecionado, setProdutoSelecionado] = useState<any | null>(null);
+    const [modalProdutoVisivel, setModalProdutoVisivel] = useState(false);
+
+    const [produtosFavoritos, setProdutosFavoritos] = useState<any[]>([]);
     const [agricultoresFavoritos, setAgricultoresFavoritos] = useState<any[]>([]);
 
     const { colors, isNightMode } = useTema()
@@ -42,6 +49,33 @@ export default function PerfilHome() {
         segundoTelefone: "",
     });
 
+    const handleProdutoFavoritadoClick = (produto: any, setProdutoSelecionado: Function, setModalProdutoVisivel: Function) => {
+        Alert.alert(
+            "O que deseja fazer?",
+            produto.nome,
+            [
+            {
+                text: "Ver detalhes",
+                onPress: () => {
+                setProdutoSelecionado({
+                    ...produto,
+                    preco: produto.preco_promocional
+                    ? `R$ ${Number(produto.preco_promocional).toFixed(2)}`
+                    : `R$ ${Number(produto.preco).toFixed(2)}`
+                });
+                setModalProdutoVisivel(true);
+                }
+            },
+            {
+                text: "Ver produtor",
+                onPress: () => {
+                router.push(`/home/produtorProfile?cpf_cnpj=${produto.produtor?.cpf_cnpj}`);
+                }
+            },
+            { text: "Cancelar", style: "cancel" }
+            ]
+        );
+    };
 
     useFocusEffect(
         useCallback(() => {
@@ -95,6 +129,10 @@ export default function PerfilHome() {
                     // Buscar agricultores favoritos do usuário
                     const resProdutoresFavoritos = await api.get("/usuarios/perfil/produtores-favoritos");
                     setAgricultoresFavoritos(resProdutoresFavoritos.data);
+
+                    // Buscar produtos favoritos do usuário
+                    const resProdutosFavoritos = await api.get(`/favoritos/produto?cpf_usuario=${dados.cpf_cnpj}`);
+                    setProdutosFavoritos(resProdutosFavoritos.data);
                     
                     // TODO: outros dados
 
@@ -445,6 +483,15 @@ export default function PerfilHome() {
                         dadosIniciais={cliente}
                     />
 
+                    {/* 🔹 Modal de detalhes do produto */}
+                    {modalProdutoVisivel && (
+                        <ModalDetalhesProduto
+                            visible={modalProdutoVisivel}
+                            onClose={() => setModalProdutoVisivel(false)}
+                            produto={produtoSelecionado}
+                        />
+                    )}
+
                     <ScrollView contentContainerStyle={{  padding: 20, backgroundColor: colors.background }} showsVerticalScrollIndicator={true} bounces={false} >
                         
                         {/* 🔹 Perfil do Cliente */}
@@ -541,11 +588,39 @@ export default function PerfilHome() {
                         {/* 🔹 Produtos Favoritos */}
                         <Text style={[styles.sectionTitle, { color: colors.text }]}>Produtos favoritos</Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
-                            {produtos.map((produto, index) => (
-                                <TouchableOpacity key={index} style={[styles.productItem, { backgroundColor: colors.profileCard, borderColor: colors.borderCard }]}>
-                                    <Text style={[styles.productText, { color: colors.text }]}>{produto}</Text>
+                            {loading ? (
+                                <View style={{ marginLeft: 10, paddingVertical: 10 }}>
+                                <ActivityIndicator size="small" color="#4D7E1B" />
+                                {/* <Text style={{ color: colors.text, marginTop: 5 }}>Carregando...</Text> */}
+                                </View>
+                            ) : produtosFavoritos.length === 0 ? (
+                                <Text style={[styles.productText, { marginLeft: 10, color: colors.text }]}>
+                                    Você ainda não adicionou nenhum produto aos favoritos.
+                                </Text>
+                            ) : (
+                                produtosFavoritos.map((produto, index) => (
+                                <TouchableOpacity
+                                    key={produto.id || index}
+                                    style={[styles.productItem, { backgroundColor: colors.profileCard, borderColor: colors.borderCard, padding: 10 }]}
+                                    onPress={() => {
+                                        setProdutoSelecionado({
+                                            ...produto,
+                                            preco: produto.preco_promocional
+                                            ? `R$ ${Number(produto.preco_promocional).toFixed(2)}`
+                                            : `R$ ${Number(produto.preco).toFixed(2)}`
+                                        });
+                                        setModalProdutoVisivel(true);
+                                    }}
+                                >
+                                    <Text style={[styles.productText, { color: colors.text, fontWeight: "bold" }]}>
+                                        {produto.nome}
+                                    </Text>
+                                    <Text style={[styles.productText, { color:'gray', fontSize: 12 }]}>
+                                        {produto.produtor?.nome || "Produtor desconhecido"}
+                                    </Text>
                                 </TouchableOpacity>
-                            ))}
+                                ))
+                            )}
                         </ScrollView>
                         
                         {/* 🔹 Últimos pedidos */}
@@ -564,7 +639,7 @@ export default function PerfilHome() {
                         {loading ? (
                             <View style={{ marginLeft: 10, paddingVertical: 10 }}>
                                 <ActivityIndicator size="small" color="#4D7E1B" />
-                                <Text style={{ color: colors.text, marginTop: 5 }}>Carregando favoritos...</Text>
+                                {/* <Text style={{ color: colors.text, marginTop: 5 }}>Carregando favoritos...</Text> */}
                             </View>
                         ) : (
                             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
