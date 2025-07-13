@@ -1,125 +1,41 @@
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Modal, Alert } from "react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Feather } from "@expo/vector-icons";
 import Header from "@/components/header";
+import { api } from '../../../services/api';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTema } from '@/contexts/ThemeContext';
 
 export default function Notificacoes() {
-  const [notificacoes, setNotificacoes] = useState([
-    {
-      id: '1',
-      titulo: 'Pedido Confirmado',
-      descricao: 'Seu pedido foi confirmado pelo produtor João.',
-      data: '14/05/2025',
-    },
-    {
-      id: '2',
-      titulo: 'Produto em Promoção',
-      descricao: 'Tomate está com 20% de desconto hoje.',
-      data: '13/05/2025',
-    },{
-      id: '3',
-      titulo: 'Pedido Confirmado',
-      descricao: 'Seu pedido foi confirmado pelo produtor João.',
-      data: '14/05/2025',
-    },
-    {
-      id: '4',
-      titulo: 'Produto em Promoção',
-      descricao: 'Tomate está com 20% de desconto hoje.',
-      data: '13/05/2025',
-    },{
-      id: '5',
-      titulo: 'Pedido Confirmado',
-      descricao: 'Seu pedido foi confirmado pelo produtor João.',
-      data: '14/05/2025',
-    },
-    {
-      id: '6',
-      titulo: 'Produto em Promoção',
-      descricao: 'Tomate está com 20% de desconto hoje.',
-      data: '13/05/2025',
-    },{
-      id: '7',
-      titulo: 'Pedido Confirmado',
-      descricao: 'Seu pedido foi confirmado pelo produtor João.',
-      data: '14/05/2025',
-    },
-    {
-      id: '8',
-      titulo: 'Produto em Promoção',
-      descricao: 'Tomate está com 20% de desconto hoje.',
-      data: '13/05/2025',
-    },{
-      id: '9',
-      titulo: 'Pedido Confirmado',
-      descricao: 'Seu pedido foi confirmado pelo produtor João.',
-      data: '14/05/2025',
-    },
-    {
-      id: '10',
-      titulo: 'Produto em Promoção',
-      descricao: 'Tomate está com 20% de desconto hoje.',
-      data: '13/05/2025',
-    },{
-      id: '11',
-      titulo: 'Pedido Confirmado',
-      descricao: 'Seu pedido foi confirmado pelo produtor João.',
-      data: '14/05/2025',
-    },
-    {
-      id: '12',
-      titulo: 'Produto em Promoção',
-      descricao: 'Tomate está com 20% de desconto hoje.',
-      data: '13/05/2025',
-    },{
-      id: '13',
-      titulo: 'Pedido Confirmado',
-      descricao: 'Seu pedido foi confirmado pelo produtor João.',
-      data: '14/05/2025',
-    },
-    {
-      id: '14',
-      titulo: 'Produto em Promoção',
-      descricao: 'Tomate está com 20% de desconto hoje.',
-      data: '13/05/2025',
-    },{
-      id: '15',
-      titulo: 'Pedido Confirmado',
-      descricao: 'Seu pedido foi confirmado pelo produtor João.',
-      data: '14/05/2025',
-    },
-    {
-      id: '16',
-      titulo: 'Produto em Promoção',
-      descricao: 'Tomate está com 20% de desconto hoje.',
-      data: '13/05/2025',
-    },{
-      id: '17',
-      titulo: 'Pedido Confirmado',
-      descricao: 'Seu pedido foi confirmado pelo produtor João.',
-      data: '14/05/2025',
-    },
-    {
-      id: '18',
-      titulo: 'Produto em Promoção',
-      descricao: 'Tomate está com 20% de desconto hoje.',
-      data: '13/05/2025',
-    },{
-      id: '19',
-      titulo: 'Pedido Confirmado',
-      descricao: 'Seu pedido foi confirmado pelo produtor João.',
-      data: '14/05/2025',
-    },
-    {
-      id: '20',
-      titulo: 'Produto em Promoção',
-      descricao: 'Tomate está com 20% de desconto hoje.',
-      data: '13/05/2025',
-    }
-  ]);
-
+  const { isNightMode, colors } = useTema();
+  const [notificacoes, setNotificacoes] = useState<any[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [notificacaoSelecionada, setNotificacaoSelecionada] = useState<any>(null);
+
+  useEffect(() => {
+    buscarNotificacoes();
+  }, []);
+
+  const buscarNotificacoes = async () => {
+    
+    try {
+      const token = await AsyncStorage.getItem("token");
+      const res = await api.get("/notificacoes", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const formatadas = res.data.map((n: any) => ({
+        id: n.id.toString(),
+        titulo: n.titulo,
+        descricao: n.mensagem,
+        data: new Date(n.criado_em).toLocaleDateString("pt-BR"),
+      }));
+
+      setNotificacoes(formatadas);
+    } catch (error) {
+      console.error("Erro ao buscar notificações:", error);
+    }
+  };
 
   const abrirModal = (notificacao: any) => {
     setNotificacaoSelecionada(notificacao);
@@ -132,18 +48,27 @@ export default function Notificacoes() {
       {
         text: "Excluir",
         style: "destructive",
-        onPress: () => {
-          setNotificacoes(prev => prev.filter(n => n.id !== id));
+        onPress: async () => {
+          try {
+            const token = await AsyncStorage.getItem("token");
+            await api.delete(`/notificacoes/${id}`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            setNotificacoes(prev => prev.filter(n => n.id !== id));
+          } catch (error) {
+            console.error("Erro ao excluir notificação:", error);
+            Alert.alert("Erro", "Não foi possível excluir a notificação.");
+          }
         }
       }
     ]);
   };
 
   const renderItem = ({ item }: any) => (
-    <TouchableOpacity style={styles.item} onPress={() => abrirModal(item)}>
+    <TouchableOpacity style={[styles.item, { backgroundColor: colors.background }]} onPress={() => abrirModal(item)}>
       <View style={styles.itemInfo}>
-        <Text style={styles.titulo}>{item.titulo}</Text>
-        <Text style={styles.data}>{item.data}</Text>
+        <Text style={[styles.titulo, { color: colors.text }]}>{item.titulo}</Text>
+        <Text style={[styles.data, { color: colors.text }]}>{item.data}</Text>
       </View>
       <TouchableOpacity onPress={() => excluirNotificacao(item.id)} style={styles.btnDelete}>
         <Feather name="trash" size={24} color="#B00020" />
@@ -152,10 +77,9 @@ export default function Notificacoes() {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header />
-
-      <Text style={styles.headerText}>Notificações</Text>
+      <Text style={[styles.headerText, { color: colors.text }]}>Notificações</Text>
 
       <FlatList
         data={notificacoes}
@@ -163,15 +87,20 @@ export default function Notificacoes() {
         renderItem={renderItem}
         contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 10 }}
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <View style={{ padding: 20, alignItems: 'center' }}>
+            <Text style={{ fontSize: 16, color: colors.text  }}>Nenhuma notificação encontrada.</Text>
+          </View>
+        }
       />
 
       {/* Modal Detalhes */}
       <Modal visible={modalVisible} transparent animationType="fade">
         <View style={styles.modalOverlay}>
-          <View style={styles.modalBox}>
-            <Text style={styles.modalTitulo}>{notificacaoSelecionada?.titulo}</Text>
-            <Text style={styles.modalDescricao}>{notificacaoSelecionada?.descricao}</Text>
-            <Text style={styles.modalData}>{notificacaoSelecionada?.data}</Text>
+          <View style={[styles.modalBox, { backgroundColor: colors.background }]}>
+            <Text style={[styles.modalTitulo, { color: colors.text }]}>{notificacaoSelecionada?.titulo}</Text>
+            <Text style={[styles.modalDescricao, { color: colors.text }]}>{notificacaoSelecionada?.descricao}</Text>
+            <Text style={[styles.modalData, { color: colors.text }]}>{notificacaoSelecionada?.data}</Text>
             <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.fecharBotao}>
               <Text style={{ color: '#4CAF50', fontWeight: 'bold' }}>Fechar</Text>
             </TouchableOpacity>
@@ -184,7 +113,6 @@ export default function Notificacoes() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
-
   headerText: {
     fontSize: 22,
     fontWeight: 'bold',
@@ -192,7 +120,6 @@ const styles = StyleSheet.create({
     marginVertical: 15,
     color: '#4D7E1B'
   },
-
   item: {
     backgroundColor: '#F9F9F9',
     padding: 15,
@@ -204,35 +131,29 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#4D7E1B'
   },
-
   itemInfo: {
     flex: 1,
     marginRight: 10,
   },
-
   titulo: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#4D7E1B'
   },
-
   data: {
     fontSize: 12,
     color: '#777',
     marginTop: 4,
   },
-
   btnDelete: {
     padding: 5,
   },
-
   modalOverlay: {
     flex: 1,
     backgroundColor: '#00000099',
     justifyContent: 'center',
     alignItems: 'center'
   },
-
   modalBox: {
     backgroundColor: 'white',
     padding: 20,
@@ -240,23 +161,19 @@ const styles = StyleSheet.create({
     width: '85%',
     gap: 10
   },
-
   modalTitulo: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#4D7E1B'
   },
-
   modalDescricao: {
     fontSize: 14,
     color: '#555'
   },
-
   modalData: {
     fontSize: 12,
     color: '#999'
   },
-
   fecharBotao: {
     marginTop: 10,
     alignSelf: 'flex-end'
