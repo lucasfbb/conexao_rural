@@ -32,6 +32,18 @@ export default function Carrinho() {
         <Header />
         <Text style={[styles.title, { color: colors.title }]}>Carrinho</Text>
 
+        {itens.length === 0 ? (
+          <View style={styles.vazioContainer}>
+            <Image
+              source={{ uri: 'https://cdn-icons-png.flaticon.com/512/2038/2038854.png' }}
+              style={styles.imagemVazia}
+              resizeMode="contain"
+            />
+            <Text style={styles.mensagemVazio}>Seu carrinho está vazio...</Text>
+            <Text style={styles.mensagemVazio}>Que tal adicionar alguma coisa? 🛒</Text>
+          </View>
+        ) : (
+
         <FlatList
           data={itens}
           keyExtractor={(item) => item.id_listagem.toString()}
@@ -61,6 +73,7 @@ export default function Carrinho() {
             );
           }}
         />
+        )}
       </View>
 
       <SafeAreaView style={styles.footer} edges={["bottom"]}>
@@ -68,7 +81,14 @@ export default function Carrinho() {
           Total sem entrega: R$ {total.toFixed(2)}
         </Text>
 
-        <TouchableOpacity style={styles.continuar} onPress={() => router.push('/carrinho/confirmacao')}>
+        <TouchableOpacity
+          style={[
+            styles.continuar,
+            { backgroundColor: itens.length === 0 ? '#ccc' : '#4D7E1B' }
+          ]}
+          onPress={() => router.push('/carrinho/confirmacao')}
+          disabled={itens.length === 0}
+        >
           <Text style={styles.continuarText}>Continuar</Text>
         </TouchableOpacity>
 
@@ -108,4 +128,21 @@ const styles = StyleSheet.create({
   total: { fontSize: 16, fontWeight: 'bold', color: '#4D7E1B', marginBottom: height * 0.025 },
   continuar: { backgroundColor: '#4D7E1B', paddingVertical: 12, paddingHorizontal: 30, borderRadius: 25 },
   continuarText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+  vazioContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 40
+  },
+  imagemVazia: {
+    width: 180,
+    height: 180,
+    marginBottom: 20
+  },
+  mensagemVazio: {
+    fontSize: 16,
+    color: '#777',
+    textAlign: 'center',
+    marginBottom: 5
+  }
 });
