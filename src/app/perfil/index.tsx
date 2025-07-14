@@ -172,6 +172,7 @@ export default function PerfilHome() {
                     setProdutosFavoritos(resProdutosFavoritos.data);
 
                     const resUltimosPedidos = await api.get(`/usuarios/perfil/ultimos-pedidos?cpf_usuario=${dados.cpf_cnpj}`);
+                    console.log("Últimos pedidos:", resUltimosPedidos.data);
                     setUltimosPedidos(resUltimosPedidos.data);
                     
                     // TODO: outros dados
@@ -701,12 +702,12 @@ export default function PerfilHome() {
                                         // Exibir detalhes do pedido? Navegar para tela de pedido?
                                     }}
                                     >
-                                    <Text style={[styles.productText, { color: colors.text }]}>
-                                        {pedido.produto?.nome || "Produto"} - {pedido.quantidade}x
-                                    </Text>
-                                    <Text style={[styles.productText, { fontSize: 12, color: "gray" }]}>
-                                        {new Date(pedido.criado_em).toLocaleDateString("pt-BR")}
-                                    </Text>
+                                        <Text style={[styles.productText, { color: colors.text }]}>
+                                            {pedido.produto?.nome || "Produto"} - {pedido.quantidade}x
+                                        </Text>
+                                        <Text style={[styles.productText, { fontSize: 12, color: "gray" }]}>
+                                            {new Date(pedido.momento_compra).toLocaleDateString("pt-BR")}
+                                        </Text>
                                     </TouchableOpacity>
                                 ))
                             )}

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
-import { View, Text, Image, TouchableOpacity, ScrollView, FlatList, StyleSheet, Dimensions, ActivityIndicator } from "react-native";
+import { View, Text, Image, TouchableOpacity, ScrollView, FlatList, StyleSheet, Dimensions, ActivityIndicator, Alert } from "react-native";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
 
 import Header from "@/components/header";
@@ -8,10 +8,12 @@ import ModalProduto from "@/components/modais/produtos/modalProduto";
 
 import { useTema } from "@/contexts/ThemeContext";
 import { useFavoritos } from "@/contexts/FavoritosContext";
+import { useCarrinho } from "@/contexts/CarrinhoContext";
 
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api, baseURL } from "../../../services/api";
 import { Produtor } from "@/types/types";
+import { parsePreco } from "../../../services/utils";
 
 const { width, height } = Dimensions.get("window");
 
@@ -37,6 +39,7 @@ export default function ProdutorScreen() {
   const { cpf_cnpj } = params;
   const { colors } = useTema();
   const { favoritarProduto, desfavoritarProduto, isProdutoFavorito } = useFavoritos();
+  const { adicionarItem } = useCarrinho();
 
   const base = baseURL.slice(0, -1);
 
@@ -114,7 +117,26 @@ export default function ProdutorScreen() {
               }}
               produto={produtoSelecionado}
               onAddToCart={(qtd) => {
-                // Aqui você pode implementar o carrinho!
+                const precoFinal = produtoSelecionado?.preco_promocional
+                  ? parsePreco(produtoSelecionado.preco_promocional)
+                  : parsePreco(produtoSelecionado.preco);
+                
+                // console.log(produtoSelecionado.preco)
+                // console.log("💰 precoFinal calculado:", precoFinal);
+
+                adicionarItem({
+                  id_listagem: Number(produtoSelecionado?.id),
+                  nome: produtoSelecionado?.nome,
+                  preco: precoFinal,
+                  qtd,
+                  imagem: produtoSelecionado?.imagem,
+                });
+
+                Alert.alert(
+                  'Adicionado ao carrinho',
+                  `${produtoSelecionado.nome} (x${qtd}) adicionado com sucesso!`
+                );
+
                 setModalProdutoVisivel(false);
                 setProdutoSelecionado(null);
               }}

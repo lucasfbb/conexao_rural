@@ -19,3 +19,25 @@ class Pedido(Base):
 
     usuario = relationship("Usuario", back_populates="pedidos")
     endereco = relationship("Endereco", back_populates="pedidos")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "produto": self.produto,
+            "quantidade": self.quantidade,
+            "valor": self.valor,
+            "momento_compra": self.momento_compra.isoformat() if self.momento_compra else None,
+            "status": self.status,
+            "avaliacao": self.avaliacao,
+            "cpf_usuario": self.cpf_usuario,
+            "id_endereco": self.id_endereco,
+            "usuario": {
+                "cpf_cnpj": self.usuario.cpf_cnpj,
+                "nome": self.usuario.nome
+            } if self.usuario else None,
+            "endereco": {
+                "id": self.endereco.id,
+                "rua": self.endereco.rua,
+                "cidade": self.endereco.cidade
+            } if self.endereco else None
+        }

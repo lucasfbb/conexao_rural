@@ -44,3 +44,22 @@ export type EnderecoItem =
       addNew: true;
     };
 
+export interface EnderecoOut {
+  id: number;
+  cep: string;
+  numero: string;
+  estado: string;
+  cidade: string;
+  rua: string;
+  complemento?: string;
+  referencia?: string;
+}
+
+export interface FormaPagamentoOut {
+  id: number;
+  gateway: string;
+  token: string;
+  bandeira: string;
+  final_cartao: string; // pode ser final "**** 1234"
+  nome_cartao: string;
+}

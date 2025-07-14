@@ -49,3 +49,8 @@ export const formatarNumeroCartao = (numero: string) => {
     .slice(0, 16)                      // máximo de 16 dígitos
     .replace(/(\d{4})(?=\d)/g, "$1 "); // insere espaço a cada 4 dígitos
 };
+
+export const parsePreco = (valor: string) => {
+  if (!valor) return 0;
+  return Number(valor.replace("R$", "").replace(/\s/g, "").replace(",", "."));
+};
