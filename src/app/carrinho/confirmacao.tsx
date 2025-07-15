@@ -1,7 +1,7 @@
 // app/home/confirmacao.tsx
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import Header from '@/components/header';
-import { Feather, MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTema } from '@/contexts/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -27,10 +27,10 @@ export default function Confirmacao() {
   const [pagamentos, setPagamentos] = useState<any[]>([]);
   const [enderecoSelecionado, setEnderecoSelecionado] = useState<number | null>(null);
   const [pagamentoSelecionado, setPagamentoSelecionado] = useState<number | null>(null);
+  const [escolhaForma, setEscolhaForma] = useState<string>('cartao'); // default: cartão
 
   const subtotal = itens.reduce((acc, item) => acc + item.preco * item.qtd, 0);
-  const frete = 10.00;
-  const totalFinal = subtotal + frete;
+  const totalFinal = subtotal;
 
   useEffect(() => {
     const carregarDados = async () => {
@@ -42,9 +42,6 @@ export default function Confirmacao() {
         const resPag = await api.get("usuarios/perfil/pagamentos");
         setPagamentos(resPag.data);
         if (resPag.data.length > 0) setPagamentoSelecionado(resPag.data[0].id);
-
-        // console.log("Endereços carregados:", resEnd.data);
-        // console.log("Formas de pagamento carregadas:", resPag.data);
       } catch (e) {
         console.error("Erro ao carregar endereços/pagamentos", e);
       }
@@ -69,7 +66,6 @@ export default function Confirmacao() {
               style={styles.picker}
             >
               {enderecos.map(e => (
-                // console.log("Endereço:", e),
                 <Picker.Item key={e.id} label={formatarEndereco(e)} value={e.id} />
               ))}
             </Picker>
@@ -82,28 +78,44 @@ export default function Confirmacao() {
               <MaterialIcons name="calendar-today" size={20} color="#4D7E1B" />
               <View style={{ marginLeft: 10 }}>
                 <Text style={styles.texto}>28/02/2025</Text>
-                <Text style={styles.subtexto}>Frete: R$ {frete.toFixed(2)}</Text>
               </View>
             </View>
           </View>
 
-          {/* Pagamento */}
-          <Text style={[styles.label, { color: colors.title }]}>Forma de pagamento</Text>
+          {/* Tipo de pagamento */}
+          <Text style={[styles.label, { color: colors.title }]}>Tipo de pagamento</Text>
           <View style={styles.selectContainer}>
             <Picker
-              selectedValue={pagamentoSelecionado}
-              onValueChange={setPagamentoSelecionado}
+              selectedValue={escolhaForma}
+              onValueChange={setEscolhaForma}
               style={styles.picker}
             >
-              {pagamentos.map(p => (
-                <Picker.Item key={p.id} label={formatarCartao(p)} value={p.id} />
-              ))}
+              <Picker.Item label="Cartão de Crédito" value="cartao" />
+              <Picker.Item label="Pix" value="pix" />
             </Picker>
           </View>
 
+          {/* Se for cartão, mostra picker dos cartões */}
+          {escolhaForma === 'cartao' && (
+            <>
+              <Text style={[styles.label, { color: colors.title }]}>Cartões Salvos</Text>
+              <View style={styles.selectContainer}>
+                <Picker
+                  selectedValue={pagamentoSelecionado}
+                  onValueChange={setPagamentoSelecionado}
+                  style={styles.picker}
+                >
+                  {pagamentos.map(p => (
+                    <Picker.Item key={p.id} label={formatarCartao(p)} value={p.id} />
+                  ))}
+                </Picker>
+              </View>
+            </>
+          )}
+
           {/* Total */}
           <View style={styles.totalContainer}>
-            <Text style={styles.total}>Total com entrega</Text>
+            <Text style={styles.total}>Total</Text>
             <Text style={styles.totalValor}>R$ {totalFinal.toFixed(2)}</Text>
           </View>
 
@@ -138,7 +150,6 @@ const styles = StyleSheet.create({
   },
   row: { flexDirection: 'row', alignItems: 'center' },
   texto: { color: '#4D7E1B', fontWeight: 'bold' },
-  subtexto: { color: '#555', fontSize: 12 },
   totalContainer: { marginTop: height * 0.05, alignItems: 'center' },
   total: { fontSize: 14, color: '#777' },
   totalValor: { fontSize: 20, color: '#4D7E1B', fontWeight: 'bold', marginBottom: height * 0.045 },
@@ -156,7 +167,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginBottom: 20,
   },
-
   picker: {
     height: 50,
     width: '100%',

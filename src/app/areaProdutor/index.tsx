@@ -49,6 +49,10 @@ export default function AreaProdutor() {
     telefone_1: "",
     telefone_2: "",
     endereco: "",
+    rua: "",
+    numero: "",
+    complemento: "",
+    bairro: "",
   });
 
   const [perfilOriginal, setPerfilOriginal] = useState({
@@ -61,6 +65,10 @@ export default function AreaProdutor() {
     telefone_1: "",
     telefone_2: "",
     endereco: "",
+    rua: "",
+    numero: "",
+    complemento: "",
+    bairro: "",
   });
 
   const [carregando, setCarregando] = useState(true);
@@ -496,8 +504,16 @@ export default function AreaProdutor() {
           <TextInput style={styles.input} value={perfil.nome} onChangeText={nome => setPerfil(p => ({ ...p, nome }))} />
           <Text style={styles.inputLabel}>Email</Text>
           <TextInput style={styles.input} value={perfil.email} onChangeText={email => setPerfil(p => ({ ...p, email }))} />
-          <Text style={styles.inputLabel}>Endereço</Text>
-          <TextInput style={styles.input} value={perfil.endereco} onChangeText={endereco => setPerfil(p => ({ ...p, endereco }))} />
+          {/* <Text style={styles.inputLabel}>Endereço</Text>
+          <TextInput style={styles.input} value={perfil.endereco} onChangeText={endereco => setPerfil(p => ({ ...p, endereco }))} /> */}
+          <Text style={styles.inputLabel}>Rua</Text>
+          <TextInput style={styles.input} value={perfil.rua} onChangeText={rua => setPerfil(p => ({ ...p, rua }))} />
+          <Text style={styles.inputLabel}>Número</Text>
+          <TextInput style={styles.input} value={perfil.numero} onChangeText={numero => setPerfil(p => ({ ...p, numero }))} />
+          <Text style={styles.inputLabel}>Complemento</Text>
+          <TextInput style={styles.input} value={perfil.complemento} onChangeText={complemento => setPerfil(p => ({ ...p, complemento }))} />
+          <Text style={styles.inputLabel}>Bairro</Text>
+          <TextInput style={styles.input} value={perfil.bairro} onChangeText={bairro => setPerfil(p => ({ ...p, bairro }))} />            
           <Text style={styles.inputLabel}>Telefone</Text>
           <TextInput style={styles.input} value={perfil.telefone_1} onChangeText={telefone => setPerfil(p => ({ ...p, telefone }))} />
           <Text style={styles.inputLabel}>Categoria</Text>

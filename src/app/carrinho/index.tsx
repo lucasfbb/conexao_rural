@@ -5,12 +5,17 @@ import { router } from 'expo-router';
 import { useTema } from '@/contexts/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCarrinho } from '@/contexts/CarrinhoContext';
+import { useEffect } from 'react';
 
 const { width, height } = Dimensions.get("window");
 
 export default function Carrinho() {
   const { itens, alterarQuantidade, limparCarrinho } = useCarrinho();
   const { colors } = useTema();
+
+  // useEffect(() => {
+  //   console.log("Itens no carrinho:", itens);  
+  // }, [itens]);
 
   const aumentarQuantidade = (id: number) => {
     const item = itens.find(i => i.id_listagem === id);

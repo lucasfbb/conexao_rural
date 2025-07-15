@@ -5,6 +5,10 @@ class ProdutorOut(BaseModel):
     cpf_cnpj: Optional[str] = None
     nome: str
     endereco: Optional[str] = None
+    rua: Optional[str] = None
+    numero: Optional[str] = None
+    complemento: Optional[str] = None
+    bairro: Optional[str] = None
     distancia: Optional[float] = None
     categoria: Optional[str] = None
     foto: Optional[str] = None
@@ -21,6 +25,10 @@ class ProdutorOut(BaseModel):
 class ProdutorUpdate(BaseModel):
     nome: Optional[str] = None
     endereco: Optional[str] = None
+    rua: Optional[str] = None
+    numero: Optional[str] = None
+    complemento: Optional[str] = None
+    bairro: Optional[str] = None
     categoria: Optional[str] = None
     banner: Optional[str] = None
     foto: Optional[str] = None

@@ -13,7 +13,7 @@ import { useCarrinho } from "@/contexts/CarrinhoContext";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api, baseURL } from "../../../services/api";
 import { Produtor } from "@/types/types";
-import { parsePreco } from "../../../services/utils";
+import { geocodeEndereco, parsePreco } from "../../../services/utils";
 
 const { width, height } = Dimensions.get("window");
 
@@ -58,7 +58,10 @@ export default function ProdutorScreen() {
       try {
         // Dados do produtor
         const resProdutor = await api.get(`/produtores/${cpf_cnpj}`);
+
         setProdutor(resProdutor.data);
+        
+        // console.log("Dados do produtor:", resProdutor.data);
 
         // Produtos desse produtor
         const resProdutos = await api.get(`/produtores/${cpf_cnpj}/produtos`);
@@ -116,7 +119,7 @@ export default function ProdutorScreen() {
                 setProdutoSelecionado(null);
               }}
               produto={produtoSelecionado}
-              onAddToCart={(qtd) => {
+              onAddToCart={async (qtd) => {
                 const precoFinal = produtoSelecionado?.preco_promocional
                   ? parsePreco(produtoSelecionado.preco_promocional)
                   : parsePreco(produtoSelecionado.preco);
@@ -124,12 +127,36 @@ export default function ProdutorScreen() {
                 // console.log(produtoSelecionado.preco)
                 // console.log("💰 precoFinal calculado:", precoFinal);
 
+                const enderecoTexto = `${produtor?.rua ?? ''}, ${produtor?.numero ?? ''}, ${produtor?.bairro ?? ''}`;
+                const coords = await geocodeEndereco(enderecoTexto);
+                  
+                // // Se não encontrou, tenta só com o bairro
+                // if (!coords && produtor?.bairro) {
+                //   console.warn("Endereço completo falhou. Tentando com apenas o bairro...");
+                //   coords = await geocodeEndereco(produtor.bairro);
+                // }
+
+                // // Se ainda falhar, aborta
+                // if (!coords) {
+                //   console.error("Não foi possível geocodificar o endereço do cliente.");
+                //   return;
+                // }
+
                 adicionarItem({
                   id_listagem: Number(produtoSelecionado?.id),
                   nome: produtoSelecionado?.nome,
                   preco: precoFinal,
                   qtd,
                   imagem: produtoSelecionado?.imagem,
+                  endereco_produtor: {
+                    texto: enderecoTexto,
+                    rua: produtor?.rua,
+                    numero: produtor?.numero,
+                    bairro: produtor?.bairro,
+                    complemento: produtor?.complemento,
+                    latitude: coords?.latitude,
+                    longitude: coords?.longitude,
+                  }
                 });
 
                 Alert.alert(

@@ -35,10 +35,16 @@ def listar_produtores(
             nome=produtor.nome,
             banner=produtor.banner,
             endereco=produtor.endereco,
+            rua=produtor.rua,
+            numero=produtor.numero,
+            bairro=produtor.bairro,
+            complemento=produtor.complemento,
             categoria=produtor.categoria,
             foto=produtor.foto,
             distancia=8.5  # valor default fictício por enquanto
         ))
+
+        # print(f"Produtor: {produtor.nome}, CPF/CNPJ: {usuario.cpf_cnpj}, rua: {produtor.rua}")
 
     return resposta
 

@@ -8,6 +8,15 @@ export type ItemCarrinho = {
   preco: number;
   qtd: number;
   imagem?: any;
+  endereco_produtor?: {
+    texto: string; // Rua, cidade etc
+    rua?: string;
+    numero?: string;
+    complemento?: string;
+    bairro?: string;
+    latitude?: number;
+    longitude?: number;
+  };
 };
 
 type CarrinhoContextType = {
@@ -48,6 +57,7 @@ export const CarrinhoProvider = ({ children }: { children: ReactNode }) => {
   }, [itens, user]);
 
   const adicionarItem = (novo: ItemCarrinho) => {
+    console.log("Adicionando item ao carrinho:", novo);
     setItens(prev => {
       const existente = prev.find(i => i.id_listagem === novo.id_listagem);
       if (existente) {

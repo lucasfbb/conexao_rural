@@ -9,6 +9,8 @@ import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { EnderecoOut, FormaPagamentoOut } from '@/types/types';
 
+import { geocodeEndereco, obterFrete } from '../../../services/utils';
+
 const { height } = Dimensions.get("window");
 
 export default function Finalizacao() {
@@ -21,9 +23,10 @@ export default function Finalizacao() {
   const [pagamentos, setPagamentos] = useState<FormaPagamentoOut[]>([]);
   const [enderecoSelecionado, setEnderecoSelecionado] = useState<EnderecoOut | null>(null);
   const [pagamentoSelecionado, setPagamentoSelecionado] = useState<FormaPagamentoOut | null>(null);
+  const [frete, setFrete] = useState<number>(0.00);
+  const [distancia, setDistancia] = useState<number>(0);
 
   const subtotal = itens.reduce((acc, item) => acc + item.preco * item.qtd, 0);
-  const frete = 10.00;
   const total = subtotal + frete;
 
   // useEffect(() => {
@@ -48,13 +51,14 @@ export default function Finalizacao() {
 
     useEffect(() => {
       const carregarDados = async () => {
+        // console.log(itens)
         try {
           const resEnd = await api.get("usuarios/perfil/enderecos");
           setEnderecos(resEnd.data);
           if (resEnd.data.length > 0) setEnderecoSelecionado(resEnd.data[0]);
 
           const resPag = await api.get("usuarios/perfil/pagamentos");
-          console.log("Formas de pagamento:", resPag.data);
+          // console.log("Formas de pagamento:", resPag.data);
           setPagamentos(resPag.data);
           if (resPag.data.length > 0) setPagamentoSelecionado(resPag.data[0]);
         } catch (e) {
@@ -64,11 +68,104 @@ export default function Finalizacao() {
       carregarDados();
     }, []);
 
+    useEffect(() => {
+      const calcularFrete = async () => {
+        let origemCliente = {
+          latitude: enderecoSelecionado?.latitude,
+          longitude: enderecoSelecionado?.longitude,
+        };
+
+        if (!origemCliente.latitude || !origemCliente.longitude) {
+          // monta o endereço textual
+          const textoEndereco = `${enderecoSelecionado?.rua ?? ''}, ${enderecoSelecionado?.numero ?? ''}, ${enderecoSelecionado?.bairro ?? ''}`;
+          let coords = await geocodeEndereco(textoEndereco);
+
+          // Se não encontrou, tenta só com o bairro
+          if (!coords && enderecoSelecionado?.bairro) {
+            console.warn("Endereço completo falhou. Tentando com apenas o bairro...");
+            coords = await geocodeEndereco(enderecoSelecionado.bairro);
+          }
+
+          // Se ainda falhar, aborta
+          if (!coords) {
+            console.error("Não foi possível geocodificar o endereço do cliente.");
+            return;
+          }
+
+          console.log("📍 Coordenadas do cliente:", coords);
+
+          origemCliente = coords;
+        }
+
+        let totalFrete = 0;
+        const destinosUnicos = new Set();
+
+        for (const item of itens) {
+          const coords = item.endereco_produtor;
+          if (!coords?.latitude || !coords?.longitude) continue;
+
+          const chave = `${coords.latitude},${coords.longitude}`;
+          if (destinosUnicos.has(chave)) continue;
+          destinosUnicos.add(chave);
+
+          if (
+            origemCliente.latitude === undefined || origemCliente.longitude === undefined ||
+            coords.latitude === undefined || coords.longitude === undefined
+          ) {
+            console.warn("Coordenadas inválidas, pulando item");
+            return;
+          }
+
+          const valor = obterFrete(
+            { lat: origemCliente.latitude, lon: origemCliente.longitude },
+            { lat: coords.latitude, lon: coords.longitude }
+          );
+
+          totalFrete += valor;
+        }
+        
+        console.log("💰 Frete total calculado:", totalFrete);
+
+        setFrete(totalFrete);
+      };
+
+      if (enderecoSelecionado && itens.length > 0) {
+        calcularFrete();
+      }
+    }, [enderecoSelecionado, itens]);
+
+  // const finalizarPedido = async () => {
+  //   const payload = {
+  //     cpf_usuario: user?.cpf_cnpj,
+  //     id_endereco: enderecoSelecionado?.id,
+  //     id_pagamento: pagamentoSelecionado?.id,
+  //     itens: itens.map(i => ({
+  //       id_listagem: i.id_listagem,
+  //       quantidade: i.qtd
+  //     }))
+  //   };
+
+  //   try {
+  //     await api.post('/pedidos/', payload);
+  //     limparCarrinho();
+  //     Alert.alert("Sucesso", "Pedido finalizado com sucesso!");
+  //     router.push('/home');
+  //   } catch (error) {
+  //     console.error(error);
+  //     Alert.alert("Erro", "Falha ao finalizar pedido.");
+  //   }
+  // };
+
   const finalizarPedido = async () => {
+    if (!pagamentoSelecionado || !enderecoSelecionado || !user) {
+      Alert.alert("Erro", "Selecione endereço e forma de pagamento.");
+      return;
+    }
+
     const payload = {
       cpf_usuario: user?.cpf_cnpj,
-      id_endereco: enderecoSelecionado?.id,
-      id_pagamento: pagamentoSelecionado?.id,
+      id_endereco: enderecoSelecionado.id,
+      id_pagamento: pagamentoSelecionado.id,
       itens: itens.map(i => ({
         id_listagem: i.id_listagem,
         quantidade: i.qtd
@@ -76,10 +173,15 @@ export default function Finalizacao() {
     };
 
     try {
-      await api.post('/pedidos/', payload);
-      limparCarrinho();
-      Alert.alert("Sucesso", "Pedido finalizado com sucesso!");
-      router.push('/home');
+      const resposta = await api.post('/pedidos/pagar', payload);
+
+      if (resposta.data.status === 'aprovado') {
+        limparCarrinho();
+        Alert.alert("Sucesso", "Pagamento aprovado e pedido finalizado!");
+        router.push('/home');
+      } else {
+        Alert.alert("Pagamento recusado", "Houve um problema ao processar o pagamento.");
+      }
     } catch (error) {
       console.error(error);
       Alert.alert("Erro", "Falha ao finalizar pedido.");

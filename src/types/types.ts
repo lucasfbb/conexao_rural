@@ -27,6 +27,10 @@ export type Produtor = {
   foto?: string;
   categoria?: string;
   endereco?: string;
+  rua?: string;
+  numero?: string;
+  complemento?: string;
+  bairro?: string;
   telefone1?: string;
   telefone2?: string;
   distancia?: number;
@@ -48,11 +52,14 @@ export interface EnderecoOut {
   id: number;
   cep: string;
   numero: string;
+  bairro?: string;
   estado: string;
   cidade: string;
   rua: string;
   complemento?: string;
   referencia?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface FormaPagamentoOut {

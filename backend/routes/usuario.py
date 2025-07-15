@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 import shutil
 import time
@@ -90,9 +91,34 @@ def remover_endereco(id: int, db: Session = Depends(get_db), current_user: Usuar
 def listar_pagamentos(current_user: Usuario = Depends(get_current_user)):
     return current_user.formas_pagamento
 
+# @router.post("/perfil/pagamentos", response_model=FormaPagamentoOut)
+# def adicionar_pagamento(dados: FormaPagamentoIn, db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
+#     nova = FormaPagamento(**dados.dict(), usuario_cpf_cnpj=current_user.cpf_cnpj)
+#     db.add(nova)
+#     db.commit()
+#     db.refresh(nova)
+#     return nova
+
 @router.post("/perfil/pagamentos", response_model=FormaPagamentoOut)
-def adicionar_pagamento(dados: FormaPagamentoIn, db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
-    nova = FormaPagamento(**dados.dict(), usuario_cpf_cnpj=current_user.cpf_cnpj)
+def adicionar_pagamento(
+    dados: FormaPagamentoIn,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    if not dados.token_gateway:
+        raise HTTPException(status_code=400, detail="Token do cartão é obrigatório")
+
+    nova = FormaPagamento(
+        usuario_cpf_cnpj=current_user.cpf_cnpj,
+        gateway="mercadopago",
+        token_gateway=dados.token_gateway,
+        bandeira=dados.bandeira,
+        final_cartao=dados.final_cartao,
+        nome_cartao=dados.nome_cartao,
+        nome_impresso=dados.nome_impresso,
+        criado_em=datetime.now()
+    )
+
     db.add(nova)
     db.commit()
     db.refresh(nova)
