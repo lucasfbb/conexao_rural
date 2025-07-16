@@ -7,7 +7,7 @@ class FormaPagamento(Base):
     __tablename__ = "forma_pagamento"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    usuario_cpf_cnpj = Column(String, ForeignKey("usuario.cpf_cnpj"), nullable=False)
+    usuario_id = Column(Integer, ForeignKey("usuario.id"), nullable=False)
     gateway = Column(String, nullable=False)  # "stripe", "mercadopago", "pagseguro"...
     token_gateway = Column(String, nullable=False)  # o token recebido do gateway
     bandeira = Column(String, nullable=True)        # Ex: "Visa", "Master"

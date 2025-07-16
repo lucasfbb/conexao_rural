@@ -2,6 +2,8 @@ from pydantic import BaseModel
 from typing import Optional
 
 class ProdutorOut(BaseModel):
+    id: Optional[int] = None
+    usuario_id: Optional[int] = None
     cpf_cnpj: Optional[str] = None
     nome: str
     endereco: Optional[str] = None

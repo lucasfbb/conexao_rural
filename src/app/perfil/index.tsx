@@ -168,10 +168,10 @@ export default function PerfilHome() {
                     setAgricultoresFavoritos(resProdutoresFavoritos.data);
 
                     // Buscar produtos favoritos do usuário
-                    const resProdutosFavoritos = await api.get(`/favoritos/produto?cpf_usuario=${dados.cpf_cnpj}`);
+                    const resProdutosFavoritos = await api.get(`/favoritos/produto?id_usuario=${dados.id}`);
                     setProdutosFavoritos(resProdutosFavoritos.data);
 
-                    const resUltimosPedidos = await api.get(`/usuarios/perfil/ultimos-pedidos?cpf_usuario=${dados.cpf_cnpj}`);
+                    const resUltimosPedidos = await api.get(`/usuarios/perfil/ultimos-pedidos?usuario_id=${dados.id}`);
                     console.log("Últimos pedidos:", resUltimosPedidos.data);
                     setUltimosPedidos(resUltimosPedidos.data);
                     

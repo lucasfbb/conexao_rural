@@ -19,7 +19,7 @@ class Coordenadas(BaseModel):
 
 @router.post("/pedidos/")
 def criar_pedido(payload: PedidoCreate, db: Session = Depends(get_db)):
-    usuario = db.query(Usuario).filter_by(cpf_cnpj=payload.cpf_usuario).first()
+    usuario = db.query(Usuario).filter_by(id=payload.usuario_id).first()
     endereco = db.query(Endereco).filter_by(id=payload.id_endereco).first()
 
     if not usuario or not endereco:
@@ -35,7 +35,7 @@ def criar_pedido(payload: PedidoCreate, db: Session = Depends(get_db)):
             quantidade=item.quantidade,
             valor=float(listagem.preco) * item.quantidade,
             status="pendente",
-            cpf_usuario=usuario.cpf_cnpj,
+            usuario_id=usuario.id,
             id_endereco=endereco.id
         )
         db.add(pedido)

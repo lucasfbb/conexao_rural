@@ -41,7 +41,7 @@ def criar_usuario(db: Session, usuario: UsuarioCreate):
         # ✅ Só cria o produtor depois que o usuário já existe no banco
         if usuario.e_vendedor:
             novo_produtor = Produtor(
-                cpf_cnpj=usuario.cpf_cnpj,
+                usuario_id=novo_usuario.id,
                 nome=usuario.nome,
                 endereco="",
                 categoria="",

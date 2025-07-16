@@ -32,7 +32,7 @@ def pagar_pedido(
 ):
     forma = db.query(FormaPagamento).filter_by(
         id=pagamento.id_pagamento,
-        usuario_cpf_cnpj=current_user.cpf_cnpj
+        usuario_id=current_user.id
     ).first()
 
     if not forma:

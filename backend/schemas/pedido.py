@@ -6,8 +6,10 @@ class PedidoItemCreate(BaseModel):
     quantidade: int
 
 class PedidoCreate(BaseModel):
-    cpf_usuario: str
+    # cpf_usuario: str
+    usuario_id: int
     id_endereco: int
+    id_pagamento: int
     itens: List[PedidoItemCreate]
 
     

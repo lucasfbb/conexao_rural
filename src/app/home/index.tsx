@@ -54,8 +54,8 @@ export default function Home(){
     };  
 
     useEffect(() => {
-        if (isLoading || !user?.cpf_cnpj) {
-            // console.log("Esperando carregar usuário...");
+        if (isLoading || !user?.id) {
+            console.log("Esperando carregar usuário...");
             return;
         }
 
@@ -65,7 +65,8 @@ export default function Home(){
 
         const buscar = async () => {
             try {
-                const res = await api.get(`/home/produtores?exclude_cpf_cnpj=${user.cpf_cnpj}&limit=10`);
+                const res = await api.get(`/home/produtores?exclude_usuario_id=${user.id}&limit=10`);
+                console.log("Agricultores encontrados:", res.data);
                 setAgricultores(res.data);
             } catch (error) {
                 console.error("Erro ao buscar agricultores:", error);
@@ -79,7 +80,7 @@ export default function Home(){
     const renderAgricultor = ({ item } : { item: ItemHome }) => (
         <TouchableOpacity 
             style={styles.agricultorItem} 
-            onPress={() => router.push({ pathname: "/home/produtorProfile", params: { cpf_cnpj: String(item.cpf_cnpj) }})}
+            onPress={() => router.push({ pathname: "/home/produtorProfile", params: { usuario_id: item.usuario_id, cpf_cnpj: String(item.cpf_cnpj) }})}
         >
             <View style={styles.logoPlaceholder}>
                 <Image source={{
@@ -89,10 +90,16 @@ export default function Home(){
             </View>
             
             <View style={styles.agricultorInfo}>
-                <Text style={[styles.nomeLoja, { color: colors.text }]}>{item.nome}</Text>
-                { item.endereco &&
-                    <Text style={[styles.endereco, { color: colors.endereco }]}>{item.endereco} - {item.distancia} km</Text>
-                }
+            <Text style={[styles.nomeLoja, { color: colors.text }]}>
+                {item.nome}
+            </Text>
+
+            {(item.rua || item.numero) && (
+                <Text style={[styles.endereco, { color: colors.endereco }]}>
+                {item.rua ? item.rua : ""}{item.numero ? `, ${item.numero}` : ""} 
+                {item.distancia ? ` - ${item.distancia} km` : ""}
+                </Text>
+            )}
             </View>
             {/* <TouchableOpacity style={styles.bookmarkIcon}>
                 <Text><Fontisto name="favorite" size={20} color={colors.title} style={styles.icon} /> </Text>

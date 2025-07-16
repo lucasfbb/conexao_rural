@@ -11,7 +11,8 @@ class FormaPagamentoIn(BaseModel):
 
 class FormaPagamentoOut(FormaPagamentoIn):
     id: int
-    usuario_cpf_cnpj: str
+    # usuario_cpf_cnpj: str
+    usuario_id: int
 
     class Config:
         from_attributes = True

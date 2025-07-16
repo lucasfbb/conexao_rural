@@ -14,7 +14,7 @@ class Pedido(Base):
     status = Column(String)
     avaliacao = Column(String)
 
-    cpf_usuario = Column(String, ForeignKey("usuario.cpf_cnpj"))
+    usuario_id = Column(Integer, ForeignKey("usuario.id"))
     id_endereco = Column(Integer, ForeignKey("endereco.id"))
 
     usuario = relationship("Usuario", back_populates="pedidos")
@@ -29,10 +29,10 @@ class Pedido(Base):
             "momento_compra": self.momento_compra.isoformat() if self.momento_compra else None,
             "status": self.status,
             "avaliacao": self.avaliacao,
-            "cpf_usuario": self.cpf_usuario,
+            "usuario_id": self.usuario_id,
             "id_endereco": self.id_endereco,
             "usuario": {
-                "cpf_cnpj": self.usuario.cpf_cnpj,
+                "id": self.usuario.id,
                 "nome": self.usuario.nome
             } if self.usuario else None,
             "endereco": {

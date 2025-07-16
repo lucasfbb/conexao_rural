@@ -1,12 +1,13 @@
-from sqlalchemy import Column, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from database import Base
 from models.associacoes import usuario_produtor_favorito
 
 class Produtor(Base):
     __tablename__ = 'produtor'
-
-    cpf_cnpj = Column(String, ForeignKey('usuario.cpf_cnpj'), primary_key=True)
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    usuario_id = Column(Integer, ForeignKey('usuario.id'), nullable=False, unique=True)
     banner = Column(String, nullable=True)
     foto = Column(String, nullable=True)
     categoria = Column(String, nullable=True)
@@ -18,6 +19,7 @@ class Produtor(Base):
     # cidade = Column(String, nullable=True)
     nome = Column(String, nullable=True)
 
+    usuario = relationship("Usuario", back_populates="produtor")
     listagens = relationship("Listagem", back_populates="produtor")
     certificados = relationship("Certificado", back_populates="produtor")
 

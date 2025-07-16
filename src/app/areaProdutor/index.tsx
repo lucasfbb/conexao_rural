@@ -40,6 +40,7 @@ export default function AreaProdutor() {
   const base = baseURL.slice(0, -1);
 
   const [perfil, setPerfil] = useState({
+    usuario_id: 0,
     cpf_cnpj: "",
     nome: "",
     email: "",
@@ -153,7 +154,8 @@ export default function AreaProdutor() {
     async function buscarPerfil() {
       setCarregando(true);
       try {
-        const res = await api.get("/produtores/me");    
+        const res = await api.get("/produtores/me");  
+        console.log("Perfil do produtor:", res.data);  
         setPerfil(res.data);
         setPerfilOriginal(res.data);
         setImagemProdutor(`${res.data.foto}`);
@@ -265,7 +267,7 @@ export default function AreaProdutor() {
 
   const buscarProdutos = async () => {
     try {
-      const res = await api.get(`/produtores/${perfil.cpf_cnpj}/produtos`);
+      const res = await api.get(`/produtores/${perfil.usuario_id}/produtos`);
       // console.log("Produtos do produtor:", res.data);
       
       // Ajusta o array para o formato esperado na FlatList

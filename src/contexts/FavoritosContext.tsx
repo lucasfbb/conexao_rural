@@ -34,11 +34,11 @@ export const FavoritosProvider = ({ children }: { children: React.ReactNode }) =
   const [produtosFavoritos, setProdutosFavoritos] = useState<number[]>([]);
 
   const carregarFavoritos = async () => {
-    if (!user?.cpf_cnpj) return;
+    if (!user?.id) return;
     try {
       const [resProdutores, resProdutos] = await Promise.all([
-        api.get(`/favoritos/produtor?cpf_usuario=${user.cpf_cnpj}`),
-        api.get(`/favoritos/produto?cpf_usuario=${user.cpf_cnpj}`),
+        api.get(`/favoritos/produtor?id_usuario=${user.id}`),
+        api.get(`/favoritos/produto?id_usuario=${user.id}`),
       ]);
 
       setFavoritos(resProdutores.data || []);
@@ -49,11 +49,11 @@ export const FavoritosProvider = ({ children }: { children: React.ReactNode }) =
   };
 
   const adicionarFavorito = async (cpfProdutor: string) => {
-    if (!user?.cpf_cnpj) return;
+    if (!user?.id) return;
     try {
       await api.post("/favoritos/produtor", null, {
         params: {
-          cpf_usuario: user.cpf_cnpj,
+          id_usuario: user.id,
           cpf_produtor: cpfProdutor,
         },
       });
@@ -64,11 +64,11 @@ export const FavoritosProvider = ({ children }: { children: React.ReactNode }) =
   };
 
   const removerFavorito = async (cpfProdutor: string) => {
-    if (!user?.cpf_cnpj) return;
+    if (!user?.id) return;
     try {
       await api.delete("/favoritos/produtor", {
         params: {
-          cpf_usuario: user.cpf_cnpj,
+          id_usuario: user.id,
           cpf_produtor: cpfProdutor,
         },
       });
@@ -79,12 +79,12 @@ export const FavoritosProvider = ({ children }: { children: React.ReactNode }) =
   };
 
   const favoritarProduto = async (id: number) => {
-    if (!user?.cpf_cnpj || produtosFavoritos.includes(id)) return;
+    if (!user?.id || produtosFavoritos.includes(id)) return;
 
     try {
       await api.post(`/favoritos/produto`, null, {
         params: {
-          cpf_usuario: user.cpf_cnpj,
+          id_usuario: user.id,
           id_produto: id,
         },
       });
@@ -95,12 +95,12 @@ export const FavoritosProvider = ({ children }: { children: React.ReactNode }) =
   };
 
   const desfavoritarProduto = async (id: number) => {
-    if (!user?.cpf_cnpj) return;
+    if (!user?.id) return;
 
     try {
       await api.delete(`/favoritos/produto`, {
         params: {
-          cpf_usuario: user.cpf_cnpj,
+          id_usuario: user.id,
           id_produto: id,
         },
       });
@@ -115,7 +115,7 @@ export const FavoritosProvider = ({ children }: { children: React.ReactNode }) =
 
   useEffect(() => {
     carregarFavoritos();
-  }, [user?.cpf_cnpj]);
+  }, [user?.id]);
 
   return (
     <FavoritosContext.Provider

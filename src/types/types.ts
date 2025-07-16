@@ -6,9 +6,15 @@ export interface Item {
   }
 
 export interface ItemHome {
+    id: number;
+    usuario_id: number;
     cpf_cnpj: string;
     nome: string;
     endereco?: string;
+    rua?: string;
+    numero?: string;
+    complemento?: string;
+    bairro?: string;
     distancia?: number;
     categoria?: string;
     foto?: string;

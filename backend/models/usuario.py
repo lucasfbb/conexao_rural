@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Column, Date, DateTime, String, Boolean
+from sqlalchemy import Column, Date, DateTime, Integer, String, Boolean
 from sqlalchemy.orm import relationship
 from database import Base
 from models.associacoes import usuario_produto_favorito, usuario_produtor_favorito
@@ -7,7 +7,8 @@ from models.associacoes import usuario_produto_favorito, usuario_produtor_favori
 class Usuario(Base):
     __tablename__ = 'usuario'
 
-    cpf_cnpj = Column(String, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    cpf_cnpj = Column(String, unique=True, index=True)
     email = Column(String, unique=True, index=True)
     senha = Column(String)
     nome = Column(String)
@@ -18,6 +19,8 @@ class Usuario(Base):
     telefone_2 = Column(String, nullable=True)
     data_nascimento = Column(Date, nullable=True)
     criado_em = Column(DateTime, default=datetime.now())
+
+    produtor = relationship("Produtor", back_populates="usuario", uselist=False)
 
     enderecos = relationship("Endereco", back_populates="usuario")
     pedidos = relationship("Pedido", back_populates="usuario")

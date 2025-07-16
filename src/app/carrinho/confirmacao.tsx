@@ -65,9 +65,13 @@ export default function Confirmacao() {
               onValueChange={setEnderecoSelecionado}
               style={styles.picker}
             >
-              {enderecos.map(e => (
-                <Picker.Item key={e.id} label={formatarEndereco(e)} value={e.id} />
-              ))}
+                {enderecos.length === 0 ? (
+                  <Picker.Item label="Nenhum endereço cadastrado" value={null} />
+                  ) : (
+                  enderecos.map(e => (
+                    <Picker.Item key={e.id} label={formatarEndereco(e)} value={e.id} />
+                  ))
+                )}
             </Picker>
           </View>
 
@@ -96,22 +100,26 @@ export default function Confirmacao() {
           </View>
 
           {/* Se for cartão, mostra picker dos cartões */}
-          {escolhaForma === 'cartao' && (
+            {escolhaForma === 'cartao' && (
             <>
               <Text style={[styles.label, { color: colors.title }]}>Cartões Salvos</Text>
               <View style={styles.selectContainer}>
-                <Picker
-                  selectedValue={pagamentoSelecionado}
-                  onValueChange={setPagamentoSelecionado}
-                  style={styles.picker}
-                >
-                  {pagamentos.map(p => (
-                    <Picker.Item key={p.id} label={formatarCartao(p)} value={p.id} />
-                  ))}
-                </Picker>
+              <Picker
+                selectedValue={pagamentoSelecionado}
+                onValueChange={setPagamentoSelecionado}
+                style={styles.picker}
+              >
+                {pagamentos.length === 0 ? (
+                <Picker.Item label="Nenhum cartão cadastrado" value={null} />
+                ) : (
+                pagamentos.map(p => (
+                  <Picker.Item key={p.id} label={formatarCartao(p)} value={p.id} />
+                ))
+                )}
+              </Picker>
               </View>
             </>
-          )}
+            )}
 
           {/* Total */}
           <View style={styles.totalContainer}>

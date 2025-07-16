@@ -163,7 +163,7 @@ export default function Finalizacao() {
     }
 
     const payload = {
-      cpf_usuario: user?.cpf_cnpj,
+      usuario_id: user?.id,
       id_endereco: enderecoSelecionado.id,
       id_pagamento: pagamentoSelecionado.id,
       itens: itens.map(i => ({

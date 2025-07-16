@@ -59,7 +59,7 @@ def listar_enderecos(current_user: Usuario = Depends(get_current_user)):
 
 @router.post("/perfil/enderecos", response_model=EnderecoOut)
 def adicionar_endereco(endereco: EnderecoIn, db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
-    novo = Endereco(**endereco.dict(), cpf_usuario=current_user.cpf_cnpj)
+    novo = Endereco(**endereco.dict(), usuario_id=current_user.id)
     db.add(novo)
     db.commit()
     db.refresh(novo)
@@ -67,7 +67,7 @@ def adicionar_endereco(endereco: EnderecoIn, db: Session = Depends(get_db), curr
 
 @router.patch("/perfil/enderecos/{id}", response_model=EnderecoOut)
 def editar_endereco(id: int, dados: EnderecoIn, db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
-    end = db.query(Endereco).filter_by(id=id, cpf_usuario=current_user.cpf_cnpj).first()
+    end = db.query(Endereco).filter_by(id=id, usuario_id=current_user.id).first()
     if not end:
         raise HTTPException(404)
     for attr, value in dados.dict(exclude_unset=True).items():
@@ -78,7 +78,7 @@ def editar_endereco(id: int, dados: EnderecoIn, db: Session = Depends(get_db), c
 
 @router.delete("/perfil/enderecos/{id}")
 def remover_endereco(id: int, db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
-    end = db.query(Endereco).filter_by(id=id, cpf_usuario=current_user.cpf_cnpj).first()
+    end = db.query(Endereco).filter_by(id=id, usuario_id=current_user.id).first()
     if not end:
         raise HTTPException(404)
     db.delete(end)
@@ -109,7 +109,7 @@ def adicionar_pagamento(
         raise HTTPException(status_code=400, detail="Token do cartão é obrigatório")
 
     nova = FormaPagamento(
-        usuario_cpf_cnpj=current_user.cpf_cnpj,
+        usuario_id=current_user.id,
         gateway="mercadopago",
         token_gateway=dados.token_gateway,
         bandeira=dados.bandeira,
@@ -126,7 +126,7 @@ def adicionar_pagamento(
 
 @router.delete("/perfil/pagamentos/{id}")
 def remover_pagamento(id: int, db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
-    pag = db.query(FormaPagamento).filter_by(id=id, usuario_cpf_cnpj=current_user.cpf_cnpj).first()
+    pag = db.query(FormaPagamento).filter_by(id=id, usuario_id=current_user.id).first()
     if not pag:
         raise HTTPException(404)
     db.delete(pag)
@@ -135,7 +135,7 @@ def remover_pagamento(id: int, db: Session = Depends(get_db), current_user: Usua
 
 @router.patch("/perfil/pagamentos/{id}", response_model=FormaPagamentoOut)
 def editar_pagamento(id: int, dados: FormaPagamentoIn, db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
-    pagamento = db.query(FormaPagamento).filter_by(id=id, usuario_cpf_cnpj=current_user.cpf_cnpj).first()
+    pagamento = db.query(FormaPagamento).filter_by(id=id, usuario_id=current_user.id).first()
     if not pagamento:
         raise HTTPException(404, detail="Pagamento não encontrado")
 
@@ -195,14 +195,14 @@ def desfavoritar_produtor(produtor_cpf_cnpj: str, db: Session = Depends(get_db),
     return {"detail": "Produtor removido dos favoritos"}
 
 @router.get("/perfil/ultimos-pedidos")
-def listar_ultimos_pedidos(cpf_usuario: str, db: Session = Depends(get_db)):
-    usuario = db.query(Usuario).filter_by(cpf_cnpj=cpf_usuario).first()
+def listar_ultimos_pedidos(usuario_id: int, db: Session = Depends(get_db)):
+    usuario = db.query(Usuario).filter_by(id=usuario_id).first()
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
 
     pedidos = (
         db.query(Pedido)
-        .filter(Pedido.cpf_usuario == cpf_usuario)
+        .filter(Pedido.usuario_id == usuario_id)
         .order_by(Pedido.momento_compra.desc())
         .limit(5)
         .all()
@@ -218,7 +218,7 @@ async def upload_foto_perfil(
 ):
     print("==> RECEBIDO UPLOAD FOTO", file.filename, file.content_type)
     ext = file.filename.split('.')[-1]
-    filename = f"foto_perfil_{current_user.cpf_cnpj}_{int(time.time())}.{ext}"
+    filename = f"foto_perfil_{current_user.id}_{int(time.time())}.{ext}"
     file_path = os.path.join(UPLOAD_PERFIS_USUARIO_DIR, filename)
 
     # Tenta deletar o arquivo anterior, se existir
@@ -231,7 +231,7 @@ async def upload_foto_perfil(
     try:
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-        usuario = db.query(Usuario).filter(Usuario.cpf_cnpj == current_user.cpf_cnpj).first()
+        usuario = db.query(Usuario).filter(Usuario.id == current_user.id).first()
         if usuario:
             if usuario.foto_perfil and os.path.exists(usuario.foto_perfil[1:]):  # Remove a barra inicial
                 try:

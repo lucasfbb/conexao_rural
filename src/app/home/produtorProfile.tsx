@@ -36,7 +36,7 @@ type Produto = {
 
 export default function ProdutorScreen() {
   const params = useLocalSearchParams();
-  const { cpf_cnpj } = params;
+  const { usuario_id, cpf_cnpj } = params;
   const { colors } = useTema();
   const { favoritarProduto, desfavoritarProduto, isProdutoFavorito } = useFavoritos();
   const { adicionarItem } = useCarrinho();
@@ -56,15 +56,17 @@ export default function ProdutorScreen() {
     async function buscarDados() {
       setCarregando(true);
       try {
-        // Dados do produtor
-        const resProdutor = await api.get(`/produtores/${cpf_cnpj}`);
 
+        // Dados do produtor
+        const resProdutor = await api.get(`/produtores/${usuario_id}`);
+
+        console.log("Dados do produtor:", resProdutor.data);
         setProdutor(resProdutor.data);
         
         // console.log("Dados do produtor:", resProdutor.data);
 
         // Produtos desse produtor
-        const resProdutos = await api.get(`/produtores/${cpf_cnpj}/produtos`);
+        const resProdutos = await api.get(`/produtores/${usuario_id}/produtos`);
         const produtosTratados: Produto[] = resProdutos.data.map((produto: any) => ({
           id: produto.id?.toString() ?? Math.random().toString(),
           nome: produto.nome,
@@ -91,8 +93,8 @@ export default function ProdutorScreen() {
         setCarregando(false);
       }
     }
-    if (cpf_cnpj) buscarDados();
-  }, [cpf_cnpj, base]);
+    if (usuario_id) buscarDados();
+  }, [usuario_id, base]);
 
   if (carregando) {
     return (
