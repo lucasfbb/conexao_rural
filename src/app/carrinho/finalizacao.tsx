@@ -159,10 +159,13 @@ export default function Finalizacao() {
       return;
     }
 
+    const groupHash = Date.now().toString(36) + Math.random().toString(36).slice(2);
+
     const payload = {
       usuario_id: user?.id,
       id_endereco: enderecoSelecionado.id,
       id_pagamento: pagamentoSelecionado.id,
+      group_hash: groupHash,
       itens: itens.map(i => ({
         id_listagem: i.id_listagem,
         quantidade: i.qtd

@@ -7,4 +7,5 @@ from .produto import Produto
 from .formapagamento import FormaPagamento
 from .notificacao import Notificacao
 from .certificado import Certificado
+from .item_pedido import ItemPedido
 from .associacoes import usuario_produto_favorito, usuario_produtor_favorito

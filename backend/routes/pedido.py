@@ -25,23 +25,37 @@ def criar_pedido(payload: PedidoCreate, db: Session = Depends(get_db)):
     if not usuario or not endereco:
         raise HTTPException(status_code=404, detail="Usuário ou endereço não encontrado.")
 
+    # Agrupar itens por produtor
+    pedidos_por_produtor = {}
+
     for item in payload.itens:
         listagem = db.query(Listagem).filter_by(id=item.id_listagem).first()
         if not listagem:
             raise HTTPException(status_code=404, detail=f"Produto com ID {item.id_listagem} não encontrado.")
 
-        pedido = Pedido(
-            produto=listagem.nome_personalizado or listagem.produto.nome,
-            quantidade=item.quantidade,
-            valor=float(listagem.preco) * item.quantidade,
-            status="pendente",
-            usuario_id=usuario.id,
-            id_endereco=endereco.id
-        )
-        db.add(pedido)
+        produtor_id = listagem.produtor_id
+
+        if produtor_id not in pedidos_por_produtor:
+            pedidos_por_produtor[produtor_id] = []
+
+        pedidos_por_produtor[produtor_id].append((listagem, item))
+
+    # Criar um pedido para cada produtor
+    for produtor_id, lista in pedidos_por_produtor.items():
+        for listagem, item in lista:
+            pedido = Pedido(
+                produto=listagem.nome_personalizado or listagem.produto.nome,
+                quantidade=item.quantidade,
+                valor=float(listagem.preco) * item.quantidade,
+                status="pendente",
+                usuario_id=usuario.id,
+                id_endereco=endereco.id,
+                group_hash=payload.group_hash
+            )
+            db.add(pedido)
 
     db.commit()
-    return {"mensagem": "Pedido realizado com sucesso."}
+    return {"mensagem": "Pedidos criados com sucesso", "group_hash": payload.group_hash}
 
 @router.post("/frete/calcular")
 async def calcular_frete(data: Coordenadas):
