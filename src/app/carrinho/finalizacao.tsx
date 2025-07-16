@@ -23,6 +23,8 @@ export default function Finalizacao() {
   const [pagamentos, setPagamentos] = useState<FormaPagamentoOut[]>([]);
   const [enderecoSelecionado, setEnderecoSelecionado] = useState<EnderecoOut | null>(null);
   const [pagamentoSelecionado, setPagamentoSelecionado] = useState<FormaPagamentoOut | null>(null);
+
+  const [fretesPorProdutor, setFretesPorProdutor] = useState<{ [chave: string]: number }>({});
   const [frete, setFrete] = useState<number>(0.00);
   const [distancia, setDistancia] = useState<number>(0);
 
@@ -98,6 +100,7 @@ export default function Finalizacao() {
         }
 
         let totalFrete = 0;
+        const fretesIndividuais: { [chave: string]: number } = {};
         const destinosUnicos = new Set();
 
         for (const item of itens) {
@@ -108,25 +111,19 @@ export default function Finalizacao() {
           if (destinosUnicos.has(chave)) continue;
           destinosUnicos.add(chave);
 
-          if (
-            origemCliente.latitude === undefined || origemCliente.longitude === undefined ||
-            coords.latitude === undefined || coords.longitude === undefined
-          ) {
-            console.warn("Coordenadas inválidas, pulando item");
-            return;
-          }
-
           const valor = obterFrete(
-            { lat: origemCliente.latitude, lon: origemCliente.longitude },
-            { lat: coords.latitude, lon: coords.longitude }
+            { lat: origemCliente.latitude!, lon: origemCliente.longitude! },
+            { lat: coords.latitude!, lon: coords.longitude! }
           );
 
+          fretesIndividuais[chave] = valor;
           totalFrete += valor;
         }
         
         console.log("💰 Frete total calculado:", totalFrete);
 
         setFrete(totalFrete);
+        setFretesPorProdutor(fretesIndividuais);
       };
 
       if (enderecoSelecionado && itens.length > 0) {
@@ -223,7 +220,23 @@ export default function Finalizacao() {
             {/* Resumo */}
             <View style={styles.resumo}>
               <View style={styles.linha}><Text style={styles.label}>Subtotal</Text><Text style={styles.valor}>R$ {subtotal.toFixed(2)}</Text></View>
-              <View style={styles.linha}><Text style={styles.label}>Frete</Text><Text style={styles.valor}>R$ {frete.toFixed(2)}</Text></View>
+              {/* <View style={styles.linha}><Text style={styles.label}>Frete</Text><Text style={styles.valor}>R$ {frete.toFixed(2)}</Text></View> */}
+              
+              {Object.entries(fretesPorProdutor).map(([chave, valor], idx) => {
+                const item = itens.find(i =>
+                  `${i.endereco_produtor?.latitude},${i.endereco_produtor?.longitude}` === chave
+                );
+
+                const nomeProdutor = item?.nome_produtor ?? `Produtor ${idx + 1}`;
+
+                return (
+                  <View style={styles.linha} key={chave}>
+                    <Text style={styles.label}>Frete ({nomeProdutor})</Text>
+                    <Text style={styles.valor}>R$ {valor.toFixed(2)}</Text>
+                  </View>
+                );
+              })}
+              
               <View style={styles.linha}><Text style={[styles.label, { fontWeight: 'bold' }]}>Total</Text><Text style={[styles.valor, { fontWeight: 'bold' }]}>R$ {total.toFixed(2)}</Text></View>
             </View>
           </ScrollView>

@@ -162,10 +162,13 @@ def detalhes_produtor(usuario_id: int, db: Session = Depends(get_db)):
     produtor = db.query(Produtor).filter(Produtor.usuario_id == usuario_id).first()
     usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
 
+    print(produtor.id)
+
     if not produtor or not usuario:
         raise HTTPException(status_code=404, detail="Produtor não encontrado")
 
     return ProdutorOut(
+        id=produtor.id,
         usuario_id=usuario.id,
         cpf_cnpj=usuario.cpf_cnpj,
         nome=produtor.nome,

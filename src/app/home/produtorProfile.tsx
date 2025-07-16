@@ -60,7 +60,7 @@ export default function ProdutorScreen() {
         // Dados do produtor
         const resProdutor = await api.get(`/produtores/${usuario_id}`);
 
-        console.log("Dados do produtor:", resProdutor.data);
+        // console.log("Dados do produtor:", resProdutor.data);
         setProdutor(resProdutor.data);
         
         // console.log("Dados do produtor:", resProdutor.data);
@@ -149,6 +149,8 @@ export default function ProdutorScreen() {
                   nome: produtoSelecionado?.nome,
                   preco: precoFinal,
                   qtd,
+                  produtor_id: produtor?.id || 0,
+                  nome_produtor: produtor?.nome,
                   imagem: produtoSelecionado?.imagem,
                   endereco_produtor: {
                     texto: enderecoTexto,

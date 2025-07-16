@@ -28,6 +28,7 @@ export type Produto = {
 }
 
 export type Produtor = {
+  id?: number;
   nome: string;
   banner?: string;
   foto?: string;

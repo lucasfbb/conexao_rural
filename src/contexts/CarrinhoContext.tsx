@@ -7,9 +7,11 @@ export type ItemCarrinho = {
   nome: string;
   preco: number;
   qtd: number;
+  produtor_id: number;  // ✅ novo campo
+  nome_produtor?: string;
   imagem?: any;
   endereco_produtor?: {
-    texto: string; // Rua, cidade etc
+    texto: string;
     rua?: string;
     numero?: string;
     complemento?: string;
@@ -25,6 +27,7 @@ type CarrinhoContextType = {
   alterarQuantidade: (id_listagem: number, novaQtd: number) => void;
   removerItem: (id_listagem: number) => void;
   limparCarrinho: () => void;
+  agruparPorProdutor: () => { [produtorId: number]: ItemCarrinho[] };  // ✅ útil no checkout
 };
 
 const CarrinhoContext = createContext<CarrinhoContextType>({} as CarrinhoContextType);
@@ -57,7 +60,6 @@ export const CarrinhoProvider = ({ children }: { children: ReactNode }) => {
   }, [itens, user]);
 
   const adicionarItem = (novo: ItemCarrinho) => {
-    console.log("Adicionando item ao carrinho:", novo);
     setItens(prev => {
       const existente = prev.find(i => i.id_listagem === novo.id_listagem);
       if (existente) {
@@ -92,9 +94,18 @@ export const CarrinhoProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const agruparPorProdutor = () => {
+    const grupos: { [produtorId: number]: ItemCarrinho[] } = {};
+    for (const item of itens) {
+      if (!grupos[item.produtor_id]) grupos[item.produtor_id] = [];
+      grupos[item.produtor_id].push(item);
+    }
+    return grupos;
+  };
+
   return (
     <CarrinhoContext.Provider
-      value={{ itens, adicionarItem, alterarQuantidade, removerItem, limparCarrinho }}
+      value={{ itens, adicionarItem, alterarQuantidade, removerItem, limparCarrinho, agruparPorProdutor }}
     >
       {children}
     </CarrinhoContext.Provider>

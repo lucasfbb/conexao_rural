@@ -12,6 +12,7 @@ class Pedido(Base):
     valor = Column(Integer)
     momento_compra = Column(DateTime, default=datetime.datetime.utcnow)
     status = Column(String)
+    group_hash = Column(String, index=True)  # Agrupador de pedidos
     avaliacao = Column(String)
 
     usuario_id = Column(Integer, ForeignKey("usuario.id"))
