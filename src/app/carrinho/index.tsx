@@ -121,7 +121,7 @@ export default function Carrinho() {
         )}
       </View>
 
-      <SafeAreaView style={styles.footer} edges={["bottom"]}>
+      <SafeAreaView style={[styles.footer, { backgroundColor: colors.produtoContainer }]} edges={["bottom"]}>
         <Text style={[styles.total, { color: colors.title }]}>
           Total sem entrega: R$ {total.toFixed(2)}
         </Text>
