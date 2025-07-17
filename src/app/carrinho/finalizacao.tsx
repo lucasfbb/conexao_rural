@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 import { EnderecoOut, FormaPagamentoOut } from '@/types/types';
 
 import { geocodeEndereco, obterFrete } from '../../../services/utils';
+import ModalPixPagamento from '@/components/modais/pagamentos/modalPixPagamento';
 
 const { height } = Dimensions.get("window");
 
@@ -28,28 +29,11 @@ export default function Finalizacao() {
   const [frete, setFrete] = useState<number>(0.00);
   const [distancia, setDistancia] = useState<number>(0);
 
+  const [modalPixVisivel, setModalPixVisivel] = useState(false);
+  const [dadosPix, setDadosPix] = useState<any>(null);
+
   const subtotal = itens.reduce((acc, item) => acc + item.preco * item.qtd, 0);
   const total = subtotal + frete;
-
-  // useEffect(() => {
-  //   const carregarDados = async () => {
-  //     try {
-  //       const resEnd = await api.get("usuarios/perfil/enderecos");
-  //       setEnderecos(resEnd.data);
-  //       const endereco = resEnd.data.find((e: EnderecoOut) => e.id === parseInt(enderecoId as string));
-  //       setEnderecoSelecionado(endereco ?? null);
-
-  //       const resPag = await api.get("usuarios/perfil/pagamentos");
-  //       setPagamentos(resPag.data);
-  //       const pagamento = resPag.data.find((p: FormaPagamentoOut) => p.id === parseInt(pagamentoId as string));
-  //       setPagamentoSelecionado(pagamento ?? null);
-  //     } catch (e) {
-  //       console.error("Erro ao buscar dados", e);
-  //     }
-  //   };
-
-  //   carregarDados();
-  // }, [enderecoId, pagamentoId]);
 
     useEffect(() => {
       const carregarDados = async () => {
@@ -132,10 +116,18 @@ export default function Finalizacao() {
     }, [enderecoSelecionado, itens]);
 
   // const finalizarPedido = async () => {
+  //   if (!pagamentoSelecionado || !enderecoSelecionado || !user) {
+  //     Alert.alert("Erro", "Selecione endereço e forma de pagamento.");
+  //     return;
+  //   }
+
+  //   const groupHash = Date.now().toString(36) + Math.random().toString(36).slice(2);
+
   //   const payload = {
-  //     cpf_usuario: user?.cpf_cnpj,
-  //     id_endereco: enderecoSelecionado?.id,
-  //     id_pagamento: pagamentoSelecionado?.id,
+  //     usuario_id: user?.id,
+  //     id_endereco: enderecoSelecionado.id,
+  //     id_pagamento: pagamentoSelecionado.id,
+  //     group_hash: groupHash,
   //     itens: itens.map(i => ({
   //       id_listagem: i.id_listagem,
   //       quantidade: i.qtd
@@ -143,10 +135,15 @@ export default function Finalizacao() {
   //   };
 
   //   try {
-  //     await api.post('/pedidos/', payload);
-  //     limparCarrinho();
-  //     Alert.alert("Sucesso", "Pedido finalizado com sucesso!");
-  //     router.push('/home');
+  //     const resposta = await api.post('/pedidos/pagar', payload);
+
+  //     if (resposta.data.status === 'aprovado') {
+  //       limparCarrinho();
+  //       Alert.alert("Sucesso", "Pagamento aprovado e pedido finalizado!");
+  //       router.push('/home');
+  //     } else {
+  //       Alert.alert("Pagamento recusado", "Houve um problema ao processar o pagamento.");
+  //     }
   //   } catch (error) {
   //     console.error(error);
   //     Alert.alert("Erro", "Falha ao finalizar pedido.");
@@ -162,7 +159,7 @@ export default function Finalizacao() {
     const groupHash = Date.now().toString(36) + Math.random().toString(36).slice(2);
 
     const payload = {
-      usuario_id: user?.id,
+      usuario_id: user.id,
       id_endereco: enderecoSelecionado.id,
       id_pagamento: pagamentoSelecionado.id,
       group_hash: groupHash,
@@ -173,20 +170,46 @@ export default function Finalizacao() {
     };
 
     try {
-      const resposta = await api.post('/pedidos/pagar', payload);
-
-      if (resposta.data.status === 'aprovado') {
-        limparCarrinho();
-        Alert.alert("Sucesso", "Pagamento aprovado e pedido finalizado!");
-        router.push('/home');
-      } else {
-        Alert.alert("Pagamento recusado", "Houve um problema ao processar o pagamento.");
-      }
+      const resposta = await api.post('/pedidos/pagar_pix', payload);
+      setDadosPix(resposta.data);
+      setModalPixVisivel(true);
+      limparCarrinho();
     } catch (error) {
       console.error(error);
-      Alert.alert("Erro", "Falha ao finalizar pedido.");
+      Alert.alert("Erro", "Falha ao iniciar pagamento via PIX.");
     }
   };
+
+  useEffect(() => {
+    let intervalo: any;
+
+    if (modalPixVisivel && dadosPix?.id_pagamento) {
+      intervalo = setInterval(async () => {
+        try {
+          const resp = await api.get(`/pagamento/status/${dadosPix.id_pagamento}`);
+          const status = resp.data.status;
+          console.log("📦 Status atual do PIX:", status);
+
+          if (status === "approved") {
+            clearInterval(intervalo);
+            Alert.alert("Pagamento Aprovado", "Seu pagamento foi confirmado!");
+            setModalPixVisivel(false);
+            router.push('/home');
+          } else if (status === "rejected") {
+            clearInterval(intervalo);
+            Alert.alert("Pagamento Recusado", "Houve um problema com o pagamento via PIX.");
+          }
+
+          // Você pode exibir o status dinamicamente no modal se quiser
+        } catch (e) {
+          console.error("Erro ao consultar status do pagamento:", e);
+        }
+      }, 10000); // 10 segundos
+    }
+
+    return () => clearInterval(intervalo);
+  }, [modalPixVisivel, dadosPix?.id_pagamento]);
+
 
   const formatarEndereco = (e: EnderecoOut) =>
     `${e.rua}${e.numero ? `, ${e.numero}` : ''}${e.complemento ? `, ${e.complemento}` : ''}${e.cidade ? ` - ${e.cidade}` : ''}`;
@@ -252,6 +275,16 @@ export default function Finalizacao() {
             </TouchableOpacity>
           </SafeAreaView>
         </View>
+
+        <ModalPixPagamento
+          visible={modalPixVisivel}
+          onClose={() => setModalPixVisivel(false)}
+          qrCodeBase64={dadosPix?.qr_code_base64}
+          qrCodeText={dadosPix?.qr_code}
+          valor={dadosPix?.valor}
+          status={dadosPix?.status}
+        />
+
       </SafeAreaView>
     </>
   );

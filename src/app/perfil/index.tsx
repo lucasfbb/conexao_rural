@@ -600,7 +600,7 @@ export default function PerfilHome() {
                             renderItem={({ item }) =>
                                 'addNew' in item ? (
                                     <TouchableOpacity style={styles.addCard} onPress={() => setModalEnderecoVisible(true)}>
-                                    <Feather name="plus" size={30} color="green" />
+                                        <Feather name="plus" size={30} color="green" />
                                     </TouchableOpacity>
                                 ) : (
                                     <Card
@@ -640,6 +640,11 @@ export default function PerfilHome() {
                                     <TouchableOpacity style={styles.addCard} onPress={() => setModalPagamentoVisible(true)}>
                                         <Feather name="plus" size={30} color="green" />
                                     </TouchableOpacity>
+
+                                    // <TouchableOpacity style={styles.addCard} onPress={() => router.push("/perfil/CadastroCartaoScreen")}>
+                                    //     <Feather name="plus" size={30} color="green" />
+                                    // </TouchableOpacity>
+
                                 ) : (renderItemPagamento({ item }))
                             }
                             keyExtractor={(item, index) => index.toString()}

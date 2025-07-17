@@ -66,7 +66,7 @@ export default function Home(){
         const buscar = async () => {
             try {
                 const res = await api.get(`/home/produtores?exclude_usuario_id=${user.id}&limit=10`);
-                console.log("Agricultores encontrados:", res.data);
+                // console.log("Agricultores encontrados:", res.data);
                 setAgricultores(res.data);
             } catch (error) {
                 console.error("Erro ao buscar agricultores:", error);
