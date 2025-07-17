@@ -81,7 +81,7 @@ def listar_favoritos_produtos(id_usuario: int, db: Session = Depends(get_db)):
             "preco_promocional": float(listagem.preco_promocional) if listagem and listagem.preco_promocional else None,
             "produtor": {
                 "nome": produtor.nome,
-                "cpf_cnpj": produtor.cpf_cnpj,
+                # "cpf_cnpj": produtor.cpf_cnpj,
             } if produtor else None
         })
 
