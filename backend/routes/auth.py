@@ -19,6 +19,7 @@ def login(usuario: UsuarioLogin, db: Session = Depends(get_db)):
         "access_token": token,
         "token_type": "bearer",
         "user": {
+            "id": usuario_autenticado.id,
             "cpf_cnpj": usuario_autenticado.cpf_cnpj,
             "email": usuario_autenticado.email,
             "nome": usuario_autenticado.nome,

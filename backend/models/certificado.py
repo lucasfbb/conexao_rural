@@ -7,7 +7,7 @@ class Certificado(Base):
     __tablename__ = "certificado"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    produtor_cpf_cnpj = Column(String, ForeignKey("produtor.cpf_cnpj"), nullable=False)
+    produtor_id = Column(Integer, ForeignKey("produtor.id"), nullable=False)
     nome = Column(String, nullable=False)
     instituicao = Column(String, nullable=True)
     validade = Column(Date, nullable=True)

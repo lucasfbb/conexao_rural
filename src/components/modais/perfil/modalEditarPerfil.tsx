@@ -58,7 +58,7 @@ export default function ModalEditarPerfil({ visible, onClose, onSave, dadosInici
     const tel1 = telefone1.replace(/\D/g, "");
     const tel2 = telefone2.replace(/\D/g, "");
 
-    console.log(tel1, tel2);
+    (tel1, tel2);
 
     onSave({
       nome: nome,

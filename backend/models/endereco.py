@@ -13,7 +13,8 @@ class Endereco(Base):
     rua = Column(String)
     complemento = Column(String)
     referencia = Column(String, nullable=True)
-    cpf_usuario = Column(String, ForeignKey("usuario.cpf_cnpj"))
+    
+    usuario_id = Column(Integer, ForeignKey("usuario.id"), nullable=False)
 
     usuario = relationship("Usuario", back_populates="enderecos")
     pedidos = relationship("Pedido", back_populates="endereco")

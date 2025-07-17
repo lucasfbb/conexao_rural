@@ -28,14 +28,19 @@ def get_me_produtor(
     current_user: Usuario = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    produtor = db.query(Produtor).filter(Produtor.cpf_cnpj == current_user.cpf_cnpj).first()
+    produtor = db.query(Produtor).filter(Produtor.usuario_id == current_user.id).first()
     if not produtor:
         raise HTTPException(status_code=404, detail="Produtor não encontrado")
     # Evita erro de campo faltando:
     return ProdutorOut(
+        usuario_id=current_user.id,
         cpf_cnpj=current_user.cpf_cnpj,
         nome=produtor.nome,
         endereco=produtor.endereco,
+        rua=produtor.rua,
+        numero=produtor.numero,
+        complemento=produtor.complemento,
+        bairro=produtor.bairro,
         categoria=produtor.categoria,
         foto=produtor.foto,
         banner=produtor.banner,
@@ -51,7 +56,7 @@ def update_me_produtor(
     current_user: Usuario = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    produtor = db.query(Produtor).filter(Produtor.cpf_cnpj == current_user.cpf_cnpj).first()
+    produtor = db.query(Produtor).filter(Produtor.usuario_id == current_user.id).first()
     usuario = db.query(Usuario).filter(Usuario.cpf_cnpj == current_user.cpf_cnpj).first()
     if not produtor or not usuario:
         raise HTTPException(status_code=404, detail="Produtor não encontrado")
@@ -70,6 +75,10 @@ def update_me_produtor(
     return ProdutorOut(
         nome=produtor.nome,
         endereco=produtor.endereco,
+        rua=produtor.rua,
+        numero=produtor.numero,
+        complemento=produtor.complemento,
+        bairro=produtor.bairro,
         categoria=produtor.categoria,
         foto=produtor.foto,
         banner=produtor.banner,
@@ -87,12 +96,12 @@ async def upload_banner(
 ):  
     print("==> RECEBIDO UPLOAD FOTO", file.filename, file.content_type)
     ext = file.filename.split('.')[-1]
-    filename = f"banner_{current_user.cpf_cnpj}_{int(time.time())}.{ext}"
+    filename = f"banner_{current_user.id}_{int(time.time())}.{ext}"
     file_path = os.path.join(UPLOAD_BANNERS_DIR, filename)
     print("==> Salvando em", file_path)
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-    produtor = db.query(Produtor).filter(Produtor.cpf_cnpj == current_user.cpf_cnpj).first()
+    produtor = db.query(Produtor).filter(Produtor.usuario_id == current_user.id).first()
     if produtor:
 
         if produtor.banner and os.path.exists(produtor.banner[1:]):  # Remove a barra inicial
@@ -114,7 +123,7 @@ async def upload_foto(
 ):
     print("==> RECEBIDO UPLOAD FOTO", file.filename, file.content_type)
     ext = file.filename.split('.')[-1]
-    filename = f"foto_{current_user.cpf_cnpj}_{int(time.time())}.{ext}"
+    filename = f"foto_{current_user.id}_{int(time.time())}.{ext}"
     file_path = os.path.join(UPLOAD_PERFIS_DIR, filename)
 
     # Tenta deletar o arquivo anterior, se existir
@@ -127,7 +136,7 @@ async def upload_foto(
     try:
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-        produtor = db.query(Produtor).filter(Produtor.cpf_cnpj == current_user.cpf_cnpj).first()
+        produtor = db.query(Produtor).filter(Produtor.usuario_id == current_user.id).first()
         if produtor:
             if produtor.foto and os.path.exists(produtor.foto[1:]):  # Remove a barra inicial
                 try:
@@ -148,18 +157,26 @@ async def upload_foto(
         print("ERRO AO SALVAR FOTO:", e)
         raise HTTPException(status_code=500, detail="Erro ao salvar a foto")
     
-@router.get("/produtores/{cpf_cnpj}", response_model=ProdutorOut)
-def detalhes_produtor(cpf_cnpj: str, db: Session = Depends(get_db)):
-    produtor = db.query(Produtor).filter(Produtor.cpf_cnpj == cpf_cnpj).first()
-    usuario = db.query(Usuario).filter(Usuario.cpf_cnpj == cpf_cnpj).first()
+@router.get("/produtores/{usuario_id}", response_model=ProdutorOut)
+def detalhes_produtor(usuario_id: int, db: Session = Depends(get_db)):
+    produtor = db.query(Produtor).filter(Produtor.usuario_id == usuario_id).first()
+    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+
+    print(produtor.id)
 
     if not produtor or not usuario:
         raise HTTPException(status_code=404, detail="Produtor não encontrado")
 
     return ProdutorOut(
+        id=produtor.id,
+        usuario_id=usuario.id,
         cpf_cnpj=usuario.cpf_cnpj,
         nome=produtor.nome,
         endereco=produtor.endereco,
+        rua=produtor.rua,
+        numero=produtor.numero,
+        complemento=produtor.complemento,
+        bairro=produtor.bairro,
         categoria=produtor.categoria,
         banner=produtor.banner,
         foto=produtor.foto,
@@ -171,27 +188,26 @@ async def listar_produtores_perto(
     lat: float,
     lng: float,
     raio_km: float = 10,
-    exclude_cpf_cnpj: str = None,
+    exclude_usuario_id: int = None,
     limit: int = 20,
     offset: int = 0,
     db: Session = Depends(get_db)
 ):
     query = db.query(Produtor)
     # Filtro de localização e outros...
-    if exclude_cpf_cnpj:
-        query = query.filter(Produtor.cpf_cnpj != exclude_cpf_cnpj)
+    if exclude_usuario_id:
+        query = query.filter(Produtor.usuario_id != exclude_usuario_id)
     query = query.offset(offset).limit(limit)
     return query.all()
 
-@router.get("/produtores/{cpf_cnpj}/produtos", response_model=list[ProdutoEstoqueOut])
-def listar_produtos_produtor(cpf_cnpj: str, db: Session = Depends(get_db)):
-    listagens = (
-        db.query(Listagem)
-        .join(Produto, Listagem.produto_id == Produto.id)
-        .filter(Listagem.produtor_cpf_cnpj == cpf_cnpj)
-        .all()
-    )
-    
+@router.get("/produtores/{usuario_id}/produtos", response_model=list[ProdutoEstoqueOut])
+def listar_produtos_produtor(usuario_id: int, db: Session = Depends(get_db)):
+    produtor = db.query(Produtor).filter(Produtor.usuario_id == usuario_id).first()
+    if not produtor:
+        raise HTTPException(status_code=404, detail="Produtor não encontrado")
+
+    listagens = db.query(Listagem).filter(Listagem.produtor_id == produtor.id).all()
+
     produtos = []
     for listagem in listagens:
         produto = listagem.produto
@@ -213,7 +229,7 @@ def listar_produtos_produtor(cpf_cnpj: str, db: Session = Depends(get_db)):
 
 @router.post("/produtores/produtos/adicionar")
 async def adicionar_produto(
-    nome: str = Form(...),  # Nome para busca no catálogo e exibição personalizada
+    nome: str = Form(...),
     preco: float = Form(...),
     preco_promocional: Optional[float] = Form(None),
     quantidade: int = Form(...),
@@ -223,40 +239,45 @@ async def adicionar_produto(
     current_user: Usuario = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    # 1. Procura produto existente no catálogo (ignora maiúscula/minúscula)
+    # 1. Busca o produtor pelo usuario_id
+    produtor = db.query(Produtor).filter_by(usuario_id=current_user.id).first()
+    if not produtor:
+        raise HTTPException(status_code=404, detail="Produtor não encontrado")
+
+    # 2. Procura produto existente no catálogo
     produto_existente = db.query(Produto).filter(Produto.nome.ilike(nome.strip())).first()
     if not produto_existente:
-        # Em produção, só admin pode criar produto novo!
         produto_existente = Produto(nome=nome.strip())
         db.add(produto_existente)
         db.commit()
         db.refresh(produto_existente)
     
-    # 2. Salvar imagem SE enviada
+    # 3. Salvar imagem, se enviada
     foto_url = None
     if file is not None:
         ext = file.filename.split('.')[-1]
-        filename = f"produto_{current_user.cpf_cnpj}_{int(time.time())}.{ext}"
+        filename = f"produto_{current_user.id}_{int(time.time())}.{ext}"
         file_path = os.path.join(FOTO_PRODUTO_DIR, filename)
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         foto_url = f"/uploads/fotoProduto/{filename}"
 
-    # 3. Cria a Listagem, agora usando nome_personalizado
+    # 4. Verifica se esse produto já foi listado por esse produtor
     listagem_existente = db.query(Listagem).filter(
         Listagem.produto_id == produto_existente.id,
-        Listagem.produtor_cpf_cnpj == current_user.cpf_cnpj
+        Listagem.produtor_id == produtor.id
     ).first()
     if listagem_existente:
         raise HTTPException(status_code=400, detail="Este produto já está no estoque do produtor")
-    
+
+    # 5. Cria a listagem
     listagem = Listagem(
         produto_id=produto_existente.id,
         preco=preco,
         preco_promocional=preco_promocional,
-        nome_personalizado=nome.strip(),   # <--- Aqui você personaliza!
+        nome_personalizado=nome.strip(),
         estoque=quantidade,
-        produtor_cpf_cnpj=current_user.cpf_cnpj,
+        produtor_id=produtor.id,
         unidade=unidade,
         descricao=descricao,
         foto=foto_url
@@ -264,6 +285,7 @@ async def adicionar_produto(
     db.add(listagem)
     db.commit()
     db.refresh(listagem)
+
     return {
         "message": "Produto adicionado com sucesso!",
         "produto_id": produto_existente.id,

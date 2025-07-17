@@ -29,7 +29,7 @@ def listar_notificacoes(
     current_user: Usuario = Depends(get_current_user)
 ):
     notificacoes = db.query(Notificacao).filter(
-        Notificacao.usuario_cpf_cnpj == current_user.cpf_cnpj
+        Notificacao.usuario_id == current_user.id
     ).order_by(Notificacao.criado_em.desc()).all()
     return notificacoes
 
@@ -42,7 +42,7 @@ def deletar_notificacao(
 ):
     notificacao = db.query(Notificacao).filter(
         Notificacao.id == notificacao_id,
-        Notificacao.usuario_cpf_cnpj == current_user.cpf_cnpj
+        Notificacao.usuario_id == current_user.id
     ).first()
 
     if not notificacao:

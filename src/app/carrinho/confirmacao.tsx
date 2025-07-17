@@ -1,61 +1,78 @@
 // app/home/confirmacao.tsx
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import Header from '@/components/header';
-import { Feather, MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTema } from '@/contexts/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useCarrinho } from '@/contexts/CarrinhoContext';
+import { useEffect, useState } from 'react';
+import { api } from '../../../services/api';
+import { Picker } from '@react-native-picker/picker';
 
 const { width, height } = Dimensions.get("window");
 
+const formatarEndereco = (e: any) =>
+  `${e.rua}${e.complemento ? `, ${e.complemento}` : ''}${e.cidade ? ` - ${e.cidade}` : ''}`;
+
+const formatarCartao = (c: any) =>
+  `${c.bandeira ?? ''} •••• ${c.final_cartao?.slice(-4) ?? '0000'}`;
+
 export default function Confirmacao() {
   const router = useRouter();
+  const { colors } = useTema();
+  const { itens } = useCarrinho();
 
-  const { colors } = useTema()
+  const [enderecos, setEnderecos] = useState<any[]>([]);
+  const [pagamentos, setPagamentos] = useState<any[]>([]);
+  const [enderecoSelecionado, setEnderecoSelecionado] = useState<number | null>(null);
+  const [pagamentoSelecionado, setPagamentoSelecionado] = useState<number | null>(null);
+  const [escolhaForma, setEscolhaForma] = useState<string>('cartao'); // default: cartão
 
-  const endereco = {
-    local: 'Minha Localização',
-    rua: 'Rua Teste 145',
-    cidade: 'Rio de Janeiro - Rio de Janeiro',
-    complemento: 'Bloco H'
-  };
+  const subtotal = itens.reduce((acc, item) => acc + item.preco * item.qtd, 0);
+  const totalFinal = subtotal;
 
-  const dataEntrega = '28/02/2025';
-  const frete = 10.00;
+  useEffect(() => {
+    const carregarDados = async () => {
+      try {
+        const resEnd = await api.get("usuarios/perfil/enderecos");
+        setEnderecos(resEnd.data);
+        if (resEnd.data.length > 0) setEnderecoSelecionado(resEnd.data[0].id);
 
-  const pagamento = {
-    tipo: 'Crédito',
-    final: '9999'
-  };
-
-  const total = 40.00;
-  const totalFinal = total + frete;
+        const resPag = await api.get("usuarios/perfil/pagamentos");
+        setPagamentos(resPag.data);
+        if (resPag.data.length > 0) setPagamentoSelecionado(resPag.data[0].id);
+      } catch (e) {
+        console.error("Erro ao carregar endereços/pagamentos", e);
+      }
+    };
+    carregarDados();
+  }, []);
 
   return (
-      <>
-
-        <SafeAreaView
-            edges={["top"]}
-            style={{ backgroundColor: '#4D7E1B' }} 
-        />
-
-        <View style={[styles.container, { backgroundColor: colors.background }]}>
-          <Header showGoBack />
-          <View style={{ padding:25 }}>
+    <>
+      <SafeAreaView edges={["top"]} style={{ backgroundColor: '#4D7E1B' }} />
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <Header showGoBack />
+        <View style={{ padding: 25 }}>
           <Text style={[styles.titulo, { color: colors.title }]}>Carrinho</Text>
 
           {/* Endereço */}
           <Text style={[styles.label, { color: colors.title }]}>Endereço entrega</Text>
-          <View style={[styles.card, { backgroundColor: colors.produtoContainer }]}>
-            <View style={styles.row}>
-              <Feather name="map-pin" size={20} color="#4D7E1B" />
-              <View style={{ marginLeft: 10 }}>
-                <Text style={styles.texto}>{endereco.local}</Text>
-                <Text style={styles.subtexto}>{endereco.rua}</Text>
-                <Text style={styles.subtexto}>{endereco.cidade}</Text>
-                <Text style={styles.subtexto}>{endereco.complemento}</Text>
-              </View>
-            </View>
+          <View style={styles.selectContainer}>
+            <Picker
+              selectedValue={enderecoSelecionado}
+              onValueChange={setEnderecoSelecionado}
+              style={styles.picker}
+            >
+                {enderecos.length === 0 ? (
+                  <Picker.Item label="Nenhum endereço cadastrado" value={null} />
+                  ) : (
+                  enderecos.map(e => (
+                    <Picker.Item key={e.id} label={formatarEndereco(e)} value={e.id} />
+                  ))
+                )}
+            </Picker>
           </View>
 
           {/* Data */}
@@ -64,58 +81,83 @@ export default function Confirmacao() {
             <View style={styles.row}>
               <MaterialIcons name="calendar-today" size={20} color="#4D7E1B" />
               <View style={{ marginLeft: 10 }}>
-                <Text style={styles.texto}>{dataEntrega}</Text>
-                <Text style={styles.subtexto}>Frete: R$ {frete.toFixed(2)}</Text>
+                <Text style={styles.texto}>28/02/2025</Text>
               </View>
             </View>
           </View>
 
-          {/* Pagamento */}
-          <Text style={[styles.label, { color: colors.title }]}>Forma de pagamento</Text>
-          <View style={[styles.card, { backgroundColor: colors.produtoContainer }]}>
-            <View style={styles.row}>
-              <Feather name="credit-card" size={20} color="#4D7E1B" />
-              <View style={{ marginLeft: 10 }}>
-                <Text style={styles.texto}>Meu cartão - {pagamento.tipo}</Text>
-                <Text style={styles.subtexto}>●●●● {pagamento.final}</Text>
-                <TouchableOpacity><Text style={styles.trocar}>Trocar</Text></TouchableOpacity>
-              </View>
-            </View>
+          {/* Tipo de pagamento */}
+          <Text style={[styles.label, { color: colors.title }]}>Tipo de pagamento</Text>
+          <View style={styles.selectContainer}>
+            <Picker
+              selectedValue={escolhaForma}
+              onValueChange={setEscolhaForma}
+              style={styles.picker}
+            >
+              <Picker.Item label="Cartão de Crédito" value="cartao" />
+              <Picker.Item label="Pix" value="pix" />
+            </Picker>
           </View>
+
+          {/* Se for cartão, mostra picker dos cartões */}
+            {escolhaForma === 'cartao' && (
+            <>
+              <Text style={[styles.label, { color: colors.title }]}>Cartões Salvos</Text>
+              <View style={styles.selectContainer}>
+              <Picker
+                selectedValue={pagamentoSelecionado}
+                onValueChange={setPagamentoSelecionado}
+                style={styles.picker}
+              >
+                {pagamentos.length === 0 ? (
+                <Picker.Item label="Nenhum cartão cadastrado" value={null} />
+                ) : (
+                pagamentos.map(p => (
+                  <Picker.Item key={p.id} label={formatarCartao(p)} value={p.id} />
+                ))
+                )}
+              </Picker>
+              </View>
+            </>
+            )}
 
           {/* Total */}
           <View style={styles.totalContainer}>
-            <Text style={styles.total}>Total com entrega</Text>
+            <Text style={styles.total}>Total</Text>
             <Text style={styles.totalValor}>R$ {totalFinal.toFixed(2)}</Text>
           </View>
 
-          <TouchableOpacity style={styles.botao} onPress={() => router.push('/carrinho/finalizacao')}>
+          <TouchableOpacity
+            style={styles.botao}
+            onPress={() => {
+              router.push({
+                pathname: '/carrinho/finalizacao',
+                params: {
+                  endereco_id: enderecoSelecionado,
+                  pagamento_id: pagamentoSelecionado
+                }
+              });
+            }}
+          >
             <Text style={styles.botaoTexto}>Confirmar Pedido</Text>
           </TouchableOpacity>
-          </View>
         </View>
-      </>
+      </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff'},
-  titulo: { fontSize: 22, fontWeight: 'bold', color: '#4D7E1B', marginBottom: height * 0.015, fontStyle: 'italic' },
+  container: { flex: 1 },
+  titulo: { fontSize: 22, fontWeight: 'bold', marginBottom: height * 0.015, fontStyle: 'italic' },
   label: { fontSize: 16, fontWeight: 'bold', marginTop: height * 0.025, marginBottom: height * 0.01 },
   card: {
-    backgroundColor: '#F7FAF0',
-    borderRadius: 10,
-    padding: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    borderRadius: 10, padding: 15,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1, shadowRadius: 3, elevation: 2,
   },
   row: { flexDirection: 'row', alignItems: 'center' },
   texto: { color: '#4D7E1B', fontWeight: 'bold' },
-  subtexto: { color: '#555', fontSize: 12 },
-  trocar: { marginTop: height * 0.008, color: '#4D7E1B', textDecorationLine: 'underline' },
   totalContainer: { marginTop: height * 0.05, alignItems: 'center' },
   total: { fontSize: 14, color: '#777' },
   totalValor: { fontSize: 20, color: '#4D7E1B', fontWeight: 'bold', marginBottom: height * 0.045 },
@@ -126,5 +168,16 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     alignSelf: 'center'
   },
-  botaoTexto: { color: 'white', fontWeight: 'bold', fontSize: 16 }
+  botaoTexto: { color: 'white', fontWeight: 'bold', fontSize: 16 },
+  selectContainer: {
+    backgroundColor: '#F7FAF0',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    marginBottom: 20,
+  },
+  picker: {
+    height: 50,
+    width: '100%',
+    color: '#4D7E1B',
+  }
 });

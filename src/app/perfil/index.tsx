@@ -168,10 +168,11 @@ export default function PerfilHome() {
                     setAgricultoresFavoritos(resProdutoresFavoritos.data);
 
                     // Buscar produtos favoritos do usuário
-                    const resProdutosFavoritos = await api.get(`/favoritos/produto?cpf_usuario=${dados.cpf_cnpj}`);
+                    const resProdutosFavoritos = await api.get(`/favoritos/produto?id_usuario=${dados.id}`);
                     setProdutosFavoritos(resProdutosFavoritos.data);
 
-                    const resUltimosPedidos = await api.get(`/usuarios/perfil/ultimos-pedidos?cpf_usuario=${dados.cpf_cnpj}`);
+                    const resUltimosPedidos = await api.get(`/usuarios/perfil/ultimos-pedidos?usuario_id=${dados.id}`);
+                    console.log("Últimos pedidos:", resUltimosPedidos.data);
                     setUltimosPedidos(resUltimosPedidos.data);
                     
                     // TODO: outros dados
@@ -599,7 +600,7 @@ export default function PerfilHome() {
                             renderItem={({ item }) =>
                                 'addNew' in item ? (
                                     <TouchableOpacity style={styles.addCard} onPress={() => setModalEnderecoVisible(true)}>
-                                    <Feather name="plus" size={30} color="green" />
+                                        <Feather name="plus" size={30} color="green" />
                                     </TouchableOpacity>
                                 ) : (
                                     <Card
@@ -639,6 +640,11 @@ export default function PerfilHome() {
                                     <TouchableOpacity style={styles.addCard} onPress={() => setModalPagamentoVisible(true)}>
                                         <Feather name="plus" size={30} color="green" />
                                     </TouchableOpacity>
+
+                                    // <TouchableOpacity style={styles.addCard} onPress={() => router.push("/perfil/CadastroCartaoScreen")}>
+                                    //     <Feather name="plus" size={30} color="green" />
+                                    // </TouchableOpacity>
+
                                 ) : (renderItemPagamento({ item }))
                             }
                             keyExtractor={(item, index) => index.toString()}
@@ -701,12 +707,12 @@ export default function PerfilHome() {
                                         // Exibir detalhes do pedido? Navegar para tela de pedido?
                                     }}
                                     >
-                                    <Text style={[styles.productText, { color: colors.text }]}>
-                                        {pedido.produto?.nome || "Produto"} - {pedido.quantidade}x
-                                    </Text>
-                                    <Text style={[styles.productText, { fontSize: 12, color: "gray" }]}>
-                                        {new Date(pedido.criado_em).toLocaleDateString("pt-BR")}
-                                    </Text>
+                                        <Text style={[styles.productText, { color: colors.text }]}>
+                                            {pedido.produto?.nome || "Produto"} - {pedido.quantidade}x
+                                        </Text>
+                                        <Text style={[styles.productText, { fontSize: 12, color: "gray" }]}>
+                                            {new Date(pedido.momento_compra).toLocaleDateString("pt-BR")}
+                                        </Text>
                                     </TouchableOpacity>
                                 ))
                             )}

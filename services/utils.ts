@@ -1,3 +1,5 @@
+import { api } from "./api";
+
 export function validarCPF(cpf: string): boolean {
     cpf = cpf.replace(/[^\d]+/g, ''); // remove pontos e traços
 
@@ -49,3 +51,52 @@ export const formatarNumeroCartao = (numero: string) => {
     .slice(0, 16)                      // máximo de 16 dígitos
     .replace(/(\d{4})(?=\d)/g, "$1 "); // insere espaço a cada 4 dígitos
 };
+
+export const parsePreco = (valor: string) => {
+  if (!valor) return 0;
+  return Number(valor.replace("R$", "").replace(/\s/g, "").replace(",", "."));
+};
+
+export function obterFrete(origem: { lat: number, lon: number }, destino: { lat: number, lon: number }): number {
+  const toRad = (v: number) => v * Math.PI / 180;
+  const R = 6371; // raio da Terra em km
+
+  const dLat = toRad(destino.lat - origem.lat);
+  const dLon = toRad(destino.lon - origem.lon);
+
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(toRad(origem.lat)) * Math.cos(toRad(destino.lat)) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  const distanciaKm = R * c;
+  const precoKm = 1.5; // valor por km
+
+  return distanciaKm * precoKm;
+}
+
+export async function geocodeEndereco(enderecoTexto: string): Promise<{ latitude: number; longitude: number } | null> {
+  try {
+    const query = encodeURIComponent(enderecoTexto);
+    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`, {
+      headers: {
+        'User-Agent': 'conexao-rural-app' // obrigatório
+      }
+    });
+
+    const data = await response.json();
+
+    if (data.length > 0) {
+      return {
+        latitude: parseFloat(data[0].lat),
+        longitude: parseFloat(data[0].lon)
+      };
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Erro ao geocodificar endereço:", error);
+    return null;
+  }
+}
+

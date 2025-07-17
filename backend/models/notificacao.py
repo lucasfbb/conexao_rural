@@ -7,7 +7,7 @@ class Notificacao(Base):
     __tablename__ = "notificacao"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    usuario_cpf_cnpj = Column(String, ForeignKey("usuario.cpf_cnpj"), nullable=False)
+    usuario_id = Column(Integer, ForeignKey("usuario.id"), nullable=False)
     titulo = Column(String, nullable=False)
     mensagem = Column(Text, nullable=False)
     tipo = Column(String, nullable=True)

@@ -1,206 +1,193 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, Dimensions, ScrollView } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { useState } from 'react';
-
 import Header from '@/components/header';
 import { router } from 'expo-router';
 import { useTema } from '@/contexts/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ItemCarrinho, useCarrinho } from '@/contexts/CarrinhoContext';
+import { useEffect } from 'react';
 
 const { width, height } = Dimensions.get("window");
 
-const mockCarrinho = [
-    {
-        id: '1',
-        nome: 'Alface Crespa',
-        descricao: 'Direto da horta, super fresca!',
-        preco: 4.50,
-        qtd: 1,
-        imagem: require('../../../assets/images/principais/alface.png'),
-      },
-      {
-        id: '2',
-        nome: 'Tomate Italiano',
-        descricao: 'Vermelho, suculento e docinho.',
-        preco: 7.25,
-        qtd: 2,
-        imagem: require('../../../assets/images/promocoes/maca.png'),
-      },
-]
-
-// const removerItem = (id: string) => {
-//     setCarrinho(prev => prev.filter(item => item.id !== id));
-// };
-
 export default function Carrinho() {
+  const { itens, alterarQuantidade, limparCarrinho } = useCarrinho();
+  const { colors } = useTema();
 
-    const [carrinho, setCarrinho] = useState(mockCarrinho);
+  // useEffect(() => {
+  //   console.log("Itens no carrinho:", itens);  
+  // }, [itens]);
 
-    const { colors, isNightMode } = useTema()
+  const aumentarQuantidade = (id: number) => {
+    const item = itens.find(i => i.id_listagem === id);
+    if (item) alterarQuantidade(id, item.qtd + 1);
+  };
 
-    const diminuirQuantidade = (id: string) => {
-        setCarrinho(prev =>
-        prev
-            .map(item =>
-            item.id === id ? { ...item, qtd: item.qtd - 1 } : item
-            )
-            .filter(item => item.qtd > 0)
-        );
-    };
+  const diminuirQuantidade = (id: number) => {
+    const item = itens.find(i => i.id_listagem === id);
+    if (item && item.qtd > 1) alterarQuantidade(id, item.qtd - 1);
+  };
 
-    const aumentarQuantidade = (id: string) => {
-        setCarrinho(prev =>
-        prev.map(item =>
-            item.id === id ? { ...item, qtd: item.qtd + 1 } : item
-        )
-        );
-    };
+  const total = itens.reduce((acc, item) => acc + item.preco * item.qtd, 0);
 
-    const total = carrinho.reduce((acc, item) => acc + item.preco * item.qtd, 0);
-    
-    return (
-        <>
+  const itensAgrupados: Record<number, ItemCarrinho[]> = itens.reduce((acc, item) => {
+    const produtorId = item.produtor_id ?? 0;
+    if (!acc[produtorId]) acc[produtorId] = [];
+    acc[produtorId].push(item);
+    return acc;
+  }, {} as Record<number, ItemCarrinho[]>);
 
-            <SafeAreaView
-                edges={["top"]}
-                style={{ backgroundColor: '#4D7E1B' }} 
+
+  return (
+    <>
+      <SafeAreaView edges={["top"]} style={{ backgroundColor: '#4D7E1B' }} />
+
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <Header />
+        <Text style={[styles.title, { color: colors.title }]}>Carrinho</Text>
+
+        {itens.length === 0 ? (
+          <View style={styles.vazioContainer}>
+            <Image
+              source={{ uri: 'https://cdn-icons-png.flaticon.com/512/2038/2038854.png' }}
+              style={styles.imagemVazia}
+              resizeMode="contain"
             />
+            <Text style={styles.mensagemVazio}>Seu carrinho está vazio...</Text>
+            <Text style={styles.mensagemVazio}>Que tal adicionar alguma coisa? 🛒</Text>
+          </View>
+        ) : (
 
-            <View style={[styles.container, { backgroundColor: colors.background }]}>
-              <Header />
+          // <FlatList
+          //   data={itens}
+          //   keyExtractor={(item) => item.id_listagem.toString()}
+          //   contentContainerStyle={{ padding: 15 }}
+          //   renderItem={({ item }) => {
+          //     // console.log("Item no carrinho:", item);
 
-              <Text style={[styles.title, { color: colors.title }]}>Carrinho</Text>
-        
-              <FlatList
-                data={carrinho}
-                keyExtractor={(item) => item.id}
-                contentContainerStyle={{ padding: 15 }}
-                renderItem={({ item }) => (
-                  <View style={[styles.produtoContainer, { backgroundColor: colors.produtoContainer }]}>
+          //     return (
+          //       <View style={[styles.produtoContainer, { backgroundColor: colors.produtoContainer }]}>
+          //         <Image source={item.imagem} style={styles.img} />
+          //         <View style={{ flex: 1 }}>
+          //           <Text style={[styles.nome, { color: colors.title }]}>{item.nome}</Text>
+          //           <Text style={styles.preco}>
+          //             R$ {typeof item.preco === "number" ? item.preco.toFixed(2) : "0,00"}
+          //           </Text>
+          //         </View>
+          //         <View style={styles.qtdContainer}>
+          //           <TouchableOpacity onPress={() => diminuirQuantidade(item.id_listagem)}>
+          //             <Feather name="minus" size={18} />
+          //           </TouchableOpacity>
+          //           <Text style={styles.qtd}>{item.qtd}</Text>
+          //           <TouchableOpacity onPress={() => aumentarQuantidade(item.id_listagem)}>
+          //             <Feather name="plus" size={18} />
+          //           </TouchableOpacity>
+          //         </View>
+          //       </View>
+          //     );
+          //   }}
+          // />
+
+          <ScrollView contentContainerStyle={{ padding: 15 }}>
+            {Object.entries(itensAgrupados).map(([produtorId, lista]) => (
+              <View key={produtorId}>
+                <Text style={{ fontWeight: 'bold', marginBottom: 10, fontSize: 16 }}>
+                  Produtos do produtor #{produtorId}
+                </Text>
+
+                {lista.map((item) => (
+                  <View key={item.id_listagem} style={[styles.produtoContainer, { backgroundColor: colors.produtoContainer }]}>
                     <Image source={item.imagem} style={styles.img} />
                     <View style={{ flex: 1 }}>
                       <Text style={[styles.nome, { color: colors.title }]}>{item.nome}</Text>
-                      <Text style={styles.descricao}>{item.descricao}</Text>
-                      <Text style={[styles.preco, { color: colors.title }]}>R$ {item.preco.toFixed(2)}</Text>
+                      <Text style={styles.preco}>
+                        R$ {typeof item.preco === "number" ? item.preco.toFixed(2) : "0,00"}
+                      </Text>
                     </View>
                     <View style={styles.qtdContainer}>
-                      <TouchableOpacity onPress={() => diminuirQuantidade(item.id)}>
+                      <TouchableOpacity onPress={() => diminuirQuantidade(item.id_listagem)}>
                         <Feather name="minus" size={18} />
                       </TouchableOpacity>
                       <Text style={styles.qtd}>{item.qtd}</Text>
-                      <TouchableOpacity onPress={() => aumentarQuantidade(item.id)}>
+                      <TouchableOpacity onPress={() => aumentarQuantidade(item.id_listagem)}>
                         <Feather name="plus" size={18} />
                       </TouchableOpacity>
                     </View>
                   </View>
-                )}
-              />
-        
-          
-            </View>
+                ))}
+              </View>
+            ))}
+          </ScrollView>
 
-            <SafeAreaView style={styles.footer} edges={["bottom"]}>
-              <Text style={[styles.total, { color: colors.title }]}>Total sem entrega: R$ {total.toFixed(2)}</Text>
-              <TouchableOpacity style={styles.continuar} onPress={() => router.push('/carrinho/confirmacao')}>
-                <Text style={styles.continuarText}>Continuar</Text>
-              </TouchableOpacity>
-            </SafeAreaView>
-        </>
-      );
+        )}
+      </View>
+
+      <SafeAreaView style={styles.footer} edges={["bottom"]}>
+        <Text style={[styles.total, { color: colors.title }]}>
+          Total sem entrega: R$ {total.toFixed(2)}
+        </Text>
+
+        <TouchableOpacity
+          style={[
+            styles.continuar,
+            { backgroundColor: itens.length === 0 ? '#ccc' : '#4D7E1B' }
+          ]}
+          onPress={() => router.push('/carrinho/confirmacao')}
+          disabled={itens.length === 0}
+        >
+          <Text style={styles.continuarText}>Continuar</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.continuar, { backgroundColor: '#999', marginTop: 10 }]}
+          onPress={limparCarrinho}
+        >
+          <Text style={styles.continuarText}>Limpar Carrinho</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    </>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: '#fff',
-    },
-  
-    title: {
-      fontSize: 22,
-      fontWeight: 'bold',
-      color: '#4D7E1B',
-      fontStyle: 'italic',
-      marginTop: height * 0.03,
-      marginLeft: 20,
-      marginBottom: height * 0.005,
-    },
-  
-    produtoContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      borderRadius: 10,
-      padding: 10,
-      marginBottom: height * 0.015,
-      gap: 10,
-    },
-  
-    img: {
-      width: 60,
-      height: 60,
-      borderRadius: 8,
-      backgroundColor: '#ddd',
-    },
-  
-    nome: {
-      fontSize: 16,
-      fontWeight: 'bold',
-      color: '#4D7E1B',
-    },
-  
-    descricao: {
-      fontSize: 12,
-      color: '#777',
-      fontStyle: 'italic',
-    },
-  
-    preco: {
-      fontSize: 14,
-      color: '#4D7E1B',
-      marginTop: 5,
-    },
-  
-    qtdContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: '#E6F2D8',
-      borderRadius: 5,
-      paddingHorizontal: 8,
-      paddingVertical: 4,
-      gap: 8,
-    },
-  
-    qtd: {
-      fontSize: 16,
-      fontWeight: 'bold',
-      color: '#4D7E1B',
-    },
-  
-    footer: {
-      borderTopWidth: 1,
-      borderTopColor: '#eee',
-      padding: 25,
-      paddingBottom: 40,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-  
-    total: {
-      fontSize: 16,
-      fontWeight: 'bold',
-      color: '#4D7E1B',
-      marginBottom: height * 0.025,
-    },
-  
-    continuar: {
-      backgroundColor: '#4D7E1B',
-      paddingVertical: 12,
-      paddingHorizontal: 30,
-      borderRadius: 25,
-    },
-  
-    continuarText: {
-      color: '#fff',
-      fontWeight: 'bold',
-      fontSize: 16,
-    },
-  })
+  container: { flex: 1, backgroundColor: '#fff' },
+  title: {
+    fontSize: 22, fontWeight: 'bold', color: '#4D7E1B', fontStyle: 'italic',
+    marginTop: height * 0.03, marginLeft: 20, marginBottom: height * 0.005
+  },
+  produtoContainer: {
+    flexDirection: 'row', alignItems: 'center', borderRadius: 10,
+    padding: 10, marginBottom: height * 0.015, gap: 10,
+  },
+  img: { width: 60, height: 60, borderRadius: 8, backgroundColor: '#ddd' },
+  nome: { fontSize: 16, fontWeight: 'bold', color: '#4D7E1B' },
+  preco: { fontSize: 14, color: '#4D7E1B', marginTop: 5 },
+  qtdContainer: {
+    flexDirection: 'row', alignItems: 'center', backgroundColor: '#E6F2D8',
+    borderRadius: 5, paddingHorizontal: 8, paddingVertical: 4, gap: 8
+  },
+  qtd: { fontSize: 16, fontWeight: 'bold', color: '#4D7E1B' },
+  footer: {
+    borderTopWidth: 1, borderTopColor: '#eee',
+    padding: 25, paddingBottom: 40, alignItems: 'center', justifyContent: 'center',
+  },
+  total: { fontSize: 16, fontWeight: 'bold', color: '#4D7E1B', marginBottom: height * 0.025 },
+  continuar: { backgroundColor: '#4D7E1B', paddingVertical: 12, paddingHorizontal: 30, borderRadius: 25 },
+  continuarText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+  vazioContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 40
+  },
+  imagemVazia: {
+    width: 180,
+    height: 180,
+    marginBottom: 20
+  },
+  mensagemVazio: {
+    fontSize: 16,
+    color: '#777',
+    textAlign: 'center',
+    marginBottom: 5
+  }
+});
