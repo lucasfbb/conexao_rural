@@ -15,8 +15,10 @@ export default function CustomDrawer(props: any) {
     const handleLogout = async () => {
         try {
             await logout();
-            const user = await AsyncStorage.getItem("usuario");
-            router.replace("/login/loginPage"); // Redireciona para a página inicial ou login
+            await AsyncStorage.removeItem("usuario");
+            await AsyncStorage.removeItem("token");
+          
+            router.replace("/login"); // Redireciona para a página inicial ou login
         } catch (error) {
             console.error("Erro ao fazer logout:", error);
         }

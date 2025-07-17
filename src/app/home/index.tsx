@@ -6,9 +6,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useFocusEffect } from 'expo-router'
 
 import { useTema } from '@/contexts/ThemeContext';
+import { useUser } from '@/contexts/UserContext';
+import { useFavoritos } from "@/contexts/FavoritosContext";
+
 import Header from '@/components/header'
-import { api } from '../../../services/api';
+
+import { api, baseURL } from '../../../services/api';
 import { ItemHome } from '@/types/types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Home(){
     const { width, height } = useWindowDimensions();
@@ -16,23 +21,11 @@ export default function Home(){
     const [agricultores, setAgricultores] = useState([]);
     const [banners, setBanners] = useState<string[]>([]);
     const [produtosSazonais, setProdutosSazonais] = useState<string[]>([]);
-    
-    // const produtos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
 
-    const imagens = {
-        foto_perfil: require("../../../assets/images/perfil_agricultor.png"),
-    } as const;
+    const { isFavorito, adicionarFavorito, removerFavorito } = useFavoritos();
 
-    
-    const buscarAgricultores = async () => {
-        try {
-            const response = await api.get("/home/agricultores");
-            setAgricultores(response.data);
-        } catch (error) {
-            console.error("Erro ao buscar agricultores:", error);
-            Alert.alert("Erro", "Não foi possível carregar os agricultores.");
-        }
-    };
+    const base = baseURL.slice(0, -1);
+    const { user, isLoading } = useUser();
     
     const fetchBanners = async () => {
         try {
@@ -42,7 +35,8 @@ export default function Home(){
                 url.startsWith("http") ? url : `${API_URL}${url}`
         );
         setBanners(bannersAbs);
-        console.log("Banners carregados:", bannersAbs);
+        const token = await AsyncStorage.getItem("token");
+        // console.log("Token atual:", token);
         } catch (error) {
             console.error("Erro ao buscar banners:", error);
         }
@@ -57,23 +51,40 @@ export default function Home(){
         } catch (error) {
             console.error("Erro ao buscar produtos sazonais:", error);
         }
-    };
+    };  
 
-    useFocusEffect(
-        useCallback(() => {
-        // Função que você quer rodar sempre que a tela volta pro foco
-            fetchBanners();
-            buscarAgricultores();
-            fetchProdutosSazonais();
-        }, [])
-    );
+    useEffect(() => {
+        if (isLoading || !user?.cpf_cnpj) {
+            // console.log("Esperando carregar usuário...");
+            return;
+        }
 
-const renderAgricultor = ({ item } : { item: ItemHome }) => (
-    <TouchableOpacity 
+        // console.log("Usuário carregado:", user?.cpf_cnpj);
+        fetchBanners();
+        fetchProdutosSazonais();
+
+        const buscar = async () => {
+            try {
+                const res = await api.get(`/home/produtores?exclude_cpf_cnpj=${user.cpf_cnpj}&limit=10`);
+                setAgricultores(res.data);
+            } catch (error) {
+                console.error("Erro ao buscar agricultores:", error);
+                Alert.alert("Erro", "Não foi possível carregar os agricultores.");
+            }
+        }
+
+        buscar();
+    }, [user?.cpf_cnpj, isLoading]);
+
+    const renderAgricultor = ({ item } : { item: ItemHome }) => (
+        <TouchableOpacity 
             style={styles.agricultorItem} 
-            onPress={() => router.push({ pathname: "/home/produtorProfile", params: { nome: String(item.nome), endereco: String(item.endereco), distancia: String(item.distancia), foto: String(item.foto)} })}
+            onPress={() => router.push({ pathname: "/home/produtorProfile", params: { cpf_cnpj: String(item.cpf_cnpj) }})}
         >
             <View style={styles.logoPlaceholder}>
+                <Image source={{
+                    uri: item.foto ? `${base}${item.foto}` : undefined
+                }} style={styles.perfilImagem} />
                 {/* <Image source={imagens[item.foto]} style={styles.produtoImagem} /> */}
             </View>
             
@@ -83,96 +94,113 @@ const renderAgricultor = ({ item } : { item: ItemHome }) => (
                     <Text style={[styles.endereco, { color: colors.endereco }]}>{item.endereco} - {item.distancia} km</Text>
                 }
             </View>
-            <TouchableOpacity style={styles.bookmarkIcon}>
-                <Text><Fontisto name="favorite" size={20} color={colors.title} style={styles.icon} /> </Text>{/* Ícone de salvar */}
+            {/* <TouchableOpacity style={styles.bookmarkIcon}>
+                <Text><Fontisto name="favorite" size={20} color={colors.title} style={styles.icon} /> </Text>
+            </TouchableOpacity> */}
+            <TouchableOpacity
+                style={styles.bookmarkIcon}
+                onPress={() => {
+                    isFavorito(item.cpf_cnpj)
+                    ? removerFavorito(item.cpf_cnpj)
+                    : adicionarFavorito(item.cpf_cnpj);
+                }}
+                >
+                {isFavorito(item.cpf_cnpj) ? (
+                    <Fontisto name="favorite" size={20} color={colors.title} />
+                ) : (
+                    <Fontisto name="bookmark" size={20}/>
+                )}
             </TouchableOpacity>
         </TouchableOpacity>
     );
 
     return (
+        
         <>  
-            <SafeAreaView
-                edges={["top"]}
-                style={{ backgroundColor: '#4D7E1B' }} 
-            />
+            {/* <ProtectedRoute> */}
+                <SafeAreaView
+                    edges={["top"]}
+                    style={{ backgroundColor: '#4D7E1B' }} 
+                />
 
-            <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["left", "right", 'bottom']}>
-                <View style={{ flex: 1}}>
-                    {/* 🔹 Header Fixo no Topo */}
-                    <View style={{ backgroundColor: "#4D7E1B" }}>
-                        <Header />
-                    </View>
-
-                    {/* 🔹 Conteúdo separado do Header */}
-                    <ScrollView contentContainerStyle={{  padding: 20 }} showsVerticalScrollIndicator={false} bounces={false} >
-
-                        {/*  Barra de Pesquisa e Localização */}
-                        <View style={styles.searchContainer}>
-                            <Feather name="search" size={20} color={"#4D7E1B"} style={styles.icon} />
-                            <TextInput style={[styles.searchInput, { color: colors.text, borderBottomColor: colors.text }]} placeholder='O que você procura hoje ?' placeholderTextColor={colors.text}/>
-                            <TouchableOpacity style={[styles.locationButton, { marginTop: height * 0.01 }]}>
-                                <Ionicons name="location-outline" size={20} color={"#4D7E1B"} />
-                                <Text style={[styles.locationText, { color: colors.text }]}>Minha Localização</Text>
-                            </TouchableOpacity>
+                <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["left", "right", 'bottom']}>
+                    <View style={{ flex: 1}}>
+                        {/* 🔹 Header Fixo no Topo */}
+                        <View style={{ backgroundColor: "#4D7E1B" }}>
+                            <Header />
                         </View>
 
-                        {/*  Carrossel de Avisos/Promoções */}
-                        {banners.length === 0 ? (
-                            <View style={[styles.carouselContainer, { height: height * 0.23, justifyContent: 'center', alignItems: 'center' }]}>
-                                <Text style={{ color: colors.text }}>Nenhum banner para exibir.</Text>
+                        {/* 🔹 Conteúdo separado do Header */}
+                        <ScrollView contentContainerStyle={{  padding: 15 }} showsVerticalScrollIndicator={false} bounces={false} >
+
+                            {/*  Barra de Pesquisa e Localização */}
+                            <View style={styles.searchContainer}>
+                                <Feather name="search" size={20} color={"#4D7E1B"} style={styles.icon} />
+                                <TextInput style={[styles.searchInput, { color: colors.text, borderBottomColor: colors.text }]} placeholder='O que você procura hoje ?' placeholderTextColor={colors.text}/>
+                                <TouchableOpacity style={[styles.locationButton, { marginTop: height * 0.01 }]}>
+                                    <Ionicons name="location-outline" size={20} color={"#4D7E1B"} />
+                                    <Text style={[styles.locationText, { color: colors.text }]}>Minha Localização</Text>
+                                </TouchableOpacity>
                             </View>
-                        ) : (
-                            <View style={styles.carouselContainer}>
-                                <Carousel
-                                    width={width * 0.85}
-                                    height={height * 0.23}
-                                    data={banners}
-                                    defaultIndex={0}
-                                    scrollAnimationDuration={500}
-                                    loop
-                                    autoPlay={true}
-                                    autoPlayInterval={5000}
-                                    renderItem={({ item }) => (
-                                        <Image
-                                            source={{ uri: item }}
-                                            style={{
-                                                width: "100%",
-                                                height: "100%",
-                                                borderRadius: 10,
-                                            }}
-                                            resizeMode="cover"
-                                        />
+
+                            {/*  Carrossel de Avisos/Promoções */}
+                            {banners.length === 0 ? (
+                                <View style={[styles.carouselContainer, { height: height * 0.23, justifyContent: 'center', alignItems: 'center' }]}>
+                                    <Text style={{ color: colors.text }}>Nenhum banner para exibir.</Text>
+                                </View>
+                            ) : (
+                                <View style={styles.carouselContainer}>
+                                    <Carousel
+                                        width={width * 0.85}
+                                        height={height * 0.23}
+                                        data={banners}
+                                        defaultIndex={0}
+                                        scrollAnimationDuration={500}
+                                        loop
+                                        autoPlay={true}
+                                        autoPlayInterval={5000}
+                                        renderItem={({ item }) => (
+                                            <Image
+                                                source={{ uri: item }}
+                                                style={{
+                                                    width: "100%",
+                                                    height: "100%",
+                                                    borderRadius: 10,
+                                                }}
+                                                resizeMode="cover"
+                                            />
+                                        )}
+                                    />
+                                </View>
+                            )}
+
+                            {/*  Produtos Sazonais */}
+                            <Text style={[styles.sectionTitle, { marginBottom: height * 0.005, color: colors.title }]}>Produtos sazonais</Text>
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
+                                {produtosSazonais.map((produto, index) => (
+                                    <TouchableOpacity key={index} style={styles.productItem}>
+                                        <Text style={[styles.productText, { color: colors.text }]}>{produto}</Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </ScrollView>
+
+                            {/*  Agricultores por Perto */}
+                            <Text style={[styles.sectionTitle, { textAlign: 'center', marginBottom: height * 0.01, color: colors.title }]}>Agricultores por perto</Text>
+                                <FlatList
+                                    data={agricultores} // seu array de produtores
+                                    keyExtractor={(item, index) => index.toString()}
+                                    renderItem={renderAgricultor}
+                                    scrollEnabled={false} // Para não conflitar com ScrollView
+                                    ListEmptyComponent={() => (
+                                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 40 }}>
+                                            <Text style={{ color: colors.text }}>Nenhum agricultor encontrado.</Text>
+                                        </View>
                                     )}
                                 />
-                            </View>
-                        )}
-
-                        {/*  Produtos Sazonais */}
-                        <Text style={[styles.sectionTitle, { marginBottom: height * 0.005, color: colors.title }]}>Produtos sazonais</Text>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
-                            {produtosSazonais.map((produto, index) => (
-                                <TouchableOpacity key={index} style={styles.productItem}>
-                                    <Text style={[styles.productText, { color: colors.text }]}>{produto}</Text>
-                                </TouchableOpacity>
-                            ))}
                         </ScrollView>
-
-                        {/*  Agricultores por Perto */}
-                        <Text style={[styles.sectionTitle, { textAlign: 'center', marginBottom: height * 0.01, color: colors.title }]}>Agricultores por perto</Text>
-                            <FlatList
-                                data={agricultores} // seu array de produtores
-                                keyExtractor={(item, index) => index.toString()}
-                                renderItem={renderAgricultor}
-                                scrollEnabled={false} // Para não conflitar com ScrollView
-                                ListEmptyComponent={() => (
-                                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 40 }}>
-                                        <Text style={{ color: colors.text }}>Nenhum agricultor encontrado.</Text>
-                                    </View>
-                                )}
-                            />
-                    </ScrollView>
-                </View>
-            </SafeAreaView>
+                    </View>
+                </SafeAreaView>
+            {/* </ProtectedRoute> */}
         </>
     );
 }
@@ -200,5 +228,6 @@ const styles = StyleSheet.create({
     card: { width: "100%", height: "100%", backgroundColor: "#ddd", justifyContent: "center", alignItems: "center", borderRadius: 10 },
     text: { fontSize: 18, fontWeight: "bold" },
     icon: { marginLeft: 10 },
-    produtoImagem: { width: 40, height: 40, marginRight: 10 }
+    produtoImagem: { width: 40, height: 40, marginRight: 10 },
+    perfilImagem: { width: 40, height: 40, borderRadius: 10 },
 });

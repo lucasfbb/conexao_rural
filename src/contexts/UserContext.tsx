@@ -57,8 +57,6 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     const logout = async () => {
         try {
             setUser(null);
-            await AsyncStorage.removeItem("usuario");
-            await AsyncStorage.removeItem("token");
         } catch (err) {
             console.error("Erro ao remover usuário:", err);
         }

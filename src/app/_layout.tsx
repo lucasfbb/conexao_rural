@@ -2,11 +2,18 @@
 import { Slot, usePathname } from "expo-router";
 import { AppProvider } from "@/providers/AppProvider";
 import DrawerLayout from "@/app/layouts/DrawerLayout";
+import { useEffect } from "react";
+import { setAuthHandler } from "../../services/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function RootLayout() {
   const pathname = usePathname();
+  const { setAuthenticated } = useAuth();
 
-  // Caso queira exibir o Drawer só em rotas específicas:
+  useEffect(() => {
+    setAuthHandler(setAuthenticated); // conecta interceptor ao contexto
+  }, []);
+
   const isDrawerPage =
     pathname.startsWith("/home") ||
     pathname.startsWith("/perfil") ||

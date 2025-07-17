@@ -6,11 +6,13 @@ export interface Item {
   }
 
 export interface ItemHome {
+    cpf_cnpj: string;
     nome: string;
     endereco?: string;
     distancia?: number;
     categoria?: string;
     foto?: string;
+    banner?: string;
 }
 
 export type Produto = {
@@ -18,3 +20,27 @@ export type Produto = {
   nome: string;
   sazonal: boolean;
 }
+
+export type Produtor = {
+  nome: string;
+  banner?: string;
+  foto?: string;
+  categoria?: string;
+  endereco?: string;
+  telefone1?: string;
+  telefone2?: string;
+  distancia?: number;
+  email?: string;
+}
+
+export type EnderecoItem =
+  | {
+      id: number;
+      title: string;
+      subtitle: string;
+      details: string[];
+    }
+  | {
+      addNew: true;
+    };
+

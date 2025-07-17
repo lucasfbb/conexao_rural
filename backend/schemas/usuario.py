@@ -1,5 +1,6 @@
 from typing import Optional
 from pydantic import BaseModel, EmailStr
+from datetime import date, datetime
 
 class UsuarioBase(BaseModel):
     email: EmailStr
@@ -18,6 +19,28 @@ class UsuarioCreate(UsuarioBase):
     e_vendedor: bool
     telefone_1: str
     telefone_2: Optional[str] = None
+
+class UsuarioOut(UsuarioBase):
+    nome: str
+    email: EmailStr
+    telefone_1: Optional[str] = None
+    telefone_2: Optional[str] = None
+    cpf_cnpj: str
+    e_vendedor: Optional[bool] = None
+    foto_perfil: Optional[str] = None
+    data_nascimento: Optional[date] = None
+    criado_em: Optional[datetime] = None
+    class Config:
+        from_attributes = True
+
+class UsuarioUpdate(BaseModel):
+    email: Optional[EmailStr] = None
+    nome: Optional[str] = None
+    # categoria: Optional[str]
+    telefone_1: Optional[str] = None
+    telefone_2: Optional[str] = None
+    foto_perfil: Optional[str] = None
+    data_nascimento: Optional[date] = None
 
 class UsuarioResponse(UsuarioBase):
     cpf_cnpj: str
