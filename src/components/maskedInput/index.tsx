@@ -3,7 +3,7 @@ import { TextInputMask } from 'react-native-masked-text';
 import { styles } from './styles'
 
 interface MaskedInputProps {
-    type: 'cpf' | 'cel-phone';
+    type: 'cpf' | 'cel-phone' | 'cnpj';
     value: string;
     onChangeText: (text: string) => void;
     placeholder: string;

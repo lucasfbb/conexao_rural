@@ -2,7 +2,6 @@ import { api } from "./api";
 
 export function validarCPF(cpf: string): boolean {
     cpf = cpf.replace(/[^\d]+/g, ''); // remove pontos e traços
-
     if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
 
     let soma = 0;
@@ -22,6 +21,50 @@ export function validarCPF(cpf: string): boolean {
     if (resto !== parseInt(cpf.charAt(10))) return false;
 
     return true;
+}
+
+function validarCNPJ(cnpj: string): boolean {
+  cnpj = cnpj.replace(/[^\d]+/g, ''); // remove pontos, traços e barras
+  if (cnpj.length !== 14 || /^(\d)\1+$/.test(cnpj)) return false;
+
+  let tamanho = 12;
+  let numeros = cnpj.substring(0, tamanho);
+  let digitos = cnpj.substring(tamanho);
+  let soma = 0;
+  let pos = tamanho - 7;
+
+  for (let i = tamanho; i >= 1; i--) {
+    soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
+    if (pos < 2) pos = 9;
+  }
+
+  let resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);
+  if (resultado !== parseInt(digitos.charAt(0))) return false;
+
+  tamanho = 13;
+  numeros = cnpj.substring(0, tamanho);
+  soma = 0;
+  pos = tamanho - 7;
+
+  for (let i = tamanho; i >= 1; i--) {
+    soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
+    if (pos < 2) pos = 9;
+  }
+
+  resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);
+  return resultado === parseInt(digitos.charAt(1));
+}
+
+export function validarCPFouCNPJ(valor: string): boolean {
+  console.log(valor);
+  const documento = valor.replace(/[^\d]+/g, '');
+  if (documento.length === 11) {
+    return validarCPF(valor);
+  } else if (documento.length === 14) {
+    return validarCNPJ(valor);
+  } else {
+    return false;
+  }
 }
 
 export function validarEmail(email: string): boolean {
