@@ -11,6 +11,8 @@ class ItemPedido(Base):
     nome_personalizado = Column(String)
     quantidade = Column(Integer)
     valor_unitario = Column(Integer)
+    listagem_id = Column(Integer, ForeignKey("listagem.id"))
 
+    listagem = relationship("Listagem")
     pedido = relationship("Pedido", back_populates="itens")
     produto = relationship("Produto")
