@@ -180,35 +180,35 @@ export default function Finalizacao() {
     }
   };
 
-  useEffect(() => {
-    let intervalo: any;
+  // useEffect(() => {
+  //   let intervalo: any;
 
-    if (modalPixVisivel && dadosPix?.id_pagamento) {
-      intervalo = setInterval(async () => {
-        try {
-          const resp = await api.get(`/pagamento/status/${dadosPix.id_pagamento}`);
-          const status = resp.data.status;
-          console.log("📦 Status atual do PIX:", status);
+  //   if (modalPixVisivel && dadosPix?.id_pagamento) {
+  //     intervalo = setInterval(async () => {
+  //       try {
+  //         const resp = await api.get(`/pagamento/status/${dadosPix.id_pagamento}`);
+  //         const status = resp.data.status;
+  //         console.log("📦 Status atual do PIX:", status);
 
-          if (status === "approved") {
-            clearInterval(intervalo);
-            Alert.alert("Pagamento Aprovado", "Seu pagamento foi confirmado!");
-            setModalPixVisivel(false);
-            router.push('/home');
-          } else if (status === "rejected") {
-            clearInterval(intervalo);
-            Alert.alert("Pagamento Recusado", "Houve um problema com o pagamento via PIX.");
-          }
+  //         if (status === "approved") {
+  //           clearInterval(intervalo);
+  //           Alert.alert("Pagamento Aprovado", "Seu pagamento foi confirmado!");
+  //           setModalPixVisivel(false);
+  //           router.push('/home');
+  //         } else if (status === "rejected") {
+  //           clearInterval(intervalo);
+  //           Alert.alert("Pagamento Recusado", "Houve um problema com o pagamento via PIX.");
+  //         }
 
-          // Você pode exibir o status dinamicamente no modal se quiser
-        } catch (e) {
-          console.error("Erro ao consultar status do pagamento:", e);
-        }
-      }, 10000); // 10 segundos
-    }
+  //         // Você pode exibir o status dinamicamente no modal se quiser
+  //       } catch (e) {
+  //         console.error("Erro ao consultar status do pagamento:", e);
+  //       }
+  //     }, 10000); // 10 segundos
+  //   }
 
-    return () => clearInterval(intervalo);
-  }, [modalPixVisivel, dadosPix?.id_pagamento]);
+  //   return () => clearInterval(intervalo);
+  // }, [modalPixVisivel, dadosPix?.id_pagamento]);
 
 
   const formatarEndereco = (e: EnderecoOut) =>
@@ -275,7 +275,7 @@ export default function Finalizacao() {
             </TouchableOpacity>
           </SafeAreaView>
         </View>
-
+{/* 
         <ModalPixPagamento
           visible={modalPixVisivel}
           onClose={() => setModalPixVisivel(false)}
@@ -283,7 +283,7 @@ export default function Finalizacao() {
           qrCodeText={dadosPix?.qr_code}
           valor={dadosPix?.valor}
           status={dadosPix?.status}
-        />
+        /> */}
 
       </SafeAreaView>
     </>
