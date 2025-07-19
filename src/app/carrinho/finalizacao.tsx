@@ -150,18 +150,46 @@ export default function Finalizacao() {
   //   }
   // };
 
+  // const finalizarPedido = async () => {
+  //   if (!pagamentoSelecionado || !enderecoSelecionado || !user) {
+  //     Alert.alert("Erro", "Selecione endereço e forma de pagamento.");
+  //     return;
+  //   }
+
+  //   const groupHash = Date.now().toString(36) + Math.random().toString(36).slice(2);
+
+  //   const payload = {
+  //     usuario_id: user.id,
+  //     id_endereco: enderecoSelecionado.id,
+  //     id_pagamento: pagamentoSelecionado.id,
+  //     group_hash: groupHash,
+  //     itens: itens.map(i => ({
+  //       id_listagem: i.id_listagem,
+  //       quantidade: i.qtd
+  //     }))
+  //   };
+
+  //   try {
+  //     const resposta = await api.post('/pedidos/pagar_pix', payload);
+  //     setDadosPix(resposta.data);
+  //     setModalPixVisivel(true);
+  //     limparCarrinho();
+  //   } catch (error) {
+  //     console.error(error);
+  //     Alert.alert("Erro", "Falha ao iniciar pagamento via PIX.");
+  //   }
+  // };
+
   const finalizarPedido = async () => {
-    if (!pagamentoSelecionado || !enderecoSelecionado || !user) {
-      Alert.alert("Erro", "Selecione endereço e forma de pagamento.");
+    if (!enderecoSelecionado || !user) {
+      Alert.alert("Erro", "Endereço não selecionado.");
       return;
     }
 
     const groupHash = Date.now().toString(36) + Math.random().toString(36).slice(2);
 
     const payload = {
-      usuario_id: user.id,
       id_endereco: enderecoSelecionado.id,
-      id_pagamento: pagamentoSelecionado.id,
       group_hash: groupHash,
       itens: itens.map(i => ({
         id_listagem: i.id_listagem,
@@ -170,13 +198,15 @@ export default function Finalizacao() {
     };
 
     try {
-      const resposta = await api.post('/pedidos/pagar_pix', payload);
-      setDadosPix(resposta.data);
-      setModalPixVisivel(true);
+      await api.post("/pedidos", payload);
+
       limparCarrinho();
+      Alert.alert("Pedido confirmado!", "Seu pedido foi registrado com sucesso.");
+
+      // router.push(`/pedidos/AcompanhamentoPedido?group_hash=${groupHash}`);
     } catch (error) {
       console.error(error);
-      Alert.alert("Erro", "Falha ao iniciar pagamento via PIX.");
+      Alert.alert("Erro", "Falha ao registrar pedido.");
     }
   };
 

@@ -5,7 +5,7 @@ from models.formapagamento import FormaPagamento
 from schemas.formaPagamento import PedidoPagamentoIn
 from models.item_pedido import ItemPedido
 import httpx
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from database import get_db
 from models import Pedido
 from models.listagem import Listagem
@@ -223,4 +223,115 @@ async def calcular_frete(data: Coordenadas):
         "valor_frete": round(valor_frete, 2)
     }
 
+@router.post("/pedidos/")
+def criar_pedido_sem_pagamento(
+    pedido: PedidoCreate,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    endereco = db.query(Endereco).filter_by(id=pedido.id_endereco, usuario_id=current_user.id).first()
+    if not endereco:
+        raise HTTPException(404, detail="Endereço não encontrado.")
 
+    pedidos_por_produtor = {}
+
+    for item in pedido.itens:
+        listagem = db.query(Listagem).filter_by(id=item.id_listagem).first()
+        if not listagem:
+            raise HTTPException(404, detail=f"Listagem com id {item.id_listagem} não encontrada.")
+        
+        produtor_id = listagem.produtor_id
+        if produtor_id not in pedidos_por_produtor:
+            pedidos_por_produtor[produtor_id] = []
+        
+        pedidos_por_produtor[produtor_id].append((listagem, item))
+
+    for produtor_id, lista in pedidos_por_produtor.items():
+        pedido_db = Pedido(
+            quantidade=sum(item.quantidade for _, item in lista),
+            valor=sum(float(l.preco) * i.quantidade for l, i in lista),
+            status="confirmado",  # ← Aqui está o status inicial
+            usuario_id=current_user.id,
+            id_endereco=endereco.id,
+            group_hash=pedido.group_hash
+        )
+        db.add(pedido_db)
+        db.flush()
+
+        for listagem, item in lista:
+            item_pedido = ItemPedido(
+                pedido_id=pedido_db.id,
+                produto_id=listagem.produto_id,
+                nome_personalizado=listagem.nome_personalizado,
+                quantidade=item.quantidade,
+                valor_unitario=float(listagem.preco)
+            )
+            db.add(item_pedido)
+
+    db.commit()
+
+    return {
+        "mensagem": "Pedido registrado com sucesso!",
+        "group_hash": pedido.group_hash
+    }
+
+@router.get("/pedidos/acompanhar/{group_hash}")
+def acompanhar_pedidos(group_hash: str, db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
+    pedidos = (
+        db.query(Pedido)
+        .filter(Pedido.group_hash == group_hash, Pedido.usuario_id == current_user.id)
+        .options(joinedload(Pedido.itens).joinedload(ItemPedido.listagem).joinedload(Listagem.produtor))
+        .all()
+    )
+
+    if not pedidos:
+        raise HTTPException(404, detail="Nenhum pedido encontrado com esse group_hash.")
+
+    retorno = []
+    for pedido in pedidos:
+        nome_produtor = None
+
+        # Obtém o nome do produtor a partir do primeiro item
+        if pedido.itens and pedido.itens[0].listagem and pedido.itens[0].listagem.produtor:
+            nome_produtor = pedido.itens[0].listagem.produtor.nome or "Produtor"
+
+        retorno.append({
+            "id": pedido.id,
+            "usuario_id": pedido.usuario_id,
+            "id_endereco": pedido.id_endereco,
+            "status": pedido.status,
+            "valor": pedido.valor,
+            "nome_produtor": nome_produtor,
+        })
+
+    return retorno
+
+@router.get("/pedidos/meus")
+def listar_pedidos_usuario(db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
+    pedidos = (
+        db.query(Pedido)
+        .filter(Pedido.usuario_id == current_user.id)
+        .options(joinedload(Pedido.itens).joinedload(ItemPedido.listagem).joinedload(Listagem.produtor))
+        .all()
+    )
+
+    if not pedidos:
+        return []
+
+    retorno = []
+    for pedido in pedidos:
+        nome_produtor = None
+        if pedido.itens and pedido.itens[0].listagem and pedido.itens[0].listagem.produtor:
+            nome_produtor = pedido.itens[0].listagem.produtor.nome or "Produtor"
+
+        retorno.append({
+            "id": pedido.id,
+            "usuario_id": pedido.usuario_id,
+            "id_endereco": pedido.id_endereco,
+            "status": pedido.status,
+            "valor": pedido.valor,
+            "group_hash": pedido.group_hash,
+            "nome_produtor": nome_produtor,
+        })
+
+    return retorno
