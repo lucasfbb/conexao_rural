@@ -1,7 +1,7 @@
 // app/layouts/DrawerLayout.tsx
 import { Drawer } from "expo-router/drawer";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { Feather } from "@expo/vector-icons";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import CustomDrawer from "@/components/customDrawer";
 import { useUser } from "@/contexts/UserContext";
 
@@ -53,6 +53,16 @@ export default function DrawerLayout() {
                     drawerIcon: ({ color }) => <Feather name="shopping-cart" size={20} color={'white'} />,
                 }} 
             />
+
+            <Drawer.Screen 
+                name="pedidos"
+                options={{ 
+                    drawerLabel: "Meus Pedidos",
+                    drawerLabelStyle: { color: "white" },
+                    drawerIcon: ({ color }) => <Feather name="package" size={20} color={'white'} />,
+                }} 
+            />
+
             <Drawer.Screen 
                 name="configuracoes"
                 options={{ 
@@ -68,7 +78,8 @@ export default function DrawerLayout() {
                     options={{ 
                         drawerLabel: "Área do Produtor",
                         drawerLabelStyle: { color: "white" },
-                        drawerIcon: ({ color }) => <Feather name="package" size={20} color={'white'} />,
+                        drawerIcon: ({ color }) => <MaterialCommunityIcons name="tractor" size={24} color={"white"} />,
+
                     }} 
                 /> :
                 <Drawer.Screen 

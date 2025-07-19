@@ -7,6 +7,7 @@ import { api, baseURL } from "../../../services/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ModalAddProduto from "@/components/modais/produtos/modalAddProduto";
 import { ProdutoGlobal } from "@/components/autoComplete";
+import { useTema } from '@/contexts/ThemeContext';
 
 type Produto = {
   id: string;
@@ -34,6 +35,7 @@ function getCamposAlterados(
 }
 
 export default function AreaProdutor() {
+
   const { width, height } = useWindowDimensions();
   const styles = getStyles(width, height);
 

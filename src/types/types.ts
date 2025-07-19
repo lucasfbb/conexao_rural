@@ -77,3 +77,13 @@ export interface FormaPagamentoOut {
   final_cartao: string; // pode ser final "**** 1234"
   nome_cartao: string;
 }
+
+export interface PedidoOut {
+  id: number;
+  usuario_id: number;
+  id_endereco: number;
+  status: string;
+  valor: number;
+  group_hash: string;
+  nome_produtor: string;
+}

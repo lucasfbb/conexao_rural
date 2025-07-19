@@ -1,10 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Modal, View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Dimensions, ScrollView } from "react-native";
+import {
+  Modal,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  Dimensions,
+  ScrollView
+} from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import { Feather } from "@expo/vector-icons";
 import { useTema } from "@/contexts/ThemeContext";
-
-import AutocompleteProduto from "@/components/autoComplete";
 
 const { width, height } = Dimensions.get("window");
 
@@ -64,10 +71,7 @@ export default function ModalAddProduto({
   onClose
 }: ModalAddProdutoProps) {
   const { colors } = useTema();
-
-  // Estado só para autocomplete (local do modal)
   const [showSugestoes, setShowSugestoes] = useState(false);
-
   const [focused, setFocused] = useState(false);
 
   function handleBlur() {
@@ -81,14 +85,14 @@ export default function ModalAddProduto({
     <Modal visible={visible} animationType="fade" transparent>
       <View style={styles.modalBackground}>
         <ScrollView contentContainerStyle={[styles.modalContainer, { backgroundColor: colors.modalBackground }]}>
-          <Text style={styles.modalTitle}>{modoEdicao ? "Editar Produto" : "Novo Produto"}</Text>
-          
-          {/* Autocomplete produto */}
+          <Text style={[styles.modalTitle, { color: colors.title}]}>{modoEdicao ? "Editar Produto" : "Novo Produto"}</Text>
+
+          {/* Nome do Produto com Autocomplete */}
           <View style={{ width: "100%" }}>
-            <Text style={styles.label}>Nome do Produto</Text>
+            <Text style={[styles.label, { color: colors.title }]}>Nome do Produto</Text>
             <TextInput
               placeholder="Digite o nome do produto"
-              style={styles.input}
+              style={[styles.input, { color: colors.title }]}
               value={nome}
               onChangeText={text => {
                 onNomeChange(text);
@@ -135,7 +139,8 @@ export default function ModalAddProduto({
               </View>
             )}
           </View>
-          
+
+          {/* Descrição */}
           <View style={{ width: "100%" }}>
             <Text style={styles.label}>Descrição</Text>
             <TextInput
@@ -147,59 +152,62 @@ export default function ModalAddProduto({
               maxLength={200}
             />
           </View>
-          
-          <View style={{ flexDirection: 'row', gap: 12 }}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.label}>Preço</Text>
-              <TextInput
-                placeholder="Preço"
-                style={styles.input}
-                value={preco}
-                onChangeText={onPrecoChange}
-                keyboardType="decimal-pad"
-                inputMode="decimal"
-              />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.label}>Preço promocional</Text>
-              <TextInput
-                placeholder="Preço promocional (opcional)"
-                style={styles.input}
-                value={precoPromocional}
-                onChangeText={onPrecoPromocionalChange}
-                keyboardType="decimal-pad"
-              />
-            </View>
+
+          {/* Preço */}
+          <View style={{ width: "100%" }}>
+            <Text style={styles.label}>Preço</Text>
+            <TextInput
+              placeholder="Preço"
+              style={styles.input}
+              value={preco}
+              onChangeText={onPrecoChange}
+              keyboardType="decimal-pad"
+              inputMode="decimal"
+            />
           </View>
-          
-          <View style={{ flexDirection: 'row', gap: 12 }}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.label}>Quantidade</Text>
-              <TextInput
-                placeholder="Quantidade"
-                style={[styles.input, { flex: 1, marginBottom: 0, marginRight: 12 }]}
-                value={quantidade}
-                onChangeText={onQuantidadeChange}
-                keyboardType="numeric"
-                inputMode="numeric"
-              />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.label}>Unidade</Text>
-              <Picker
-                selectedValue={unidade}
-                style={{ height: height * 0.08, width: width * 0.3, color: "#4D7E1B" }}
-                onValueChange={onUnidadeChange}
-                dropdownIconColor="#4D7E1B"
-              >
-                <Picker.Item label="unid." value="unidade" />
-                <Picker.Item label="g" value="g" />
-                <Picker.Item label="kg" value="kg" />
-                <Picker.Item label="ton" value="ton" />
-              </Picker>
-            </View>
+
+          {/* Preço Promocional */}
+          <View style={{ width: "100%" }}>
+            <Text style={styles.label}>Preço promocional</Text>
+            <TextInput
+              placeholder="Preço promocional (opcional)"
+              style={styles.input}
+              value={precoPromocional}
+              onChangeText={onPrecoPromocionalChange}
+              keyboardType="decimal-pad"
+            />
           </View>
-          
+
+          {/* Quantidade */}
+          <View style={{ width: "100%" }}>
+            <Text style={styles.label}>Quantidade</Text>
+            <TextInput
+              placeholder="Quantidade"
+              style={styles.input}
+              value={quantidade}
+              onChangeText={onQuantidadeChange}
+              keyboardType="numeric"
+              inputMode="numeric"
+            />
+          </View>
+
+          {/* Unidade */}
+          <View style={{ width: "100%", borderBottomWidth: 1, borderBottomColor: "#4D7E1B", marginBottom: 20 }}>
+            <Text style={styles.label}>Unidade</Text>
+            <Picker
+              selectedValue={unidade}
+              style={{ color: "#4D7E1B" }}
+              onValueChange={onUnidadeChange}
+              dropdownIconColor="#4D7E1B"
+            >
+              <Picker.Item label="unid." value="unidade" />
+              <Picker.Item label="g" value="g" />
+              <Picker.Item label="kg" value="kg" />
+              <Picker.Item label="ton" value="ton" />
+            </Picker>
+          </View>
+
+          {/* Imagem */}
           <TouchableOpacity onPress={onEscolherImagem}>
             {imagemProduto ? (
               <Image source={{ uri: imagemProduto }} style={styles.produtoImagemPreview} />
@@ -209,7 +217,8 @@ export default function ModalAddProduto({
               </View>
             )}
           </TouchableOpacity>
-          
+
+          {/* Botões */}
           <View style={styles.modalButtons}>
             <TouchableOpacity onPress={onClose}>
               <Text style={{ color: '#B00020' }}>Cancelar</Text>
@@ -263,19 +272,6 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     fontSize: 16,
     color: "#4D7E1B"
-  },
-  rowInputPicker: {
-    width: "100%",
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 20
-  },
-  pickerBox: {
-    borderBottomWidth: 1,
-    borderBottomColor: "#4D7E1B",
-    borderRadius: 7,
-    paddingHorizontal: 0,
-    marginBottom: 0
   },
   produtoImagemPreview: {
     width: width * 0.22,

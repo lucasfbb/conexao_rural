@@ -150,18 +150,46 @@ export default function Finalizacao() {
   //   }
   // };
 
+  // const finalizarPedido = async () => {
+  //   if (!pagamentoSelecionado || !enderecoSelecionado || !user) {
+  //     Alert.alert("Erro", "Selecione endereço e forma de pagamento.");
+  //     return;
+  //   }
+
+  //   const groupHash = Date.now().toString(36) + Math.random().toString(36).slice(2);
+
+  //   const payload = {
+  //     usuario_id: user.id,
+  //     id_endereco: enderecoSelecionado.id,
+  //     id_pagamento: pagamentoSelecionado.id,
+  //     group_hash: groupHash,
+  //     itens: itens.map(i => ({
+  //       id_listagem: i.id_listagem,
+  //       quantidade: i.qtd
+  //     }))
+  //   };
+
+  //   try {
+  //     const resposta = await api.post('/pedidos/pagar_pix', payload);
+  //     setDadosPix(resposta.data);
+  //     setModalPixVisivel(true);
+  //     limparCarrinho();
+  //   } catch (error) {
+  //     console.error(error);
+  //     Alert.alert("Erro", "Falha ao iniciar pagamento via PIX.");
+  //   }
+  // };
+
   const finalizarPedido = async () => {
-    if (!pagamentoSelecionado || !enderecoSelecionado || !user) {
-      Alert.alert("Erro", "Selecione endereço e forma de pagamento.");
+    if (!enderecoSelecionado || !user) {
+      Alert.alert("Erro", "Endereço não selecionado.");
       return;
     }
 
     const groupHash = Date.now().toString(36) + Math.random().toString(36).slice(2);
 
     const payload = {
-      usuario_id: user.id,
       id_endereco: enderecoSelecionado.id,
-      id_pagamento: pagamentoSelecionado.id,
       group_hash: groupHash,
       itens: itens.map(i => ({
         id_listagem: i.id_listagem,
@@ -170,45 +198,47 @@ export default function Finalizacao() {
     };
 
     try {
-      const resposta = await api.post('/pedidos/pagar_pix', payload);
-      setDadosPix(resposta.data);
-      setModalPixVisivel(true);
+      await api.post("/pedidos", payload);
+
       limparCarrinho();
+      Alert.alert("Pedido confirmado!", "Seu pedido foi registrado com sucesso.");
+
+      // router.push(`/pedidos/AcompanhamentoPedido?group_hash=${groupHash}`);
     } catch (error) {
       console.error(error);
-      Alert.alert("Erro", "Falha ao iniciar pagamento via PIX.");
+      Alert.alert("Erro", "Falha ao registrar pedido.");
     }
   };
 
-  useEffect(() => {
-    let intervalo: any;
+  // useEffect(() => {
+  //   let intervalo: any;
 
-    if (modalPixVisivel && dadosPix?.id_pagamento) {
-      intervalo = setInterval(async () => {
-        try {
-          const resp = await api.get(`/pagamento/status/${dadosPix.id_pagamento}`);
-          const status = resp.data.status;
-          console.log("📦 Status atual do PIX:", status);
+  //   if (modalPixVisivel && dadosPix?.id_pagamento) {
+  //     intervalo = setInterval(async () => {
+  //       try {
+  //         const resp = await api.get(`/pagamento/status/${dadosPix.id_pagamento}`);
+  //         const status = resp.data.status;
+  //         console.log("📦 Status atual do PIX:", status);
 
-          if (status === "approved") {
-            clearInterval(intervalo);
-            Alert.alert("Pagamento Aprovado", "Seu pagamento foi confirmado!");
-            setModalPixVisivel(false);
-            router.push('/home');
-          } else if (status === "rejected") {
-            clearInterval(intervalo);
-            Alert.alert("Pagamento Recusado", "Houve um problema com o pagamento via PIX.");
-          }
+  //         if (status === "approved") {
+  //           clearInterval(intervalo);
+  //           Alert.alert("Pagamento Aprovado", "Seu pagamento foi confirmado!");
+  //           setModalPixVisivel(false);
+  //           router.push('/home');
+  //         } else if (status === "rejected") {
+  //           clearInterval(intervalo);
+  //           Alert.alert("Pagamento Recusado", "Houve um problema com o pagamento via PIX.");
+  //         }
 
-          // Você pode exibir o status dinamicamente no modal se quiser
-        } catch (e) {
-          console.error("Erro ao consultar status do pagamento:", e);
-        }
-      }, 10000); // 10 segundos
-    }
+  //         // Você pode exibir o status dinamicamente no modal se quiser
+  //       } catch (e) {
+  //         console.error("Erro ao consultar status do pagamento:", e);
+  //       }
+  //     }, 10000); // 10 segundos
+  //   }
 
-    return () => clearInterval(intervalo);
-  }, [modalPixVisivel, dadosPix?.id_pagamento]);
+  //   return () => clearInterval(intervalo);
+  // }, [modalPixVisivel, dadosPix?.id_pagamento]);
 
 
   const formatarEndereco = (e: EnderecoOut) =>
@@ -275,7 +305,7 @@ export default function Finalizacao() {
             </TouchableOpacity>
           </SafeAreaView>
         </View>
-
+{/* 
         <ModalPixPagamento
           visible={modalPixVisivel}
           onClose={() => setModalPixVisivel(false)}
@@ -283,7 +313,7 @@ export default function Finalizacao() {
           qrCodeText={dadosPix?.qr_code}
           valor={dadosPix?.valor}
           status={dadosPix?.status}
-        />
+        /> */}
 
       </SafeAreaView>
     </>

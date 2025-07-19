@@ -10,9 +10,11 @@ router = APIRouter()
 @router.get("/favoritos/produtor")
 def listar_favoritos_produtores(id_usuario: int, db: Session = Depends(get_db)):
     usuario = db.query(Usuario).filter_by(id=id_usuario).first()
+
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
-    return [p.cpf_cnpj for p in usuario.produtores_favoritos]
+
+    return [p.usuario.cpf_cnpj for p in usuario.produtores_favoritos]
 
 @router.post("/favoritos/produtor")
 def adicionar_favorito_produtor(id_usuario: int, cpf_produtor: str, db: Session = Depends(get_db)):
@@ -81,7 +83,7 @@ def listar_favoritos_produtos(id_usuario: int, db: Session = Depends(get_db)):
             "preco_promocional": float(listagem.preco_promocional) if listagem and listagem.preco_promocional else None,
             "produtor": {
                 "nome": produtor.nome,
-                "cpf_cnpj": produtor.cpf_cnpj,
+                # "cpf_cnpj": produtor.cpf_cnpj,
             } if produtor else None
         })
 
