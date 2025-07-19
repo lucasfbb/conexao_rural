@@ -12,6 +12,7 @@ class UsuarioLogin(BaseModel):
     senha: str
 
 class UsuarioCreate(UsuarioBase):
+    id: Optional[int] = None
     nome: str
     email: EmailStr
     senha: str
@@ -21,6 +22,7 @@ class UsuarioCreate(UsuarioBase):
     telefone_2: Optional[str] = None
 
 class UsuarioOut(UsuarioBase):
+    id: int
     nome: str
     email: EmailStr
     telefone_1: Optional[str] = None
@@ -43,6 +45,7 @@ class UsuarioUpdate(BaseModel):
     data_nascimento: Optional[date] = None
 
 class UsuarioResponse(UsuarioBase):
+    id: int
     cpf_cnpj: str
     class Config:
         from_attributes = True

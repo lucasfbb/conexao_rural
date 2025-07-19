@@ -10,7 +10,7 @@ class Listagem(Base):
     nome_personalizado = Column(String(255), nullable=True) # Nome personalizado do produto na listagem do produtor
     preco = Column(DECIMAL(10, 2))
     estoque = Column(Integer)
-    produtor_cpf_cnpj = Column(String, ForeignKey('produtor.cpf_cnpj'))
+    produtor_id = Column(Integer, ForeignKey('produtor.id'), nullable=False)
     preco_promocional = Column(DECIMAL(10, 2))
     unidade = Column(String(50), nullable=True)
     descricao = Column(String(255), nullable=True)

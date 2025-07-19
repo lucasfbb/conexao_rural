@@ -144,7 +144,7 @@ export default function CadastroPage() {
                         type="cpf"
                         value={cpf}
                         onChangeText={setCpf}
-                        placeholder="Digite seu CPF*"
+                        placeholder="Digite seu CPF/CNPJ*"
                         containerStyle={[styles.inputContainer, { width: width * 0.8 }]}
                         inputStyle={{ fontSize: fontSizeResponsive }}
                     />

@@ -9,7 +9,8 @@ class NotificacaoBase(BaseModel):
     lida: bool = False
 
 class NotificacaoCreate(NotificacaoBase):
-    usuario_cpf_cnpj: str
+    # usuario_cpf_cnpj: str
+    usuario_id: int
     tipo: Optional[str] = None
     
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
-import { View, Text, Image, TouchableOpacity, ScrollView, FlatList, StyleSheet, Dimensions, ActivityIndicator } from "react-native";
+import { View, Text, Image, TouchableOpacity, ScrollView, FlatList, StyleSheet, Dimensions, ActivityIndicator, Alert } from "react-native";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
 
 import Header from "@/components/header";
@@ -8,10 +8,12 @@ import ModalProduto from "@/components/modais/produtos/modalProduto";
 
 import { useTema } from "@/contexts/ThemeContext";
 import { useFavoritos } from "@/contexts/FavoritosContext";
+import { useCarrinho } from "@/contexts/CarrinhoContext";
 
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api, baseURL } from "../../../services/api";
 import { Produtor } from "@/types/types";
+import { geocodeEndereco, parsePreco } from "../../../services/utils";
 
 const { width, height } = Dimensions.get("window");
 
@@ -34,9 +36,10 @@ type Produto = {
 
 export default function ProdutorScreen() {
   const params = useLocalSearchParams();
-  const { cpf_cnpj } = params;
+  const { usuario_id, cpf_cnpj } = params;
   const { colors } = useTema();
   const { favoritarProduto, desfavoritarProduto, isProdutoFavorito } = useFavoritos();
+  const { adicionarItem } = useCarrinho();
 
   const base = baseURL.slice(0, -1);
 
@@ -53,12 +56,17 @@ export default function ProdutorScreen() {
     async function buscarDados() {
       setCarregando(true);
       try {
+
         // Dados do produtor
-        const resProdutor = await api.get(`/produtores/${cpf_cnpj}`);
+        const resProdutor = await api.get(`/produtores/${usuario_id}`);
+
+        // console.log("Dados do produtor:", resProdutor.data);
         setProdutor(resProdutor.data);
+        
+        // console.log("Dados do produtor:", resProdutor.data);
 
         // Produtos desse produtor
-        const resProdutos = await api.get(`/produtores/${cpf_cnpj}/produtos`);
+        const resProdutos = await api.get(`/produtores/${usuario_id}/produtos`);
         const produtosTratados: Produto[] = resProdutos.data.map((produto: any) => ({
           id: produto.id?.toString() ?? Math.random().toString(),
           nome: produto.nome,
@@ -85,8 +93,8 @@ export default function ProdutorScreen() {
         setCarregando(false);
       }
     }
-    if (cpf_cnpj) buscarDados();
-  }, [cpf_cnpj, base]);
+    if (usuario_id) buscarDados();
+  }, [usuario_id, base]);
 
   if (carregando) {
     return (
@@ -113,8 +121,53 @@ export default function ProdutorScreen() {
                 setProdutoSelecionado(null);
               }}
               produto={produtoSelecionado}
-              onAddToCart={(qtd) => {
-                // Aqui você pode implementar o carrinho!
+              onAddToCart={async (qtd) => {
+                const precoFinal = produtoSelecionado?.preco_promocional
+                  ? parsePreco(produtoSelecionado.preco_promocional)
+                  : parsePreco(produtoSelecionado.preco);
+                
+                // console.log(produtoSelecionado.preco)
+                // console.log("💰 precoFinal calculado:", precoFinal);
+
+                const enderecoTexto = `${produtor?.rua ?? ''}, ${produtor?.numero ?? ''}, ${produtor?.bairro ?? ''}`;
+                const coords = await geocodeEndereco(enderecoTexto);
+                  
+                // // Se não encontrou, tenta só com o bairro
+                // if (!coords && produtor?.bairro) {
+                //   console.warn("Endereço completo falhou. Tentando com apenas o bairro...");
+                //   coords = await geocodeEndereco(produtor.bairro);
+                // }
+
+                // // Se ainda falhar, aborta
+                // if (!coords) {
+                //   console.error("Não foi possível geocodificar o endereço do cliente.");
+                //   return;
+                // }
+
+                adicionarItem({
+                  id_listagem: Number(produtoSelecionado?.id),
+                  nome: produtoSelecionado?.nome,
+                  preco: precoFinal,
+                  qtd,
+                  produtor_id: produtor?.id || 0,
+                  nome_produtor: produtor?.nome,
+                  imagem: produtoSelecionado?.imagem,
+                  endereco_produtor: {
+                    texto: enderecoTexto,
+                    rua: produtor?.rua,
+                    numero: produtor?.numero,
+                    bairro: produtor?.bairro,
+                    complemento: produtor?.complemento,
+                    latitude: coords?.latitude,
+                    longitude: coords?.longitude,
+                  }
+                });
+
+                Alert.alert(
+                  'Adicionado ao carrinho',
+                  `${produtoSelecionado.nome} (x${qtd}) adicionado com sucesso!`
+                );
+
                 setModalProdutoVisivel(false);
                 setProdutoSelecionado(null);
               }}

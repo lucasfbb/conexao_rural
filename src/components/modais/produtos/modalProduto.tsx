@@ -64,10 +64,16 @@ export default function ModalProduto({
 
           {/* Botão Adicionar */}
           <TouchableOpacity
-            style={styles.addBtn}
+            style={[
+              styles.addBtn,
+              quantidade === 0 && { backgroundColor: "#ccc" },
+            ]}
             onPress={() => onAddToCart(quantidade)}
+            disabled={quantidade === 0}
           >
-            <Text style={styles.addBtnText}>Adicionar  {produto.preco}</Text>
+            <Text style={styles.addBtnText}>
+              Adicionar {produto.preco}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
