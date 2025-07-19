@@ -68,7 +68,8 @@ export default function ProdutorScreen() {
         // Produtos desse produtor
         const resProdutos = await api.get(`/produtores/${usuario_id}/produtos`);
         const produtosTratados: Produto[] = resProdutos.data.map((produto: any) => ({
-          id: produto.id?.toString() ?? Math.random().toString(),
+          // id: produto.id?.toString() ?? Math.random().toString(),
+          id: produto.listagem_id.toString(),
           nome: produto.nome,
           descricao: produto.descricao || "",
           preco: produto.preco ? produto.preco.toString() : "",

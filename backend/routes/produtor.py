@@ -2,6 +2,10 @@ import os
 import time
 from typing import Optional
 from auth.auth_utils import get_current_user
+from models.endereco import Endereco
+from models.item_pedido import ItemPedido
+from models.pedido import Pedido
+from schemas.pedido import PedidoCreate
 from schemas.listagem import ListagemCreate
 from schemas.produto import ProdutoEstoqueOut, ProdutoOut
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form
@@ -357,3 +361,56 @@ async def editar_produto(
         "unidade": listagem.unidade,
         "descricao": listagem.descricao
     }
+
+# @router.post("/produtores/novo-pedido")
+# def criar_pedido_sem_pagamento(
+#     pedido: PedidoCreate,
+#     db: Session = Depends(get_db),
+#     current_user: Usuario = Depends(get_current_user)
+# ):
+#     endereco = db.query(Endereco).filter_by(id=pedido.id_endereco, usuario_id=current_user.id).first()
+#     if not endereco:
+#         raise HTTPException(404, detail="Endereço não encontrado.")
+
+#     pedidos_por_produtor = {}
+
+#     for item in pedido.itens:
+#         listagem = db.query(Listagem).filter_by(id=item.id_listagem).first()
+#         if not listagem:
+#             raise HTTPException(404, detail=f"Listagem com id {item.id_listagem} não encontrada.")
+        
+#         produtor_id = listagem.produtor_id
+#         if produtor_id not in pedidos_por_produtor:
+#             pedidos_por_produtor[produtor_id] = []
+        
+#         pedidos_por_produtor[produtor_id].append((listagem, item))
+
+#     for produtor_id, lista in pedidos_por_produtor.items():
+#         pedido_db = Pedido(
+#             quantidade=sum(item.quantidade for _, item in lista),
+#             valor=sum(float(l.preco) * i.quantidade for l, i in lista),
+#             status="confirmado",  # ← Aqui está o status inicial
+#             usuario_id=current_user.id,
+#             id_endereco=endereco.id,
+#             group_hash=pedido.group_hash
+#         )
+#         db.add(pedido_db)
+#         db.flush()
+
+#         for listagem, item in lista:
+#             item_pedido = ItemPedido(
+#                 pedido_id=pedido_db.id,
+#                 produto_id=listagem.produto_id,
+#                 nome_personalizado=listagem.nome_personalizado,
+#                 listagem_id=listagem.id,
+#                 quantidade=item.quantidade,
+#                 valor_unitario=float(listagem.preco)
+#             )
+#             db.add(item_pedido)
+
+#     db.commit()
+
+#     return {
+#         "mensagem": "Pedido registrado com sucesso!",
+#         "group_hash": pedido.group_hash
+#     }

@@ -1,3 +1,4 @@
+import random
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from auth.auth_utils import get_current_user
@@ -93,6 +94,7 @@ def pagar_pedido(
             item_pedido = ItemPedido(
                 pedido_id=pedido.id,
                 produto_id=listagem.produto_id,
+                listagem_id=listagem.id,
                 nome_personalizado=listagem.nome_personalizado,
                 quantidade=item.quantidade,
                 valor_unitario=float(listagem.preco)
@@ -114,6 +116,9 @@ def pagar_com_pix(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
 ):
+    
+    print('Pagar')
+
     endereco = db.query(Endereco).filter_by(id=pedido.id_endereco, usuario_id=current_user.id).first()
     if not endereco:
         raise HTTPException(404, detail="Endereço não encontrado")
@@ -171,6 +176,7 @@ def pagar_com_pix(
             item_pedido = ItemPedido(
                 pedido_id=pedido_db.id,
                 produto_id=listagem.produto_id,
+                listagem_id=listagem.id,
                 nome_personalizado=listagem.nome_personalizado,
                 quantidade=item.quantidade,
                 valor_unitario=float(listagem.preco)
@@ -223,14 +229,41 @@ async def calcular_frete(data: Coordenadas):
         "valor_frete": round(valor_frete, 2)
     }
 
-@router.post("/pedidos/")
-def criar_pedido_sem_pagamento(
+@router.post("/frete/calcular")
+async def calcular_frete(data: Coordenadas):
+    url = "https://api.openrouteservice.org/v2/directions/driving-car"
+
+    params = {
+        "api_key": ORS_API_KEY,
+        "start": f"{data.origem[0]},{data.origem[1]}",
+        "end": f"{data.destino[0]},{data.destino[1]}"
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, params=params)
+        route = response.json()
+
+    distancia_m = route['features'][0]['properties']['segments'][0]['distance']
+    distancia_km = distancia_m / 1000
+
+    # Lógica de frete
+    valor_frete = max(10, distancia_km * 2.5)
+
+    return {
+        "distancia_km": round(distancia_km, 2),
+        "valor_frete": round(valor_frete, 2)
+    }
+
+@router.post("/pedidos/novo")
+async def criar_pedido_sem_pagamento(
     pedido: PedidoCreate,
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
-):
+):  
+    print(f"Pedido recebido: {pedido}")
     endereco = db.query(Endereco).filter_by(id=pedido.id_endereco, usuario_id=current_user.id).first()
     if not endereco:
+        print("Endereço não encontrado.")
         raise HTTPException(404, detail="Endereço não encontrado.")
 
     pedidos_por_produtor = {}
@@ -238,6 +271,7 @@ def criar_pedido_sem_pagamento(
     for item in pedido.itens:
         listagem = db.query(Listagem).filter_by(id=item.id_listagem).first()
         if not listagem:
+            print(f"Listagem com id {item.id_listagem} não encontrada.")
             raise HTTPException(404, detail=f"Listagem com id {item.id_listagem} não encontrada.")
         
         produtor_id = listagem.produtor_id
@@ -249,7 +283,7 @@ def criar_pedido_sem_pagamento(
     for produtor_id, lista in pedidos_por_produtor.items():
         pedido_db = Pedido(
             quantidade=sum(item.quantidade for _, item in lista),
-            valor=sum(float(l.preco) * i.quantidade for l, i in lista),
+            valor=pedido.valor,
             status="confirmado",  # ← Aqui está o status inicial
             usuario_id=current_user.id,
             id_endereco=endereco.id,
@@ -263,6 +297,7 @@ def criar_pedido_sem_pagamento(
                 pedido_id=pedido_db.id,
                 produto_id=listagem.produto_id,
                 nome_personalizado=listagem.nome_personalizado,
+                listagem_id=listagem.id,
                 quantidade=item.quantidade,
                 valor_unitario=float(listagem.preco)
             )
@@ -335,3 +370,16 @@ def listar_pedidos_usuario(db: Session = Depends(get_db), current_user: Usuario 
         })
 
     return retorno
+
+class TesteEntrada(BaseModel):
+    nome: str
+
+@router.post("/teste/rota")
+async def rota_teste(data: TesteEntrada):
+    respostas = [
+        f"Olá {data.nome}, tudo certo!",
+        f"{data.nome}, recebemos sua mensagem com sucesso.",
+        f"Teste concluído com êxito para {data.nome}.",
+        f"{data.nome}, esta é uma resposta aleatória 😄."
+    ]
+    return {"mensagem": random.choice(respostas)}

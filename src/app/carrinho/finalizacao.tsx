@@ -47,6 +47,8 @@ export default function Finalizacao() {
           // console.log("Formas de pagamento:", resPag.data);
           setPagamentos(resPag.data);
           if (resPag.data.length > 0) setPagamentoSelecionado(resPag.data[0]);
+
+          console.log("Itens do carrinho:", itens);
         } catch (e) {
           console.error("Erro ao carregar endereços/pagamentos", e);
         }
@@ -191,6 +193,7 @@ export default function Finalizacao() {
     const payload = {
       id_endereco: enderecoSelecionado.id,
       group_hash: groupHash,
+      valor: total,
       itens: itens.map(i => ({
         id_listagem: i.id_listagem,
         quantidade: i.qtd
@@ -198,10 +201,13 @@ export default function Finalizacao() {
     };
 
     try {
-      await api.post("/pedidos", payload);
+      console.log("📦 Enviando pedido:", payload);
+
+      await api.post("/pedidos/novo", payload);
 
       limparCarrinho();
       Alert.alert("Pedido confirmado!", "Seu pedido foi registrado com sucesso.");
+      router.push('/home');
 
       // router.push(`/pedidos/AcompanhamentoPedido?group_hash=${groupHash}`);
     } catch (error) {
