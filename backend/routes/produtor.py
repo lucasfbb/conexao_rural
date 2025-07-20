@@ -1,7 +1,11 @@
 import os
 import time
+import httpx
+import shutil
 from typing import Optional
+from schemas.endereco import EnderecoInput
 from auth.auth_utils import get_current_user
+from routes.pedido import ORS_API_KEY, Coordenadas
 from models.endereco import Endereco
 from models.item_pedido import ItemPedido
 from models.pedido import Pedido
@@ -9,7 +13,6 @@ from schemas.pedido import PedidoCreate
 from schemas.listagem import ListagemCreate
 from schemas.produto import ProdutoEstoqueOut, ProdutoOut
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form
-import shutil
 from sqlalchemy.orm import Session
 from database import get_db
 from models.usuario import Usuario
@@ -26,6 +29,35 @@ FOTO_PRODUTO_DIR = "uploads/fotoProduto"
 os.makedirs(UPLOAD_BANNERS_DIR, exist_ok=True)
 os.makedirs(UPLOAD_PERFIS_DIR, exist_ok=True)
 os.makedirs(FOTO_PRODUTO_DIR, exist_ok=True)
+
+async def geocode_endereco(endereco_texto: str) -> dict | None:
+    try:
+        url = "https://nominatim.openstreetmap.org/search"
+        params = {
+            "format": "json",
+            "q": endereco_texto
+        }
+        headers = {
+            "User-Agent": "conexao-rural-app"  # obrigatório pelo Nominatim
+        }
+
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, params=params, headers=headers)
+
+        response.raise_for_status()
+        data = response.json()
+
+        if data:
+            return {
+                "latitude": float(data[0]["lat"]),
+                "longitude": float(data[0]["lon"])
+            }
+
+        return None
+
+    except Exception as e:
+        print("Erro ao geocodificar endereço:", e)
+        return None
 
 @router.get("/produtores/me", response_model=ProdutorOut)
 def get_me_produtor(
@@ -362,55 +394,40 @@ async def editar_produto(
         "descricao": listagem.descricao
     }
 
-# @router.post("/produtores/novo-pedido")
-# def criar_pedido_sem_pagamento(
-#     pedido: PedidoCreate,
-#     db: Session = Depends(get_db),
-#     current_user: Usuario = Depends(get_current_user)
-# ):
-#     endereco = db.query(Endereco).filter_by(id=pedido.id_endereco, usuario_id=current_user.id).first()
-#     if not endereco:
-#         raise HTTPException(404, detail="Endereço não encontrado.")
+@router.post("/validar-endereco")
+async def validar_endereco(data: EnderecoInput):
+    url = "https://nominatim.openstreetmap.org/search"
+    params = {
+        "format": "json",
+        "q": data.endereco
+    }
+    headers = {
+        "User-Agent": "conexao-rural-app"  # obrigatório pelo Nominatim
+    }
 
-#     pedidos_por_produtor = {}
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, params=params, headers=headers)
 
-#     for item in pedido.itens:
-#         listagem = db.query(Listagem).filter_by(id=item.id_listagem).first()
-#         if not listagem:
-#             raise HTTPException(404, detail=f"Listagem com id {item.id_listagem} não encontrada.")
-        
-#         produtor_id = listagem.produtor_id
-#         if produtor_id not in pedidos_por_produtor:
-#             pedidos_por_produtor[produtor_id] = []
-        
-#         pedidos_por_produtor[produtor_id].append((listagem, item))
+    if response.status_code != 200:
+        return {"valido": False, "erro": "Falha na requisição à API"}
 
-#     for produtor_id, lista in pedidos_por_produtor.items():
-#         pedido_db = Pedido(
-#             quantidade=sum(item.quantidade for _, item in lista),
-#             valor=sum(float(l.preco) * i.quantidade for l, i in lista),
-#             status="confirmado",  # ← Aqui está o status inicial
-#             usuario_id=current_user.id,
-#             id_endereco=endereco.id,
-#             group_hash=pedido.group_hash
-#         )
-#         db.add(pedido_db)
-#         db.flush()
+    geodata = response.json()
 
-#         for listagem, item in lista:
-#             item_pedido = ItemPedido(
-#                 pedido_id=pedido_db.id,
-#                 produto_id=listagem.produto_id,
-#                 nome_personalizado=listagem.nome_personalizado,
-#                 listagem_id=listagem.id,
-#                 quantidade=item.quantidade,
-#                 valor_unitario=float(listagem.preco)
-#             )
-#             db.add(item_pedido)
+    valido = len(geodata) > 0
 
-#     db.commit()
+    return {"valido": valido}
 
-#     return {
-#         "mensagem": "Pedido registrado com sucesso!",
-#         "group_hash": pedido.group_hash
-#     }
+@router.get("/produtores/{produtor_id}/endereco-coordenadas")
+def get_endereco_com_coordenadas(produtor_id: int, db: Session = Depends(get_db)):
+    produtor = db.query(Produtor).filter(Produtor.id == produtor_id).first()
+    if not produtor:
+        raise HTTPException(status_code=404, detail="Produtor não encontrado")
+
+    endereco = f"{produtor.rua or ''}, {produtor.numero or ''}, {produtor.bairro or ''}".strip(', ')
+
+    return {
+        "texto": endereco,
+        "rua": produtor.rua,
+        "numero": produtor.numero,
+        "bairro": produtor.bairro
+    }

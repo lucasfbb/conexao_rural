@@ -10,15 +10,15 @@ export type ItemCarrinho = {
   produtor_id: number;  // ✅ novo campo
   nome_produtor?: string;
   imagem?: any;
-  endereco_produtor?: {
-    texto: string;
-    rua?: string;
-    numero?: string;
-    complemento?: string;
-    bairro?: string;
-    latitude?: number;
-    longitude?: number;
-  };
+  // endereco_produtor?: {
+  //   texto: string;
+  //   rua?: string;
+  //   numero?: string;
+  //   complemento?: string;
+  //   bairro?: string;
+  //   latitude?: number;
+  //   longitude?: number;
+  // };
 };
 
 type CarrinhoContextType = {

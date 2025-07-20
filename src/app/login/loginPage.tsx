@@ -7,7 +7,7 @@ import { View, Image, Text, StyleSheet, TextInput, TouchableOpacity, KeyboardAvo
 import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from '@expo/vector-icons';
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "../../../services/api";
 import { BackHandler } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -23,7 +23,6 @@ export default function LoginPage() {
     const [password, setPassword] = useState("");
     const [mostrarSenha, setMostrarSenha] = useState(false);
     const [showAlert, setShowAlert] = useState(false);
-    const [alertMessage, setAlertMessage] = useState("");
 
     const { login, logout } = useUser();
 
@@ -70,7 +69,6 @@ export default function LoginPage() {
             router.push("/home");
         } catch (err: any) {
             if (err.response?.status === 401) {
-                setAlertMessage("E-mail ou senha incorretos.");
                 setShowAlert(true);
             } else {
                 Alert.alert("Erro", "Erro inesperado ao fazer login");
@@ -122,7 +120,7 @@ export default function LoginPage() {
                 show={showAlert}
                 showProgress={false}
                 title="Erro no login"
-                message={alertMessage}
+                message={"E-mail ou senha incorretos."}
                 closeOnTouchOutside={true}
                 showConfirmButton={true}
                 confirmText="OK"

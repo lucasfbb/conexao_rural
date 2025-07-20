@@ -1,17 +1,23 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, Dimensions, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, Dimensions, ScrollView, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import Header from '@/components/header';
 import { router } from 'expo-router';
 import { useTema } from '@/contexts/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ItemCarrinho, useCarrinho } from '@/contexts/CarrinhoContext';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useUser } from '@/contexts/UserContext';
+import { api } from '../../../services/api';
+import AwesomeAlert from 'react-native-awesome-alerts';
 
 const { width, height } = Dimensions.get("window");
 
 export default function Carrinho() {
   const { itens, alterarQuantidade, limparCarrinho } = useCarrinho();
+  const { user } = useUser();
   const { colors } = useTema();
+
+  const [alertSemEndereco, setAlertSemEndereco] = useState(false);
 
   // useEffect(() => {
   //   console.log("Itens no carrinho:", itens);  
@@ -36,6 +42,26 @@ export default function Carrinho() {
     return acc;
   }, {} as Record<number, ItemCarrinho[]>);
 
+
+  const continuarConfirmacao = async () => {
+    if (!user?.id) {
+      Alert.alert("Erro", "Usuário não identificado.");
+      return;
+    }
+
+    try {
+      const response = await api.get(`usuarios/perfil/${user.id}/tem-endereco`);
+
+      if (response.data?.tem_endereco) {
+        router.push('/carrinho/confirmacao');
+      } else {
+        setAlertSemEndereco(true);
+      }
+    } catch (error) {
+      console.error("Erro ao verificar endereços:", error);
+      Alert.alert("Erro", "Não foi possível verificar os endereços.");
+    }
+  };
 
   return (
     <>
@@ -131,7 +157,7 @@ export default function Carrinho() {
             styles.continuar,
             { backgroundColor: itens.length === 0 ? '#ccc' : '#4D7E1B' }
           ]}
-          onPress={() => router.push('/carrinho/confirmacao')}
+          onPress={continuarConfirmacao}
           disabled={itens.length === 0}
         >
           <Text style={styles.continuarText}>Continuar</Text>
@@ -143,6 +169,32 @@ export default function Carrinho() {
         >
           <Text style={styles.continuarText}>Limpar Carrinho</Text>
         </TouchableOpacity>
+
+        <AwesomeAlert
+          show={alertSemEndereco}
+          showCancelButton={true}
+          showConfirmButton={true}
+          title="Endereço necessário"
+          message="Você precisa cadastrar ao menos um endereço para continuar."
+          confirmText="Me leve lá"
+          cancelText="OK"
+          confirmButtonColor="#4D7E1B"
+          cancelButtonColor="#999"
+          onCancelPressed={() => setAlertSemEndereco(false)}
+          onConfirmPressed={() => {
+            setAlertSemEndereco(false);
+            router.push('/perfil'); // ou a rota correta do perfil
+          }}
+          titleStyle={{ fontSize: 20, fontWeight: 'bold', textAlign: 'center' }}
+          messageStyle={{ fontSize: 16, textAlign: 'center' }}
+          contentStyle={{
+            padding: 20,
+            borderRadius: 10,
+            width: 300,
+            backgroundColor: '#fff'
+          }}
+        />
+
       </SafeAreaView>
     </>
   );

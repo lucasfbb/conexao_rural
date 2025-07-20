@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { View, Text, Image, TouchableOpacity, ScrollView, FlatList, StyleSheet, Dimensions, ActivityIndicator, Alert } from "react-native";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
+import AwesomeAlert from 'react-native-awesome-alerts';
 
 import Header from "@/components/header";
 import ModalProduto from "@/components/modais/produtos/modalProduto";
@@ -43,6 +44,8 @@ export default function ProdutorScreen() {
 
   const base = baseURL.slice(0, -1);
 
+  const [alertCarrinho, setAlertCarrinho] = useState(false);
+  const [alertProduto, setAlertProduto] = useState<{ nome: string; qtd: number } | null>(null);
   const [produtor, setProdutor] = useState<Produtor | null>(null);
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [produtosPromocao, setProdutosPromocao] = useState<Produto[]>([]);
@@ -67,6 +70,7 @@ export default function ProdutorScreen() {
 
         // Produtos desse produtor
         const resProdutos = await api.get(`/produtores/${usuario_id}/produtos`);
+        // console.log(resProdutos.data)
         const produtosTratados: Produto[] = resProdutos.data.map((produto: any) => ({
           // id: produto.id?.toString() ?? Math.random().toString(),
           id: produto.listagem_id.toString(),
@@ -153,21 +157,10 @@ export default function ProdutorScreen() {
                   produtor_id: produtor?.id || 0,
                   nome_produtor: produtor?.nome,
                   imagem: produtoSelecionado?.imagem,
-                  endereco_produtor: {
-                    texto: enderecoTexto,
-                    rua: produtor?.rua,
-                    numero: produtor?.numero,
-                    bairro: produtor?.bairro,
-                    complemento: produtor?.complemento,
-                    latitude: coords?.latitude,
-                    longitude: coords?.longitude,
-                  }
                 });
 
-                Alert.alert(
-                  'Adicionado ao carrinho',
-                  `${produtoSelecionado.nome} (x${qtd}) adicionado com sucesso!`
-                );
+                setAlertProduto({ nome: produtoSelecionado.nome, qtd });
+                setAlertCarrinho(true);
 
                 setModalProdutoVisivel(false);
                 setProdutoSelecionado(null);
@@ -317,6 +310,36 @@ export default function ProdutorScreen() {
             />
           </View>
         </ScrollView>
+
+        <AwesomeAlert
+          show={alertCarrinho}
+          showConfirmButton={true}
+          showCancelButton={true}
+          title="Produto adicionado!"
+          message={`${alertProduto?.nome} (x${alertProduto?.qtd}) foi adicionado ao carrinho com sucesso.`}
+          confirmText="OK"
+          cancelText="Ir para Carrinho"
+          confirmButtonColor="#4D7E1B"
+          cancelButtonColor="gray"
+          onConfirmPressed={() => {
+            setAlertCarrinho(false);
+            setAlertProduto(null);
+          }}
+          onCancelPressed={() => {
+            setAlertCarrinho(false);
+            setAlertProduto(null);
+            router.push('/carrinho')
+          }}
+          titleStyle={{ fontSize: 18, fontWeight: 'bold', textAlign: 'center' }}
+          messageStyle={{ fontSize: 16, textAlign: 'center' }}
+          contentStyle={{
+            padding: 20,
+            borderRadius: 10,
+            width: 300,
+            backgroundColor: '#fff'
+          }}
+        />
+
       </SafeAreaView>
     </>
   );

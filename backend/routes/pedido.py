@@ -1,6 +1,7 @@
 import random
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
+from sqlalchemy import desc
 from auth.auth_utils import get_current_user
 from models.formapagamento import FormaPagamento
 from schemas.formaPagamento import PedidoPagamentoIn
@@ -229,31 +230,6 @@ async def calcular_frete(data: Coordenadas):
         "valor_frete": round(valor_frete, 2)
     }
 
-@router.post("/frete/calcular")
-async def calcular_frete(data: Coordenadas):
-    url = "https://api.openrouteservice.org/v2/directions/driving-car"
-
-    params = {
-        "api_key": ORS_API_KEY,
-        "start": f"{data.origem[0]},{data.origem[1]}",
-        "end": f"{data.destino[0]},{data.destino[1]}"
-    }
-
-    async with httpx.AsyncClient() as client:
-        response = await client.get(url, params=params)
-        route = response.json()
-
-    distancia_m = route['features'][0]['properties']['segments'][0]['distance']
-    distancia_km = distancia_m / 1000
-
-    # Lógica de frete
-    valor_frete = max(10, distancia_km * 2.5)
-
-    return {
-        "distancia_km": round(distancia_km, 2),
-        "valor_frete": round(valor_frete, 2)
-    }
-
 @router.post("/pedidos/novo")
 async def criar_pedido_sem_pagamento(
     pedido: PedidoCreate,
@@ -303,6 +279,12 @@ async def criar_pedido_sem_pagamento(
             )
             db.add(item_pedido)
 
+            # ↓↓↓ Atualiza estoque
+            listagem.estoque -= item.quantidade
+            if listagem.estoque < 0:
+                listagem.estoque = 0  # (opcional) evita número negativo
+            db.add(listagem)
+
     db.commit()
 
     return {
@@ -346,6 +328,7 @@ def listar_pedidos_usuario(db: Session = Depends(get_db), current_user: Usuario 
     pedidos = (
         db.query(Pedido)
         .filter(Pedido.usuario_id == current_user.id)
+        .order_by(desc(Pedido.id))
         .options(joinedload(Pedido.itens).joinedload(ItemPedido.listagem).joinedload(Listagem.produtor))
         .all()
     )
