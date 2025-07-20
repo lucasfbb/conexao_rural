@@ -30,9 +30,9 @@ export default function Home(){
     const fetchBanners = async () => {
         try {
             const res = await api.get("/banners");
-            const API_URL = "http://10.0.2.2:5000";
+            const API_URL = baseURL; // Usando a URL base definida no api.ts
             const bannersAbs = res.data.map((url: string) =>
-                url.startsWith("http") ? url : `${API_URL}${url}`
+                url.startsWith("http") ? url : `${API_URL}${url.slice(1)}`
         );
         setBanners(bannersAbs);
         const token = await AsyncStorage.getItem("token");
@@ -167,6 +167,7 @@ export default function Home(){
                                         autoPlay={true}
                                         autoPlayInterval={5000}
                                         renderItem={({ item }) => (
+                                            // <Text style={{ color: colors.text }}>{item}</Text>
                                             <Image
                                                 source={{ uri: item }}
                                                 style={{

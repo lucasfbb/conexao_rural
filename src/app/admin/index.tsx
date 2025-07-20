@@ -8,7 +8,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTema } from "@/contexts/ThemeContext";
 import Header from "@/components/header";
 import Button from "@/components/button";
-import { api } from "../../../services/api";
+import { api, baseURL } from "../../../services/api";
 import { Ionicons } from "@expo/vector-icons";
 
 // TIPO DE PRODUTO
@@ -18,7 +18,7 @@ type Produto = {
   sazonal: boolean;
 };
 
-const API_URL = "http://10.0.2.2:5000";
+const API_URL = baseURL; // Usando a URL base definida no api.ts
 
 export default function Admin() {
   const { colors } = useTema();
@@ -50,7 +50,7 @@ export default function Admin() {
     try {
       const res = await api.get("/banners");
       const bannersAbs = res.data.map((url: string) =>
-        url.startsWith("http") ? url : `${API_URL}${url}`
+        url.startsWith("http") ? url : `${API_URL}${url.slice(1)}`
       );
       setBanners(bannersAbs);
     } catch (error) {
