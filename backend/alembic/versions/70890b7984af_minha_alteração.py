@@ -1,7 +1,7 @@
 """minha alteração
 
 Revision ID: 70890b7984af
-Revises: 5b1ae0139af3
+Revises: 2d912ec2a2de
 Create Date: 2025-07-19 21:54:26.755942
 
 """
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = '70890b7984af'
-down_revision: Union[str, None] = '5b1ae0139af3'
+down_revision: Union[str, None] = '2d912ec2a2de'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
