@@ -32,6 +32,7 @@ type Produto = {
   preco: string;
   preco_promocional?: string;
   imagem: any;
+  vendedor?: string; // Adicionando vendedor para compatibilidade com busca
 };
 
 export default function ProdutorScreen() {

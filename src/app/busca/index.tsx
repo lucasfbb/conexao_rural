@@ -18,6 +18,14 @@ import { geocodeEndereco, parsePreco } from "../../../services/utils";
 
 const { width, height } = Dimensions.get("window");
 
+// Fatores dinâmicos
+const fontSizeTitulo = width * 0.047;
+const fontSizePromoNome = width * 0.03;
+const fontSizePrecoRiscado = width * 0.028;
+const fontSizePromocao = width * 0.036;
+const fontSizePreco = width * 0.035;
+const fontSizeDescricao = width * 0.03;
+
 type Produto = {
   id: string;
   nome: string;
@@ -25,6 +33,7 @@ type Produto = {
   preco: string;
   preco_promocional?: string;
   imagem: any;
+  vendedor: string;
 };
 
 export default function Busca() {
@@ -67,6 +76,7 @@ export default function Busca() {
               descricao: produto.descricao || "",
               preco: produto.preco,
               preco_promocional: produto.preco_promocional ? produto.preco_promocional.toString() : "",
+              vendedor: produto.vendedor,
               imagem: produto.foto
                 ? { uri: base + produto.foto }
                 : require('../../../assets/images/principais/alface.png'),
@@ -102,9 +112,9 @@ export default function Busca() {
         <>
         <SafeAreaView edges={["top"]} style={{ backgroundColor: '#4D7E1B' }} />
 
-        <View style={[styles.container]}>
-            <Header />
-            <Text style={[styles.title]}>{alvo}</Text>
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
+            <Header showGoBack={true} />
+            <Text style={[styles.title]}>Buscando: {alvo}</Text>
 
             {produtos.length === 0 ? (
             <View style={styles.vazioContainer}>
@@ -117,19 +127,203 @@ export default function Busca() {
             </View>
             ) : (
             <ScrollView contentContainerStyle={{ padding: 15 }}>
-                    {produtos.map((produto) => (
+                    {/* {produtos.map((produto) => (
                     <TouchableOpacity key={produto.id}>
                         <View style={[styles.produtoContainer]}>
-                            {/* <Image source={item} style={styles.img} /> */}
+                            <Image source={item} style={styles.img} />
                             <View style={{ flex: 1 }}>
                             <Text style={[styles.nome]}>{produto.nome}</Text>
+                            <Text style={[styles.nome]}>{produto.vendedor}</Text>
                             <Text style={styles.preco}>
                                 R$ {typeof produto.preco === "number" ? produto.preco : "0,00"}
                             </Text>
                             </View>
                         </View>
                     </TouchableOpacity>
-                    ))}
+                    ))} */}
+                          {/* Modal Produto */}
+                          {produtoSelecionado && (
+                            <ModalProduto
+                              visible={modalProdutoVisivel}
+                              onClose={() => {
+                                setModalProdutoVisivel(false);
+                                setProdutoSelecionado(null);
+                              }}
+                              produto={produtoSelecionado}
+                              onAddToCart={async (qtd) => {
+                                const precoFinal = produtoSelecionado?.preco_promocional
+                                  ? parsePreco(produtoSelecionado.preco_promocional)
+                                  : parsePreco(produtoSelecionado.preco);
+                                
+                                // console.log(produtoSelecionado.preco)
+                                // console.log("💰 precoFinal calculado:", precoFinal);
+                
+                                const enderecoTexto = `${produtor?.rua ?? ''}, ${produtor?.numero ?? ''}, ${produtor?.bairro ?? ''}`;
+                                const coords = await geocodeEndereco(enderecoTexto);
+                                  
+                                // // Se não encontrou, tenta só com o bairro
+                                // if (!coords && produtor?.bairro) {
+                                //   console.warn("Endereço completo falhou. Tentando com apenas o bairro...");
+                                //   coords = await geocodeEndereco(produtor.bairro);
+                                // }
+                
+                                // // Se ainda falhar, aborta
+                                // if (!coords) {
+                                //   console.error("Não foi possível geocodificar o endereço do cliente.");
+                                //   return;
+                                // }
+                
+                                adicionarItem({
+                                  id_listagem: Number(produtoSelecionado?.id),
+                                  nome: produtoSelecionado?.nome,
+                                  preco: precoFinal,
+                                  qtd,
+                                  produtor_id: produtor?.id || 0,
+                                  nome_produtor: produtor?.nome,
+                                  imagem: produtoSelecionado?.imagem,
+                                  endereco_produtor: {
+                                    texto: enderecoTexto,
+                                    rua: produtor?.rua,
+                                    numero: produtor?.numero,
+                                    bairro: produtor?.bairro,
+                                    complemento: produtor?.complemento,
+                                    latitude: coords?.latitude,
+                                    longitude: coords?.longitude,
+                                  }
+                                });
+                
+                                Alert.alert(
+                                  'Adicionado ao carrinho',
+                                  `${produtoSelecionado.nome} (x${qtd}) adicionado com sucesso!`
+                                );
+                
+                                setModalProdutoVisivel(false);
+                                setProdutoSelecionado(null);
+                              }}
+                            />
+                          )}
+                
+                          {/* Seção Promoções */}
+                          <Text style={[styles.sectionTitle, { color: colors.title, fontSize: fontSizeTitulo }]}>Promoções</Text>
+                          <View style={{ paddingLeft: 15, paddingRight: 15 }}>
+                            {produtosPromocao.length === 0 ? (
+                              <Text style={{ textAlign: "center", color: "#888", fontStyle: "italic", fontSize: fontSizePromoNome }}>
+                                Nenhuma promoção disponível
+                              </Text>
+                            ) : (
+                              <FlatList
+                                data={produtosPromocao}
+                                renderItem={({ item }) => (
+                                  <View style={styles.promoCard}>
+                                    <TouchableOpacity
+                                      style={{ flexDirection: "row", flex: 1, alignItems: "center" }}
+                                      onPress={() => {
+                                        setProdutoSelecionado({
+                                          ...item,
+                                          preco: `R$ ${Number(item.preco_promocional).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                                        });
+                                        setModalProdutoVisivel(true);
+                                      }}
+                                    >
+                                      <Image source={item.imagem} style={styles.produtoImagem} />
+                                      <View style={{ flex: 1 }}>
+                                        <Text style={[styles.nome]}>{item.nome}</Text>
+                                        <Text style={[styles.produtoNome, { color: colors.text, fontSize: fontSizePromoNome }]}>Vendido por: {item.vendedor}</Text>
+                                        {Number(item.preco) > Number(item.preco_promocional) && (
+                                          <Text style={{
+                                            color: '#B00020',
+                                            textDecorationLine: 'line-through',
+                                            fontSize: fontSizePrecoRiscado,
+                                            marginBottom: 2,
+                                          }}>
+                                            R$ {Number(item.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                          </Text>
+                                        )}
+                                        <Text style={{
+                                          color: '#388e3c',
+                                          fontWeight: 'bold',
+                                          fontSize: fontSizePromocao
+                                        }}>
+                                          R$ {Number(item.preco_promocional).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                        </Text>
+                                      </View>
+                                    </TouchableOpacity>
+                
+                                    {/* Botão de favoritar fora do Touchable principal */}
+                                    <TouchableOpacity
+                                      onPress={() => {
+                                        isProdutoFavorito(Number(item.id))
+                                          ? desfavoritarProduto(Number(item.id))
+                                          : favoritarProduto(Number(item.id));
+                                      }}
+                                      style={{ padding: 5 }}
+                                    >
+                                      <Feather
+                                        name="heart"
+                                        size={20}
+                                        color={isProdutoFavorito(Number(item.id)) ? "#E15610" : "#999"}
+                                      />
+                                    </TouchableOpacity>
+                                  </View>
+                                )}
+                                keyExtractor={item => item.id}
+                                numColumns={2}
+                                columnWrapperStyle={{ justifyContent: "space-between" }}
+                                scrollEnabled={false}
+                              />
+                            )}
+                          </View>
+                
+                          {/* Seção Resultados */}
+                          <Text style={[styles.sectionTitle, { color: colors.title, fontSize: fontSizeTitulo }]}>Resultados</Text>
+                          <View style={{ paddingLeft: 15, paddingRight: 15 }}>
+                            <FlatList
+                              data={produtosNormais}
+                              renderItem={({ item }) => (
+                                <View style={[styles.principalCard, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
+                                  
+                                  {/* TOCAR NO CARD ABRE O MODAL */}
+                                  <TouchableOpacity
+                                    style={{ flexDirection: 'row', flex: 1, alignItems: 'center' }}
+                                    onPress={() => {
+                                      setProdutoSelecionado({
+                                        ...item,
+                                        preco: `R$ ${Number(item.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                                      });
+                                      setModalProdutoVisivel(true);
+                                    }}
+                                  >
+                                    <Image source={item.imagem} style={styles.produtoImagem} />
+                                    <View style={styles.produtoInfo}>
+                                      <Text style={[styles.nome]}>{item.nome}</Text>
+                                      <Text style={[styles.produtoNome, { color: colors.text, fontSize: fontSizePromoNome }]}>Vendido por: {item.vendedor}</Text>
+                                      <Text style={[styles.produtoDescricao, { fontSize: fontSizeDescricao }]}>{item.descricao}</Text>
+                                      <Text style={[styles.produtoPreco, { fontSize: fontSizePreco }]}>
+                                        R$ {Number(item.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                      </Text>
+                                    </View>
+                                  </TouchableOpacity>
+                
+                                  {/* BOTÃO DE FAVORITAR */}
+                                  <TouchableOpacity
+                                    onPress={() => {
+                                      isProdutoFavorito(Number(item.id))
+                                        ? desfavoritarProduto(Number(item.id))
+                                        : favoritarProduto(Number(item.id));
+                                    }}
+                                  >
+                                    <Feather
+                                      name={isProdutoFavorito(Number(item.id)) ? "heart" : "heart"}
+                                      size={20}
+                                      color={isProdutoFavorito(Number(item.id)) ? "#E15610" : "#999"}
+                                    />
+                                  </TouchableOpacity>
+                                </View>
+                              )}
+                              keyExtractor={item => item.id}
+                              scrollEnabled={false}
+                            />
+                          </View>
             </ScrollView>
 
             )}
@@ -179,5 +373,47 @@ const styles = StyleSheet.create({
     color: '#777',
     textAlign: 'center',
     marginBottom: 5
-  }
+  },
+  banner: {
+    width: "100%",
+    height: 100,
+    backgroundColor: "#ccc",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  produtorInfo: { alignItems: "center", padding: 15, borderBottomWidth: 1, borderColor: "#ddd" },
+  logo: { width: 90, height: 90, borderRadius: 20, marginBottom: 5 },
+  produtorNome: { fontWeight: "bold" }, // fontSize é dinâmico!
+  localizacao: { flexDirection: "row", alignItems: "center", marginVertical: 8 },
+  localizacaoText: { fontSize: fontSizePrecoRiscado, color: "black" },
+  produtorDetalhes: { flexDirection: "row", alignItems: "center", gap: 5 },
+  avaliacao: { fontWeight: "bold", color: "#4D7E1B", fontSize: fontSizePrecoRiscado },
+  categoria: { fontSize: fontSizePrecoRiscado, fontStyle: "italic", color: "#777" },
+  distancia: { fontSize: fontSizePrecoRiscado, color: "#777" },
+  sectionTitle: { fontWeight: "bold", fontStyle: "italic", marginVertical: 10, marginLeft: 10, color: '#4D7E1B', textAlign: 'center'},
+  promoCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#4D7E1B",
+    borderRadius: 10,
+    width: "100%", // use 100% no FlatList horizontal ou 48% no grid
+    marginBottom: 10,
+  },
+  produtoImagem: { width: 40, height: 40, marginRight: 10 },
+  produtoNome: { fontWeight: "bold", fontStyle: "italic" }, // fontSize é dinâmico!
+  produtoPreco: { color: "#4D7E1B" }, // fontSize é dinâmico!
+  principalCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#4D7E1B",
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  produtoInfo: { flex: 1 },
+  produtoDescricao: { color: "#777" }, // fontSize é dinâmico!
 });

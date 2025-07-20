@@ -39,6 +39,7 @@ class ProdutoEstoqueOut(BaseModel):
     descricao: Optional[str] = None
     preco_promocional: Optional[float] = None
     foto: Optional[str] = None  # ou imagem, como preferir
+    vendedor: Optional[str] = None
 
     class Config:
         from_attributes = True
