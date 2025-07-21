@@ -31,10 +31,6 @@ export default function Finalizacao() {
 
   const [fretesPorProdutor, setFretesPorProdutor] = useState<{ [chave: string]: number }>({});
   const [frete, setFrete] = useState<number>(0.00);
-  const [distancia, setDistancia] = useState<number>(0);
-
-  const [modalPixVisivel, setModalPixVisivel] = useState(false);
-  const [dadosPix, setDadosPix] = useState<any>(null);
 
   const subtotal = itens.reduce((acc, item) => acc + item.preco * item.qtd, 0);
   const total = subtotal + frete;
@@ -85,11 +81,6 @@ export default function Finalizacao() {
         const resEnd = await api.get("usuarios/perfil/enderecos");
         setEnderecos(resEnd.data);
         if (resEnd.data.length > 0) setEnderecoSelecionado(resEnd.data[0]);
-
-        const resPag = await api.get("usuarios/perfil/pagamentos");
-        // console.log("Formas de pagamento:", resPag.data);
-        setPagamentos(resPag.data);
-        if (resPag.data.length > 0) setPagamentoSelecionado(resPag.data[0]);
 
         // console.log("Itens do carrinho:", itens);
       } catch (e) {
@@ -162,71 +153,6 @@ export default function Finalizacao() {
     }
   }, [enderecoSelecionado, itens, enderecosProdutores]);
 
-  // const finalizarPedido = async () => {
-  //   if (!pagamentoSelecionado || !enderecoSelecionado || !user) {
-  //     Alert.alert("Erro", "Selecione endereço e forma de pagamento.");
-  //     return;
-  //   }
-
-  //   const groupHash = Date.now().toString(36) + Math.random().toString(36).slice(2);
-
-  //   const payload = {
-  //     usuario_id: user?.id,
-  //     id_endereco: enderecoSelecionado.id,
-  //     id_pagamento: pagamentoSelecionado.id,
-  //     group_hash: groupHash,
-  //     itens: itens.map(i => ({
-  //       id_listagem: i.id_listagem,
-  //       quantidade: i.qtd
-  //     }))
-  //   };
-
-  //   try {
-  //     const resposta = await api.post('/pedidos/pagar', payload);
-
-  //     if (resposta.data.status === 'aprovado') {
-  //       limparCarrinho();
-  //       Alert.alert("Sucesso", "Pagamento aprovado e pedido finalizado!");
-  //       router.push('/home');
-  //     } else {
-  //       Alert.alert("Pagamento recusado", "Houve um problema ao processar o pagamento.");
-  //     }
-  //   } catch (error) {
-  //     console.error(error);
-  //     Alert.alert("Erro", "Falha ao finalizar pedido.");
-  //   }
-  // };
-
-  // const finalizarPedido = async () => {
-  //   if (!pagamentoSelecionado || !enderecoSelecionado || !user) {
-  //     Alert.alert("Erro", "Selecione endereço e forma de pagamento.");
-  //     return;
-  //   }
-
-  //   const groupHash = Date.now().toString(36) + Math.random().toString(36).slice(2);
-
-  //   const payload = {
-  //     usuario_id: user.id,
-  //     id_endereco: enderecoSelecionado.id,
-  //     id_pagamento: pagamentoSelecionado.id,
-  //     group_hash: groupHash,
-  //     itens: itens.map(i => ({
-  //       id_listagem: i.id_listagem,
-  //       quantidade: i.qtd
-  //     }))
-  //   };
-
-  //   try {
-  //     const resposta = await api.post('/pedidos/pagar_pix', payload);
-  //     setDadosPix(resposta.data);
-  //     setModalPixVisivel(true);
-  //     limparCarrinho();
-  //   } catch (error) {
-  //     console.error(error);
-  //     Alert.alert("Erro", "Falha ao iniciar pagamento via PIX.");
-  //   }
-  // };
-
   const finalizarPedido = async () => {
     if (!enderecoSelecionado || !user) {
       Alert.alert("Erro", "Endereço não selecionado.");
@@ -268,42 +194,8 @@ export default function Finalizacao() {
     }
   };
 
-  // useEffect(() => {
-  //   let intervalo: any;
-
-  //   if (modalPixVisivel && dadosPix?.id_pagamento) {
-  //     intervalo = setInterval(async () => {
-  //       try {
-  //         const resp = await api.get(`/pagamento/status/${dadosPix.id_pagamento}`);
-  //         const status = resp.data.status;
-  //         console.log("📦 Status atual do PIX:", status);
-
-  //         if (status === "approved") {
-  //           clearInterval(intervalo);
-  //           Alert.alert("Pagamento Aprovado", "Seu pagamento foi confirmado!");
-  //           setModalPixVisivel(false);
-  //           router.push('/home');
-  //         } else if (status === "rejected") {
-  //           clearInterval(intervalo);
-  //           Alert.alert("Pagamento Recusado", "Houve um problema com o pagamento via PIX.");
-  //         }
-
-  //         // Você pode exibir o status dinamicamente no modal se quiser
-  //       } catch (e) {
-  //         console.error("Erro ao consultar status do pagamento:", e);
-  //       }
-  //     }, 10000); // 10 segundos
-  //   }
-
-  //   return () => clearInterval(intervalo);
-  // }, [modalPixVisivel, dadosPix?.id_pagamento]);
-
-
   const formatarEndereco = (e: EnderecoOut) =>
     `${e.rua}${e.numero ? `, ${e.numero}` : ''}${e.complemento ? `, ${e.complemento}` : ''}${e.cidade ? ` - ${e.cidade}` : ''}`;
-
-  const formatarCartao = (c: FormaPagamentoOut) =>
-    `${c.bandeira ?? ''} •••• ${c.final_cartao?.slice(-4) ?? '0000'}`;
 
   return (
     <>
@@ -320,14 +212,6 @@ export default function Finalizacao() {
             <View style={styles.card}>
               <Text style={styles.texto}>
                 {enderecoSelecionado ? formatarEndereco(enderecoSelecionado) : 'Carregando...'}
-              </Text>
-            </View>
-
-            {/* Pagamento selecionado */}
-            <Text style={[styles.label, { marginTop: 20 }]}>Forma de Pagamento</Text>
-            <View style={styles.card}>
-              <Text style={styles.texto}>
-                {pagamentoSelecionado ? formatarCartao(pagamentoSelecionado) : 'Carregando...'}
               </Text>
             </View>
 
@@ -364,15 +248,6 @@ export default function Finalizacao() {
             </TouchableOpacity>
           </SafeAreaView>
         </View>
-{/* 
-        <ModalPixPagamento
-          visible={modalPixVisivel}
-          onClose={() => setModalPixVisivel(false)}
-          qrCodeBase64={dadosPix?.qr_code_base64}
-          qrCodeText={dadosPix?.qr_code}
-          valor={dadosPix?.valor}
-          status={dadosPix?.status}
-        /> */}
 
         <AwesomeAlert
           show={alertPedido}

@@ -25,7 +25,6 @@ class Usuario(Base):
 
     enderecos = relationship("Endereco", back_populates="usuario")
     pedidos = relationship("Pedido", back_populates="usuario")
-    formas_pagamento = relationship("FormaPagamento", back_populates="usuario")
     notificacoes = relationship("Notificacao", back_populates="usuario")
 
     produtos_favoritos = relationship(

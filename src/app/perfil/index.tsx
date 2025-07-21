@@ -146,20 +146,6 @@ export default function PerfilHome() {
                     const somenteEnderecos = enderecosFormatados.filter((e: any) => 'id' in e);
                     const ordenados = [...somenteEnderecos].sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
                     setEnderecos([...ordenados, { addNew: true }]);
-
-                    // Buscar pagamentos reais do usuário
-                    const resPagamentos = await api.get("/usuarios/perfil/pagamentos");
-                    // console.log("Pagamentos do usuário:", resPagamentos.data);
-                    const pagamentosFormatados = resPagamentos.data.map((p: any) => ({
-                        id: p.id,
-                        title: p.nome_cartao || "Cartão",
-                        subtitle: p.bandeira || "Tipo desconhecido",
-                        details: [`●●●● ${p.final_cartao}`],
-                        isPayment: true,
-                        titular: p.nome_impresso || "Não informado"
-                    }));
-
-                    setPagamentos([...pagamentosFormatados, { addNew: true }]);
                     
                     setLoading(true); // loading para dados que podem mudar na tela
 
@@ -172,7 +158,7 @@ export default function PerfilHome() {
                     setProdutosFavoritos(resProdutosFavoritos.data);
 
                     const resUltimosPedidos = await api.get(`/usuarios/perfil/ultimos-pedidos?usuario_id=${dados.id}`);
-                    console.log("Últimos pedidos:", resUltimosPedidos.data);
+                    // console.log("Últimos pedidos:", resUltimosPedidos.data);
                     setUltimosPedidos(resUltimosPedidos.data);
                     
                     // TODO: outros dados
@@ -320,77 +306,6 @@ export default function PerfilHome() {
         }
     };
 
-
-    const handleSavePagamento = async (dados: {
-        nome_impresso: string;
-        nome_cartao: string;
-        bandeira: string;
-        final_cartao: string;
-        token_gateway: string;
-        gateway: string;
-    }) => {
-        try {
-            const response = await api.post("usuarios/perfil/pagamentos", dados);
-            const pagamentoSalvo = response.data;
-            // console.log("Pagamento salvo:", pagamentoSalvo);
-
-            const novo = {
-                id: pagamentoSalvo.id,
-                title: pagamentoSalvo.nome_cartao || "Cartão",
-                subtitle: pagamentoSalvo.bandeira || "Tipo desconhecido",
-                details: [`●●●● ${pagamentoSalvo.final_cartao}`],
-                titular: pagamentoSalvo.nome_impresso || "Titular não informado",
-                isPayment: true
-            };
-
-            setPagamentos(prev => [...prev.slice(0, -1), novo, { addNew: true }]);
-            setModalPagamentoVisible(false);
-        } catch (error) {
-            console.error("Erro ao salvar forma de pagamento:", error);
-        }
-    };
-
-    const handleUpdatePagamento = async (dados: {
-        id: number;
-        nome_impresso: string;
-        nome_cartao: string;
-        bandeira: string;
-        final_cartao: string;
-        token_gateway: string;
-        gateway: string;
-    }) => {
-            try {
-                const response = await api.patch(`usuarios/perfil/pagamentos/${dados.id}`, dados);
-
-                const pagamentoAtualizado = response.data;
-                const atualizado = {
-                    id: pagamentoAtualizado.id,
-                    title: pagamentoAtualizado.nome_cartao || "Cartão",
-                    subtitle: pagamentoAtualizado.bandeira || "Tipo desconhecido",
-                    details: [`●●●● ${pagamentoAtualizado.final_cartao}`],
-                    isPayment: true,
-                    titular: pagamentoAtualizado.nome_impresso || "Não informado"
-                };
-
-                setPagamentos(prev => {
-                    const atualizados = [
-                        ...prev.filter(p => p.id !== dados.id),
-                        atualizado
-                    ];
-
-                    const ordenados = atualizados
-                        .filter(p => 'id' in p)
-                        .sort((a, b) => a.id - b.id);
-
-                    return [...ordenados, { addNew: true }];
-                });
-
-                setModalEditarPagamentoVisible(false);
-            } catch (error) {
-                console.error("Erro ao atualizar forma de pagamento:", error);
-            }
-    };
-
     const handleDeletePagamento = async (id: number) => {
         Alert.alert(
             "Confirmar exclusão",
@@ -422,33 +337,6 @@ export default function PerfilHome() {
             ]
         );
     };
-
-
-    // const produtos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
-    // const ultimosPedidos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
-    // const agricultoresFavoritos = ["Tomate", "Alface", "Laranja", "Maçã", "Uva"];
-
-    const renderItemPagamento = ({ item }: { item: any }) => (
-        <Card 
-            title={item.title} 
-            subtitle={item.subtitle} 
-            details={item.details} 
-            titular={item.titular} 
-            isPayment={item.isPayment} 
-              onPress={() => {
-                setPagamentoSelecionado({
-                    id: item.id,
-                    nome_cartao: item.title,
-                    nome_impresso: item.titular,
-                    bandeira: item.subtitle,
-                    final_cartao: item.details?.[0]?.slice(-4),
-                    token_gateway: "", // opcional
-                    gateway: "manual"
-                });
-                setModalEditarPagamentoVisible(true);
-            }}
-        />
-    );
 
     return (
         <>
@@ -498,23 +386,6 @@ export default function PerfilHome() {
                             }}
                         />
                     )} 
-
-                    {/* 🔹 Modal de Pagamento */}
-                    <ModalPagamento
-                        visible={modalPagamentoVisible}
-                        onClose={() => setModalPagamentoVisible(false)}
-                        onSave={handleSavePagamento}
-                    />
-
-                    {pagamentoSelecionado && (
-                        <ModalEditarPagamento
-                            visible={modalEditarPagamentoVisible}
-                            dadosIniciais={pagamentoSelecionado}
-                            onClose={() => setModalEditarPagamentoVisible(false)}
-                            onSave={handleUpdatePagamento}
-                            onExcluir={() => handleDeletePagamento(pagamentoSelecionado.id)}
-                        />
-                    )}
                     
                     {/* 🔹 Modal de Editar perfil do usuuário */}
                     <ModalEditarPerfil
@@ -624,28 +495,6 @@ export default function PerfilHome() {
                                         }}
                                     />
                                 )
-                            }
-                            keyExtractor={(item, index) => index.toString()}
-                            numColumns={3}
-                            scrollEnabled={false}
-                            columnWrapperStyle={{ justifyContent: "space-between" }}
-                        />
-
-                        {/* 🔹 Pagamentos */}
-                        <Text style={[styles.sectionTitle, { color: colors.text }]}>Pagamentos</Text>
-                        <FlatList
-                            data={pagamentos} 
-                            renderItem={({ item }) =>
-                                item.addNew ? (
-                                    <TouchableOpacity style={styles.addCard} onPress={() => setModalPagamentoVisible(true)}>
-                                        <Feather name="plus" size={30} color="green" />
-                                    </TouchableOpacity>
-
-                                    // <TouchableOpacity style={styles.addCard} onPress={() => router.push("/perfil/CadastroCartaoScreen")}>
-                                    //     <Feather name="plus" size={30} color="green" />
-                                    // </TouchableOpacity>
-
-                                ) : (renderItemPagamento({ item }))
                             }
                             keyExtractor={(item, index) => index.toString()}
                             numColumns={3}

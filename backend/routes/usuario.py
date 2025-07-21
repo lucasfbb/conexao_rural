@@ -14,7 +14,6 @@ from schemas.usuario import UsuarioCreate, UsuarioOut, UsuarioResponse, UsuarioU
 from crud.usuario import criar_usuario
 from database import get_db
 from models.pedido import Pedido
-from models.formapagamento import FormaPagamento
 from models.produto import Produto
 from models.produtor import Produtor
 from models.endereco import Endereco
