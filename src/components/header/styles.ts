@@ -16,17 +16,14 @@ export const styles = StyleSheet.create({
     },
 
     img: {
-        width: 80, 
-        height: 30,
+        width: "100%", 
+        height: "100%",
         resizeMode: "contain",
         flex: 1,
         textAlign: "center",
         justifyContent: "center",
         alignItems: "center",
-        transform: [
-          { scaleX: 4 }, // aumenta largura 50%
-          { scaleY: 4 }, // aumenta altura 20%
-        ]
+
     },
 
     toggleButton: {

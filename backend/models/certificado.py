@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Date, DateTime
 from sqlalchemy.orm import relationship
 from datetime import datetime
+from models.utils import agora_brasil
 from database import Base
 
 class Certificado(Base):
@@ -12,6 +13,6 @@ class Certificado(Base):
     instituicao = Column(String, nullable=True)
     validade = Column(Date, nullable=True)
     arquivo = Column(String, nullable=True)
-    criado_em = Column(DateTime, default=datetime.now)
+    criado_em = Column(DateTime, default=agora_brasil)
 
     produtor = relationship("Produtor", back_populates="certificados")

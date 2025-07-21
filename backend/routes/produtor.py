@@ -1,11 +1,18 @@
 import os
 import time
+import httpx
+import shutil
 from typing import Optional
+from schemas.endereco import EnderecoInput
 from auth.auth_utils import get_current_user
+from routes.pedido import ORS_API_KEY, Coordenadas
+from models.endereco import Endereco
+from models.item_pedido import ItemPedido
+from models.pedido import Pedido
+from schemas.pedido import PedidoCreate
 from schemas.listagem import ListagemCreate
 from schemas.produto import ProdutoEstoqueOut, ProdutoOut
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form
-import shutil
 from sqlalchemy.orm import Session
 from database import get_db
 from models.usuario import Usuario
@@ -22,6 +29,35 @@ FOTO_PRODUTO_DIR = "uploads/fotoProduto"
 os.makedirs(UPLOAD_BANNERS_DIR, exist_ok=True)
 os.makedirs(UPLOAD_PERFIS_DIR, exist_ok=True)
 os.makedirs(FOTO_PRODUTO_DIR, exist_ok=True)
+
+async def geocode_endereco(endereco_texto: str) -> dict | None:
+    try:
+        url = "https://nominatim.openstreetmap.org/search"
+        params = {
+            "format": "json",
+            "q": endereco_texto
+        }
+        headers = {
+            "User-Agent": "conexao-rural-app"  # obrigatório pelo Nominatim
+        }
+
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, params=params, headers=headers)
+
+        response.raise_for_status()
+        data = response.json()
+
+        if data:
+            return {
+                "latitude": float(data[0]["lat"]),
+                "longitude": float(data[0]["lon"])
+            }
+
+        return None
+
+    except Exception as e:
+        print("Erro ao geocodificar endereço:", e)
+        return None
 
 @router.get("/produtores/me", response_model=ProdutorOut)
 def get_me_produtor(
@@ -356,4 +392,42 @@ async def editar_produto(
         "quantidade": listagem.estoque,
         "unidade": listagem.unidade,
         "descricao": listagem.descricao
+    }
+
+@router.post("/validar-endereco")
+async def validar_endereco(data: EnderecoInput):
+    url = "https://nominatim.openstreetmap.org/search"
+    params = {
+        "format": "json",
+        "q": data.endereco
+    }
+    headers = {
+        "User-Agent": "conexao-rural-app"  # obrigatório pelo Nominatim
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, params=params, headers=headers)
+
+    if response.status_code != 200:
+        return {"valido": False, "erro": "Falha na requisição à API"}
+
+    geodata = response.json()
+
+    valido = len(geodata) > 0
+
+    return {"valido": valido}
+
+@router.get("/produtores/{produtor_id}/endereco-coordenadas")
+def get_endereco_com_coordenadas(produtor_id: int, db: Session = Depends(get_db)):
+    produtor = db.query(Produtor).filter(Produtor.id == produtor_id).first()
+    if not produtor:
+        raise HTTPException(status_code=404, detail="Produtor não encontrado")
+
+    endereco = f"{produtor.rua or ''}, {produtor.numero or ''}, {produtor.bairro or ''}".strip(', ')
+
+    return {
+        "texto": endereco,
+        "rua": produtor.rua,
+        "numero": produtor.numero,
+        "bairro": produtor.bairro
     }

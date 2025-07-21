@@ -85,6 +85,15 @@ def remover_endereco(id: int, db: Session = Depends(get_db), current_user: Usuar
     db.commit()
     return {"detail": "Endereço removido"}
 
+@router.get("/perfil/{usuario_id}/tem-endereco")
+def usuario_tem_endereco(usuario_id: int, db: Session = Depends(get_db)):
+    usuario = db.query(Usuario).filter_by(id=usuario_id).first()
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+
+    tem_endereco = len(usuario.enderecos) > 0
+    return {"tem_endereco": tem_endereco}
+
 ### PAGAMENTOS
 
 @router.get("/perfil/pagamentos", response_model=List[FormaPagamentoOut])

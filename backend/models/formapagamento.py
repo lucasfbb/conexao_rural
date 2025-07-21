@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from datetime import datetime
+from models.utils import agora_brasil
 from database import Base
 
 class FormaPagamento(Base):
@@ -14,6 +15,6 @@ class FormaPagamento(Base):
     final_cartao = Column(String, nullable=True)    # Ex: "1234"
     nome_impresso = Column(String, nullable=True)  # Opcional
     nome_cartao = Column(String, nullable=True)  # Opcional
-    criado_em = Column(DateTime, default=datetime.now)
+    criado_em = Column(DateTime, default=agora_brasil)
 
     usuario = relationship("Usuario", back_populates="formas_pagamento")
