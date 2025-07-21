@@ -27,3 +27,6 @@ class EnderecoOut(EnderecoIn):
     id: int
     class Config:
         from_attributes = True
+
+class EnderecoInput(BaseModel):
+    endereco: str

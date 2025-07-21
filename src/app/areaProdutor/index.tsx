@@ -7,6 +7,9 @@ import { api, baseURL } from "../../../services/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ModalAddProduto from "@/components/modais/produtos/modalAddProduto";
 import { ProdutoGlobal } from "@/components/autoComplete";
+import AwesomeAlert from "react-native-awesome-alerts";
+import MaskedInput from "@/components/maskedInput";
+import { TextInputMask } from "react-native-masked-text";
 
 type Produto = {
   id: string;
@@ -72,7 +75,9 @@ export default function AreaProdutor() {
     bairro: "",
   });
 
+  const [showAlert, setShowAlert] = useState(false);
   const [carregando, setCarregando] = useState(true);
+  const [validandoEndereco, setValidandoEndereco] = useState(false);
   const [editando, setEditando] = useState(false);
 
   // Imagem do perfil/banner
@@ -104,6 +109,14 @@ export default function AreaProdutor() {
   const [loadingSugestoes, setLoadingSugestoes] = useState(false);
   const buscaTimeout = useRef<any>(null);
   
+  const abrirModalAdicao = () => {
+    if (perfil.bairro || perfil.rua || perfil.numero) {
+      setModalNovoProduto(true);
+    } else {
+      setShowAlert(true);
+    }
+  };  
+
   const abrirModalEditar = (produto: Produto) => {
     setModoEdicao(true);
     setEditandoProduto(produto);
@@ -155,7 +168,7 @@ export default function AreaProdutor() {
       setCarregando(true);
       try {
         const res = await api.get("/produtores/me");  
-        console.log("Perfil do produtor:", res.data);  
+        // console.log("Perfil do produtor:", res.data);  s
         setPerfil(res.data);
         setPerfilOriginal(res.data);
         setImagemProdutor(`${res.data.foto}`);
@@ -312,6 +325,51 @@ export default function AreaProdutor() {
     ]);
   };
 
+  const validarEnderecoAntesDeSalvar = async () => {
+    const camposEndereco = ['rua', 'numero', 'bairro'];
+
+    // Verifica se houve mudança e se o valor novo não é vazio
+    const houveMudancaValida = camposEndereco.some(campo => {
+      const valorAtual = (perfil as Record<string, any>)[campo];
+      const valorOriginal = (perfilOriginal as Record<string, any>)[campo];
+      return valorAtual !== valorOriginal && valorAtual?.trim() !== '';
+    });
+
+    // Se não houve mudança válida, salva direto
+    if (!houveMudancaValida) {
+      await salvarPerfil();
+      return;
+    }
+
+    // Monta string de endereço com os campos preenchidos
+    const partes = [perfil.rua, perfil.numero, perfil.bairro];
+    const enderecoCompleto = partes.filter(p => p && p.trim() !== "").join(", ");
+
+    if (!enderecoCompleto) {
+      await salvarPerfil();
+      return;
+    }
+
+    setValidandoEndereco(true);
+
+    try {
+      const response = await api.post("/validar-endereco", {
+        endereco: enderecoCompleto
+      });
+
+      if (response.data?.valido) {
+        await salvarPerfil();
+      } else {
+        Alert.alert("Endereço inválido", "Não conseguimos localizar esse endereço.");
+      }
+    } catch (err) {
+      console.error("Erro ao validar endereço:", err);
+      Alert.alert("Erro", "Erro ao validar endereço. Tente novamente.");
+    } finally {
+      setValidandoEndereco(false);
+    }
+  };
+
   const salvarProduto = async () => {
     if (!novoNomeProd || !novoPrecoProd || !novaQtdProd) {
       Alert.alert("Preencha todos os campos");
@@ -321,6 +379,7 @@ export default function AreaProdutor() {
     const precoFloat = parseFloat(novoPrecoProd.replace(',', '.'));
     const precoPromocional = novoPrecoPromocional ? parseFloat(novoPrecoPromocional.replace(',', '.')) : undefined;
     const quantidadeFloat = parseFloat(novaQtdProd.replace(',', '.'));
+
     if (isNaN(precoFloat) || isNaN(quantidadeFloat)) {
       Alert.alert("Preço ou quantidade inválidos");
       return;
@@ -496,7 +555,7 @@ export default function AreaProdutor() {
             <Text style={styles.label}>{perfil.telefone_2}</Text>
           )
         }
-        <Text style={styles.label}>{perfil.categoria || "Teste"}</Text>
+        {/* <Text style={styles.label}>{perfil.categoria || "Teste"}</Text> */}
       </View>
 
       {/* Editar perfil */}
@@ -516,13 +575,44 @@ export default function AreaProdutor() {
           <TextInput style={styles.input} value={perfil.complemento} onChangeText={complemento => setPerfil(p => ({ ...p, complemento }))} />
           <Text style={styles.inputLabel}>Bairro</Text>
           <TextInput style={styles.input} value={perfil.bairro} onChangeText={bairro => setPerfil(p => ({ ...p, bairro }))} />            
+          
+          
           <Text style={styles.inputLabel}>Telefone</Text>
-          <TextInput style={styles.input} value={perfil.telefone_1} onChangeText={telefone => setPerfil(p => ({ ...p, telefone }))} />
-          <Text style={styles.inputLabel}>Categoria</Text>
-          <TextInput style={styles.input} value={perfil.categoria} onChangeText={categoria => setPerfil(p => ({ ...p, categoria }))} />
+          <TextInputMask
+            type={'cel-phone'}
+            value={perfil.telefone_1}
+            onChangeText={(telefone_1: string) =>
+              setPerfil(p => ({ ...p, telefone_1 }))
+            }
+            options={{
+              maskType: 'BRL',
+              withDDD: true,
+              dddMask: '(99) '
+            }}
+            style={[styles.input, { color: '#000' }]}
+          />
+
+          <Text style={styles.inputLabel}>Telefone 2</Text>
+          <TextInputMask
+            type={'cel-phone'}
+            value={perfil.telefone_2}
+            onChangeText={(telefone_2: string) =>
+              setPerfil(p => ({ ...p, telefone_2 }))
+            }
+            options={{
+              maskType: 'BRL',
+              withDDD: true,
+              dddMask: '(99) '
+            }}
+            style={[styles.input, { color: '#000' }]}
+          />
+          
+          
+          {/* <Text style={styles.inputLabel}>Categoria</Text>
+          <TextInput style={styles.input} value={perfil.categoria} onChangeText={categoria => setPerfil(p => ({ ...p, categoria }))} /> */}
 
           <View style={{ flexDirection: "row", gap: width * 0.04, justifyContent: "space-between", marginTop: height * 0.01 }}>
-            <TouchableOpacity style={styles.buttonSalvar} onPress={salvarPerfil}>
+            <TouchableOpacity style={styles.buttonSalvar} onPress={validarEnderecoAntesDeSalvar}>
               <Text style={styles.title}>Salvar</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.buttonCancelar} onPress={() => setEditando(false)}>
@@ -551,7 +641,7 @@ export default function AreaProdutor() {
       />
 
       <View style={{ margin: width * 0.05, gap: height * 0.012 }}>
-        <TouchableOpacity style={styles.buttonAdicionar} onPress={() => setModalNovoProduto(true)}>
+        <TouchableOpacity style={styles.buttonAdicionar} onPress={() => abrirModalAdicao()}>
           <Text style={styles.title}>Adicionar Produto</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.buttonPedidos} onPress={() => alert("Ver pedidos")}>
@@ -607,6 +697,61 @@ export default function AreaProdutor() {
         }}
         modoEdicao={modoEdicao}
       />
+
+      <AwesomeAlert
+          show={showAlert}
+          showProgress={false}
+          title="Atenção"
+          message={"Você precisa preencher seu endereço primeiro, antes de adicionar produtos."}
+          closeOnTouchOutside={true}
+          showConfirmButton={true}
+          confirmText="OK"
+          confirmButtonColor="green"
+          onConfirmPressed={() => setShowAlert(false)}
+          contentStyle={{
+            width: 300,        // LARGURA do alerta
+            padding: 20,       // Espaçamento interno
+            backgroundColor: '#fefefe',
+            borderRadius: 10,
+          }}
+          titleStyle={{
+            fontSize: 24,         // aumenta a fonte do título
+            fontWeight: 'bold',
+            textAlign: 'center',
+          }}
+          messageStyle={{
+            fontSize: 18,         // aumenta a fonte da mensagem
+            textAlign: 'center',
+          }}
+      />
+
+      <AwesomeAlert
+        show={validandoEndereco}
+        showProgress={true}
+        title="Verificando endereço"
+        message="Por favor, aguarde..."
+        closeOnTouchOutside={false}
+        closeOnHardwareBackPress={false}
+        showConfirmButton={false}
+        contentStyle={{
+          width: 280,
+          padding: 20,
+          borderRadius: 10,
+          backgroundColor: '#fff',
+        }}
+        titleStyle={{
+          fontSize: 20,
+          fontWeight: 'bold',
+          textAlign: 'center',
+          marginBottom: 10,
+        }}
+        messageStyle={{
+          fontSize: 16,
+          textAlign: 'center',
+          color: '#333',
+        }}
+      />
+
     </ScrollView>
   );
 }
@@ -665,6 +810,7 @@ function getStyles(width: number, height: number) {
     buttonEditar: {
       marginHorizontal: width * 0.06,
       marginBottom: height * 0.02,
+      marginTop: height * 0.02,
       flexDirection: "row",
       backgroundColor: "#4D7E1B",
       alignItems: "center",

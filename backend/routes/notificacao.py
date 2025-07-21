@@ -6,6 +6,7 @@ from database import get_db
 from models.notificacao import Notificacao
 from models.usuario import Usuario
 from schemas.notificacao import NotificacaoCreate, NotificacaoOut
+from models.utils import agora_brasil
 
 router = APIRouter()
 
@@ -16,11 +17,21 @@ def criar_notificacao(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
 ):
-    nova_notificacao = Notificacao(**notificacao_data.dict())
+
+    nova_notificacao = Notificacao(
+        usuario_id=current_user.id,
+        titulo=notificacao_data.titulo,
+        mensagem=notificacao_data.mensagem,
+        tipo=notificacao_data.tipo,
+        lida=notificacao_data.lida,
+        criado_em=agora_brasil()
+    )
     db.add(nova_notificacao)
     db.commit()
     db.refresh(nova_notificacao)
+    # print(nova_notificacao.criado_em)
     return nova_notificacao
+
 
 
 @router.get("/notificacoes", response_model=List[NotificacaoOut])

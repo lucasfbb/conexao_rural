@@ -21,6 +21,7 @@ class Pedido(Base):
     usuario = relationship("Usuario", back_populates="pedidos")
     endereco = relationship("Endereco", back_populates="pedidos")
     itens = relationship("ItemPedido", back_populates="pedido", cascade="all, delete-orphan")
+    pagamento = relationship("Pagamento", uselist=False, back_populates="pedido")
 
     def to_dict(self):
         return {

@@ -1,6 +1,7 @@
 from datetime import datetime
 from sqlalchemy import Column, Date, DateTime, Integer, String, Boolean
 from sqlalchemy.orm import relationship
+from models.utils import agora_brasil
 from database import Base
 from models.associacoes import usuario_produto_favorito, usuario_produtor_favorito
 
@@ -18,13 +19,12 @@ class Usuario(Base):
     telefone_1 = Column(String, nullable=True)
     telefone_2 = Column(String, nullable=True)
     data_nascimento = Column(Date, nullable=True)
-    criado_em = Column(DateTime, default=datetime.now())
+    criado_em = Column(DateTime, default=agora_brasil)
 
     produtor = relationship("Produtor", back_populates="usuario", uselist=False)
 
     enderecos = relationship("Endereco", back_populates="usuario")
     pedidos = relationship("Pedido", back_populates="usuario")
-    formas_pagamento = relationship("FormaPagamento", back_populates="usuario")
     notificacoes = relationship("Notificacao", back_populates="usuario")
 
     produtos_favoritos = relationship(
