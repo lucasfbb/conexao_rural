@@ -22,7 +22,11 @@ export const styles = StyleSheet.create({
         flex: 1,
         textAlign: "center",
         justifyContent: "center",
-        alignItems: "center"
+        alignItems: "center",
+        transform: [
+          { scaleX: 4 }, // aumenta largura 50%
+          { scaleY: 4 }, // aumenta altura 20%
+        ]
     },
 
     toggleButton: {

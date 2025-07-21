@@ -65,9 +65,9 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     logo: {
-        width: "70%",
-        height: "50%",
-        marginLeft:30
+        width: "100%",
+        height: "100%",
+        marginLeft:0
     },
     bottomContainer: {
         flex: 1,
