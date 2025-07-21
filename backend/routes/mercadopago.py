@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
-from models import FormaPagamento, Usuario
+from models import Usuario
 from schemas.formaPagamento import PedidoPagamentoIn
 from auth.auth_utils import get_current_user
 import mercadopago

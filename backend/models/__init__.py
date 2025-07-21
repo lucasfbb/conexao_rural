@@ -4,7 +4,7 @@ from .listagem import Listagem
 from .pedido import Pedido
 from .produtor import Produtor
 from .produto import Produto
-from .formapagamento import FormaPagamento
+from .pagamento import Pagamento
 from .notificacao import Notificacao
 from .certificado import Certificado
 from .item_pedido import ItemPedido

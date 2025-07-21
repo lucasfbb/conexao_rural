@@ -15,19 +15,14 @@ const { width, height } = Dimensions.get("window");
 const formatarEndereco = (e: any) =>
   `${e.rua}${e.complemento ? `, ${e.complemento}` : ''}${e.cidade ? ` - ${e.cidade}` : ''}`;
 
-const formatarCartao = (c: any) =>
-  `${c.bandeira ?? ''} •••• ${c.final_cartao?.slice(-4) ?? '0000'}`;
-
 export default function Confirmacao() {
   const router = useRouter();
   const { colors } = useTema();
   const { itens } = useCarrinho();
 
   const [enderecos, setEnderecos] = useState<any[]>([]);
-  const [pagamentos, setPagamentos] = useState<any[]>([]);
   const [enderecoSelecionado, setEnderecoSelecionado] = useState<number | null>(null);
   const [pagamentoSelecionado, setPagamentoSelecionado] = useState<number | null>(null);
-  const [escolhaForma, setEscolhaForma] = useState<string>('cartao'); // default: cartão
 
   const subtotal = itens.reduce((acc, item) => acc + item.preco * item.qtd, 0);
   const totalFinal = subtotal;
@@ -39,11 +34,8 @@ export default function Confirmacao() {
         setEnderecos(resEnd.data);
         if (resEnd.data.length > 0) setEnderecoSelecionado(resEnd.data[0].id);
 
-        const resPag = await api.get("usuarios/perfil/pagamentos");
-        setPagamentos(resPag.data);
-        if (resPag.data.length > 0) setPagamentoSelecionado(resPag.data[0].id);
       } catch (e) {
-        console.error("Erro ao carregar endereços/pagamentos", e);
+        console.error("Erro ao carregar endereços", e);
       }
     };
     carregarDados();
@@ -85,41 +77,6 @@ export default function Confirmacao() {
               </View>
             </View>
           </View>
-
-          {/* Tipo de pagamento */}
-          <Text style={[styles.label, { color: colors.title }]}>Tipo de pagamento</Text>
-          <View style={styles.selectContainer}>
-            <Picker
-              selectedValue={escolhaForma}
-              onValueChange={setEscolhaForma}
-              style={styles.picker}
-            >
-              <Picker.Item label="Cartão de Crédito" value="cartao" />
-              <Picker.Item label="Pix" value="pix" />
-            </Picker>
-          </View>
-
-          {/* Se for cartão, mostra picker dos cartões */}
-            {escolhaForma === 'cartao' && (
-            <>
-              <Text style={[styles.label, { color: colors.title }]}>Cartões Salvos</Text>
-              <View style={styles.selectContainer}>
-              <Picker
-                selectedValue={pagamentoSelecionado}
-                onValueChange={setPagamentoSelecionado}
-                style={styles.picker}
-              >
-                {pagamentos.length === 0 ? (
-                <Picker.Item label="Nenhum cartão cadastrado" value={null} />
-                ) : (
-                pagamentos.map(p => (
-                  <Picker.Item key={p.id} label={formatarCartao(p)} value={p.id} />
-                ))
-                )}
-              </Picker>
-              </View>
-            </>
-            )}
 
           {/* Total */}
           <View style={styles.totalContainer}>
