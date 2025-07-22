@@ -119,7 +119,7 @@ export default function Busca() {
             {produtos.length === 0 ? (
             <View style={styles.vazioContainer}>
                 <Image
-                source={{ uri: 'https://cdn-icons-png.flaticon.com/512/2038/2038854.png' }}
+                source={{ uri: 'https://static.vecteezy.com/system/resources/previews/007/104/553/non_2x/search-no-result-not-found-concept-illustration-flat-design-eps10-modern-graphic-element-for-landing-page-empty-state-ui-infographic-icon-vector.jpg' }}
                 style={styles.imagemVazia}
                 resizeMode="contain"
                 />
