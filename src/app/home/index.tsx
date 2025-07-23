@@ -125,11 +125,11 @@ export default function Home(){
     );
 
     const agricultoresFiltrados = useMemo(() => {
-            if (!searchTerm.trim()) return agricultores;
+            if (!busca.trim()) return agricultores;
             return agricultores.filter(a => 
-                a.nome?.toLowerCase().includes(searchTerm.toLowerCase())
+                a.nome?.toLowerCase().includes(busca.toLowerCase())
             );
-        }, [searchTerm, agricultores]);
+        }, [busca, agricultores]);
 
     return (
         
