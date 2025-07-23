@@ -138,6 +138,15 @@ export default function DrawerLayout() {
                 }} 
             />
 
+            <Drawer.Screen 
+                name="busca"
+                options={{ 
+                    drawerLabel: () => null, // 🔹 Oculta do menu
+                    title: "", // 🔹 Remove o título do header
+                    drawerItemStyle: { height: 0 } // 🔹 Evita espaço vazio no Drawer
+                }} 
+            />
+
         </Drawer>
     </GestureHandlerRootView>
   );

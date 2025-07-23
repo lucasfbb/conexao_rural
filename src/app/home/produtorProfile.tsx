@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { View, Text, Image, TouchableOpacity, ScrollView, FlatList, StyleSheet, Dimensions, ActivityIndicator, Alert } from "react-native";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
+import Entypo from '@expo/vector-icons/Entypo';
 import AwesomeAlert from 'react-native-awesome-alerts';
 
 import Header from "@/components/header";
@@ -33,6 +34,7 @@ type Produto = {
   preco: string;
   preco_promocional?: string;
   imagem: any;
+  vendedor?: string; // Adicionando vendedor para compatibilidade com busca
 };
 
 export default function ProdutorScreen() {
@@ -244,8 +246,8 @@ export default function ProdutorScreen() {
                       }}
                       style={{ padding: 5 }}
                     >
-                      <Feather
-                        name="heart"
+                      <Entypo
+                        name={isProdutoFavorito(Number(item.id)) ? "heart" : "heart-outlined"}
                         size={20}
                         color={isProdutoFavorito(Number(item.id)) ? "#E15610" : "#999"}
                       />
@@ -297,8 +299,8 @@ export default function ProdutorScreen() {
                         : favoritarProduto(Number(item.id));
                     }}
                   >
-                    <Feather
-                      name={isProdutoFavorito(Number(item.id)) ? "heart" : "heart"}
+                    <Entypo
+                      name={isProdutoFavorito(Number(item.id)) ? "heart" : "heart-outlined"}
                       size={20}
                       color={isProdutoFavorito(Number(item.id)) ? "#E15610" : "#999"}
                     />

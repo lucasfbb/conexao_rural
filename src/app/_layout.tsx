@@ -22,7 +22,8 @@ export default function RootLayout() {
     pathname.startsWith("/admin") ||
     pathname.startsWith("/carrinho") ||
     pathname.startsWith("/areaProdutor") ||
-    pathname.startsWith("/pedidos");
+    pathname.startsWith("/pedidos")||
+    pathname.startsWith("/busca");
 
   return (
     <AppProvider>

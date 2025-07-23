@@ -10,6 +10,7 @@ from routes import favoritos
 from routes import notificacao
 from routes import pedido
 from routes import mercadopago
+from routes import listagens
 from database import Base, engine
 import models
 
@@ -27,5 +28,6 @@ app.include_router(produtor.router, tags=["Produtores"])
 app.include_router(favoritos.router, tags=["Favoritos"])
 app.include_router(pedido.router, tags=["Pedidos"])
 app.include_router(mercadopago.router, tags=["Mercado Pago"])
+app.include_router(listagens.router, tags=["Listagens"])
 
 Base.metadata.create_all(bind=engine)

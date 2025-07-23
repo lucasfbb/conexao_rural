@@ -21,7 +21,9 @@ export default function Home(){
     const [agricultores, setAgricultores] = useState<ItemHome[]>([]);
     const [banners, setBanners] = useState<string[]>([]);
     const [produtosSazonais, setProdutosSazonais] = useState<string[]>([]);
-    const [searchTerm, setSearchTerm] = useState("");
+
+    const [ busca, setBusca ] = useState('');
+
 
     const { isFavorito, adicionarFavorito, removerFavorito } = useFavoritos();
 
@@ -31,9 +33,9 @@ export default function Home(){
     const fetchBanners = async () => {
         try {
             const res = await api.get("/banners");
-            const API_URL = "http://10.0.2.2:5000";
+            const API_URL = baseURL; // Usando a URL base definida no api.ts
             const bannersAbs = res.data.map((url: string) =>
-                url.startsWith("http") ? url : `${API_URL}${url}`
+                url.startsWith("http") ? url : `${API_URL}${url.slice(1)}`
         );
         setBanners(bannersAbs);
         const token = await AsyncStorage.getItem("token");
@@ -150,14 +152,13 @@ export default function Home(){
 
                             {/*  Barra de Pesquisa e Localização */}
                             <View style={styles.searchContainer}>
-                                <Feather name="search" size={20} color={"#4D7E1B"} style={styles.icon} />
-                                <TextInput
-                                        style={[styles.searchInput, { color: colors.text, borderBottomColor: colors.text }]}
-                                        placeholder='O que você procura hoje ?'
-                                        placeholderTextColor={colors.text}
-                                        value={searchTerm}
-                                        onChangeText={setSearchTerm}
-                                    />
+
+                                <Feather name="search" size={20} color={"#4D7E1B"} style={styles.icon} onPress={() => router.push({pathname: '/busca',params:{alvo : busca}})}/>
+                                <TextInput style={[styles.searchInput, { color: colors.text, borderBottomColor: colors.text }]} placeholder='O que você procura hoje ?' 
+                                value={busca} 
+                                onChangeText={(novaBusca:string) => setBusca(novaBusca)}
+                                placeholderTextColor={colors.text}/>
+
                                 <TouchableOpacity style={[styles.locationButton, { marginTop: height * 0.01 }]}>
                                     <Ionicons name="location-outline" size={20} color={"#4D7E1B"} />
                                     <Text style={[styles.locationText, { color: colors.text }]}>Minha Localização</Text>
@@ -181,6 +182,7 @@ export default function Home(){
                                         autoPlay={true}
                                         autoPlayInterval={5000}
                                         renderItem={({ item }) => (
+                                            // <Text style={{ color: colors.text }}>{item}</Text>
                                             <Image
                                                 source={{ uri: item }}
                                                 style={{
@@ -199,7 +201,7 @@ export default function Home(){
                             <Text style={[styles.sectionTitle, { marginBottom: height * 0.005, color: colors.title }]}>Produtos sazonais</Text>
                             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productScroll}>
                                 {produtosSazonais.map((produto, index) => (
-                                    <TouchableOpacity key={index} style={styles.productItem}>
+                                    <TouchableOpacity key={index} style={styles.productItem} onPress={() => router.push({ pathname: "/busca", params: { alvo: produto }})}>
                                         <Text style={[styles.productText, { color: colors.text }]}>{produto}</Text>
                                     </TouchableOpacity>
                                 ))}
