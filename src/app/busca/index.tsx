@@ -4,7 +4,7 @@ import Header from '@/components/header';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useTema } from '@/contexts/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather, MaterialIcons } from "@expo/vector-icons";
+import { Feather, MaterialIcons, Entypo } from "@expo/vector-icons";
 
 import ModalProduto from "@/components/modais/produtos/modalProduto";
 
@@ -258,8 +258,8 @@ export default function Busca() {
                                       }}
                                       style={{ padding: 5 }}
                                     >
-                                      <Feather
-                                        name="heart"
+                                      <Entypo
+                                        name={isProdutoFavorito(Number(item.id)) ? "heart" : "heart-outlined"}
                                         size={20}
                                         color={isProdutoFavorito(Number(item.id)) ? "#E15610" : "#999"}
                                       />
@@ -312,8 +312,8 @@ export default function Busca() {
                                         : favoritarProduto(Number(item.id));
                                     }}
                                   >
-                                    <Feather
-                                      name={isProdutoFavorito(Number(item.id)) ? "heart" : "heart"}
+                                    <Entypo
+                                      name={isProdutoFavorito(Number(item.id)) ? "heart" : "heart-outlined"}
                                       size={20}
                                       color={isProdutoFavorito(Number(item.id)) ? "#E15610" : "#999"}
                                     />
