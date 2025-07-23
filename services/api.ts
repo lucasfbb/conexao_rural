@@ -7,9 +7,10 @@ import { router } from "expo-router";
 // 🔹 Substitua pelo IP local ou URL da API
 // const baseURL = "http://192.168.0.17:5000/";
 
-// export const baseURL = "http://10.0.2.2:5000/";
-export const baseURL = "http://192.168.15.7:5000/";
+export const baseURL = "http://10.0.2.2:5000/";
+// export const baseURL = "http://192.168.15.7:5000/";
 // export const baseURL = "https://silly-icons-cheer.loca.lt/";
+
 export const api = axios.create({ baseURL });
 
 let setAuthenticatedExternal: ((auth: boolean) => void) | null = null;

@@ -17,8 +17,6 @@ import mercadopago
 
 router = APIRouter()
 
-ORS_API_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImU0MTgyZTZlMzcyMDQ2YTU5Y2EyNDViM2FmMjk2NjkxIiwiaCI6Im11cm11cjY0In0="
-
 sdk = mercadopago.SDK("TEST-7194314365664629-071422-91b20e782dca6d74f6f23e20d5451c70-265020088")  
 
 class Coordenadas(BaseModel):
@@ -118,31 +116,6 @@ def consultar_status_pagamento(id_pagamento: int):
         return {"status": status}
     except Exception as e:
         raise HTTPException(500, detail=f"Erro ao consultar status: {str(e)}")
-
-@router.post("/frete/calcular")
-async def calcular_frete(data: Coordenadas):
-    url = "https://api.openrouteservice.org/v2/directions/driving-car"
-
-    params = {
-        "api_key": ORS_API_KEY,
-        "start": f"{data.origem[0]},{data.origem[1]}",
-        "end": f"{data.destino[0]},{data.destino[1]}"
-    }
-
-    async with httpx.AsyncClient() as client:
-        response = await client.get(url, params=params)
-        route = response.json()
-
-    distancia_m = route['features'][0]['properties']['segments'][0]['distance']
-    distancia_km = distancia_m / 1000
-
-    # Lógica de frete
-    valor_frete = max(10, distancia_km * 2.5)
-
-    return {
-        "distancia_km": round(distancia_km, 2),
-        "valor_frete": round(valor_frete, 2)
-    }
 
 @router.post("/pedidos/novo")
 async def criar_pedido_sem_pagamento(
@@ -267,16 +240,3 @@ def listar_pedidos_usuario(db: Session = Depends(get_db), current_user: Usuario 
         })
 
     return retorno
-
-# class TesteEntrada(BaseModel):
-#     nome: str
-
-# @router.post("/teste/rota")
-# async def rota_teste(data: TesteEntrada):
-#     respostas = [
-#         f"Olá {data.nome}, tudo certo!",
-#         f"{data.nome}, recebemos sua mensagem com sucesso.",
-#         f"Teste concluído com êxito para {data.nome}.",
-#         f"{data.nome}, esta é uma resposta aleatória 😄."
-#     ]
-#     return {"mensagem": random.choice(respostas)}

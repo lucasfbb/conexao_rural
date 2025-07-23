@@ -5,7 +5,6 @@ import shutil
 from typing import Optional
 from schemas.endereco import EnderecoInput
 from auth.auth_utils import get_current_user
-from routes.pedido import ORS_API_KEY, Coordenadas
 from models.endereco import Endereco
 from models.item_pedido import ItemPedido
 from models.pedido import Pedido
