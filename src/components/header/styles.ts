@@ -16,13 +16,14 @@ export const styles = StyleSheet.create({
     },
 
     img: {
-        width: 80, 
-        height: 30,
+        width: "100%", 
+        height: "100%",
         resizeMode: "contain",
         flex: 1,
         textAlign: "center",
         justifyContent: "center",
-        alignItems: "center"
+        alignItems: "center",
+
     },
 
     toggleButton: {

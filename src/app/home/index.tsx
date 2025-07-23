@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, Alert, Image, TouchableOpacity, ScrollView, TextInput, FlatList, useWindowDimensions } from "react-native"
 import Carousel from 'react-native-reanimated-carousel';
 import { Feather, Ionicons, Fontisto } from "@expo/vector-icons";
@@ -18,10 +18,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export default function Home(){
     const { width, height } = useWindowDimensions();
     const { isNightMode, colors } = useTema();
-    const [agricultores, setAgricultores] = useState([]);
+    const [agricultores, setAgricultores] = useState<ItemHome[]>([]);
     const [banners, setBanners] = useState<string[]>([]);
     const [produtosSazonais, setProdutosSazonais] = useState<string[]>([]);
+
     const [ busca, setBusca ] = useState('');
+
 
     const { isFavorito, adicionarFavorito, removerFavorito } = useFavoritos();
 
@@ -122,6 +124,13 @@ export default function Home(){
         </TouchableOpacity>
     );
 
+    const agricultoresFiltrados = useMemo(() => {
+            if (!searchTerm.trim()) return agricultores;
+            return agricultores.filter(a => 
+                a.nome?.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }, [searchTerm, agricultores]);
+
     return (
         
         <>  
@@ -143,11 +152,13 @@ export default function Home(){
 
                             {/*  Barra de Pesquisa e Localização */}
                             <View style={styles.searchContainer}>
+
                                 <Feather name="search" size={20} color={"#4D7E1B"} style={styles.icon} onPress={() => router.push({pathname: '/busca',params:{alvo : busca}})}/>
                                 <TextInput style={[styles.searchInput, { color: colors.text, borderBottomColor: colors.text }]} placeholder='O que você procura hoje ?' 
                                 value={busca} 
                                 onChangeText={(novaBusca:string) => setBusca(novaBusca)}
                                 placeholderTextColor={colors.text}/>
+
                                 <TouchableOpacity style={[styles.locationButton, { marginTop: height * 0.01 }]}>
                                     <Ionicons name="location-outline" size={20} color={"#4D7E1B"} />
                                     <Text style={[styles.locationText, { color: colors.text }]}>Minha Localização</Text>
@@ -199,10 +210,10 @@ export default function Home(){
                             {/*  Agricultores por Perto */}
                             <Text style={[styles.sectionTitle, { textAlign: 'center', marginBottom: height * 0.01, color: colors.title }]}>Agricultores por perto</Text>
                                 <FlatList
-                                    data={agricultores} // seu array de produtores
+                                    data={agricultoresFiltrados}
                                     keyExtractor={(item, index) => index.toString()}
                                     renderItem={renderAgricultor}
-                                    scrollEnabled={false} // Para não conflitar com ScrollView
+                                    scrollEnabled={false}
                                     ListEmptyComponent={() => (
                                         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 40 }}>
                                             <Text style={{ color: colors.text }}>Nenhum agricultor encontrado.</Text>

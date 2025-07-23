@@ -37,6 +37,7 @@ function getCamposAlterados(
 }
 
 export default function AreaProdutor() {
+
   const { width, height } = useWindowDimensions();
   const styles = getStyles(width, height);
 

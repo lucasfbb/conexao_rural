@@ -11,7 +11,7 @@ import { useCallback, useEffect, useState } from "react";
 import { api } from "../../../services/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import MaskedInput from "@/components/maskedInput";
-import { validarCPF, validarEmail } from "../../../services/utils";
+import { validarCPFouCNPJ, validarEmail } from "../../../services/utils";
 
 
 export default function CadastroPage() {
@@ -20,7 +20,8 @@ export default function CadastroPage() {
 
     const [nome, setNome] = useState("");
     const [email, setEmail] = useState("");
-    const [cpf, setCpf] = useState("");
+    const [cpf_cnpj, setCpf_Cnpj] = useState("");
+    const [tipoDocumento, setTipoDocumento] = useState<"cpf" | "cnpj">("cpf");
     const [telefone1, setTelefone1] = useState("");
     const [telefone2, setTelefone2] = useState("");
     const [categoria, setCategoria] = useState<string>('Consumidor');
@@ -63,13 +64,13 @@ export default function CadastroPage() {
             return;
         }
         
-        if (!nome || !email || !cpf || !telefone1  || !senha) {
+        if (!nome || !email || !cpf_cnpj || !telefone1  || !senha) {
             alert("Preencha todos os campos obrigatórios!");
             return;
         }
 
-        if (email !== "admin@admin.com" && !validarCPF(cpf)) {
-            alert("CPF inválido. Por favor, verifique.");
+        if (email !== "admin@admin.com" && !validarCPFouCNPJ(cpf_cnpj)) {
+            alert("CPF ou CPNJ inválido. Por favor, verifique.");
             return;
         }
 
@@ -80,7 +81,7 @@ export default function CadastroPage() {
 
         try {
             const response = await api.post("/usuarios/cadastrar_user", {
-                cpf_cnpj: cpf,
+                cpf_cnpj: cpf_cnpj,
                 email: email,
                 nome: nome,
                 telefone_1: telefone1,
@@ -99,6 +100,18 @@ export default function CadastroPage() {
             }
         }
     };
+
+    const handleCpfCnpjChange = (texto: string) => {
+        const digits = texto.replace(/\D/g, "");
+
+        if (digits.length > 10) {
+            setTipoDocumento("cnpj");
+        } else {
+            setTipoDocumento("cpf");
+        }
+
+        setCpf_Cnpj(texto);
+        };
 
         return (
             
@@ -141,10 +154,10 @@ export default function CadastroPage() {
                     <Input placeholder="Digite seu e-mail*" onChangeText={setEmail} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
                     
                     <MaskedInput
-                        type="cpf"
-                        value={cpf}
-                        onChangeText={setCpf}
-                        placeholder="Digite seu CPF/CNPJ*"
+                        type={tipoDocumento}
+                        value={cpf_cnpj}
+                        onChangeText={handleCpfCnpjChange}
+                        placeholder="Digite seu CPF ou CNPJ*"
                         containerStyle={[styles.inputContainer, { width: width * 0.8 }]}
                         inputStyle={{ fontSize: fontSizeResponsive }}
                     />
