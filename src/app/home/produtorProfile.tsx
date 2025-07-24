@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { View, Text, Image, TouchableOpacity, ScrollView, FlatList, StyleSheet, Dimensions, ActivityIndicator, Alert } from "react-native";
-import { Feather, MaterialIcons } from "@expo/vector-icons";
+import { Feather, MaterialIcons, Fontisto } from "@expo/vector-icons";
 import Entypo from '@expo/vector-icons/Entypo';
 import AwesomeAlert from 'react-native-awesome-alerts';
 
@@ -43,6 +43,11 @@ export default function ProdutorScreen() {
   const { colors } = useTema();
   const { favoritarProduto, desfavoritarProduto, isProdutoFavorito } = useFavoritos();
   const { adicionarItem } = useCarrinho();
+  const { isFavorito, adicionarFavorito, removerFavorito } = useFavoritos();
+
+  const toggleFavorito = () => {
+        isFavorito(String(cpf_cnpj)) ? removerFavorito(String(cpf_cnpj)) : adicionarFavorito(String(cpf_cnpj));
+    };
 
   const base = baseURL.slice(0, -1);
 
@@ -175,6 +180,9 @@ export default function ProdutorScreen() {
             uri: produtor?.banner ? `${base}${produtor?.banner}` : undefined
           }} style={styles.banner} />
 
+          
+          
+          
           {/* Informações do Produtor */}
           <View style={styles.produtorInfo}>
             <Image source={{
@@ -190,6 +198,14 @@ export default function ProdutorScreen() {
               <Text style={styles.categoria}>- Legumes -</Text>
               <Text style={styles.distancia}>10km</Text>
             </View>
+            {/* Ícone de favorito */}
+            <TouchableOpacity style={styles.save} onPress={toggleFavorito}>
+                {isFavorito(String(cpf_cnpj)) ? (
+                    <Fontisto name="favorite" size={20} color={'black'} />
+                ) : (
+                    <Fontisto name="bookmark" size={20} color={'black'}/>
+                )}
+            </TouchableOpacity>
           </View>
 
           {/* Seção Promoções */}
@@ -348,6 +364,11 @@ export default function ProdutorScreen() {
 }
 
 const styles = StyleSheet.create({
+  save:{
+    position: "absolute",
+    right: 20,
+    top: 10,
+  },
   container: { flex: 1, backgroundColor: "white" },
   banner: {
     width: "100%",
