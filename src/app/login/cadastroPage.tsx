@@ -12,6 +12,7 @@ import { api } from "../../../services/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import MaskedInput from "@/components/maskedInput";
 import { validarCPFouCNPJ, validarEmail } from "../../../services/utils";
+import VoiceInput from "@/components/voiceInput";
 
 
 export default function CadastroPage() {
@@ -149,10 +150,22 @@ export default function CadastroPage() {
 
                 {/* 🔹 Inputs e Botão */}
                 <View style={styles.bottomContainer}>
-                    <Input placeholder="Digite seu nome completo*" onChangeText={setNome} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
+                    {/* <Input placeholder="Digite seu nome completo*" onChangeText={setNome} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} /> */}
 
-                    <Input placeholder="Digite seu e-mail*" onChangeText={setEmail} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
+                    <VoiceInput
+                        placeholder="Digite seu nome completo*"
+                        value={nome}
+                        onChangeText={setNome}
+                        placeholderTextColor="rgba(255,255,255,0.6)"
+                        iconColor="#fff"
+                        containerStyle={[styles.inputContainer, { width: width * 0.8 }]}
+                        inputStyle={{ fontSize: fontSizeResponsive }}
+                    />
+
+                    {/* <Input placeholder="Digite seu e-mail*" onChangeText={setEmail} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} /> */}
                     
+                    <VoiceInput placeholder="Digite seu e-mail*" placeholderTextColor="rgba(255,255,255,0.6)" iconColor="#fff" onChangeText={setEmail} containerStyle={[styles.inputContainer, { width: width * 0.8 }]} inputStyle={{ fontSize: fontSizeResponsive }} />
+
                     <MaskedInput
                         type={tipoDocumento}
                         value={cpf_cnpj}
@@ -190,19 +203,23 @@ export default function CadastroPage() {
                         inputStyle={{ fontSize: fontSizeResponsive }}
                     />
 
-                    <Input
+                    <VoiceInput
                         placeholder="Digite sua senha*"
                         value={senha}
                         onChangeText={setSenha}
+                        placeholderTextColor="rgba(255,255,255,0.6)"
+                        iconColor="#fff"
                         containerStyle={[styles.inputContainer, { width: width * 0.8 }]}
                         inputStyle={{ fontSize: fontSizeResponsive }}
                         isPassword
                     />
                     
-                    <Input
+                    <VoiceInput
                         placeholder="Confirme sua senha*"
                         value={confirmacaoSenha}
                         onChangeText={setConfirmacaoSenha}
+                        placeholderTextColor="rgba(255,255,255,0.6)"
+                        iconColor="#fff"
                         containerStyle={[styles.inputContainer, { width: width * 0.8 }]}
                         inputStyle={{ fontSize: fontSizeResponsive }}
                         isPassword

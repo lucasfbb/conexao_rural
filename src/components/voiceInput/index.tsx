@@ -1,27 +1,47 @@
 import React, { useState, useEffect } from "react";
 import { View, TextInput, TouchableOpacity, TextInputProps } from "react-native";
-import Voice from "@react-native-voice/voice";
+import Voice from "@react-native-community/voice";
 import { Ionicons } from "@expo/vector-icons";
 import { styles } from "./styles";
 
 interface VoiceInputProps extends TextInputProps {
   containerStyle?: object;
   inputStyle?: object;
+  isPassword?: boolean;
+  placeholderTextColor?: string;
+  iconColor?: string; // 🎙 e 👁 cor dos ícones
 }
 
-export default function VoiceInput({ containerStyle, inputStyle, ...props }: VoiceInputProps) {
+export default function VoiceInput({
+  containerStyle,
+  inputStyle,
+  isPassword = false,
+  placeholderTextColor = "#4D7E1B",
+  iconColor = "#4D7E1B",
+  value: propValue = "",
+  onChangeText,
+  ...props
+}: VoiceInputProps) {
+  const [value, setValue] = useState(propValue);
   const [isListening, setIsListening] = useState(false);
-  const [value, setValue] = useState(props.value || "");
+  const [mostrarSenha, setMostrarSenha] = useState(false);
+
+  useEffect(() => {
+    setValue(propValue);
+  }, [propValue]);
 
   useEffect(() => {
     Voice.onSpeechResults = (event) => {
       const text = event.value?.[0];
       if (text) {
         setValue(text);
-        props.onChangeText?.(text); // notifica o componente pai
+        onChangeText?.(text);
         setIsListening(false);
       }
     };
+
+    Voice.onSpeechEnd = () => setIsListening(false);
+    Voice.onSpeechError = () => setIsListening(false);
 
     return () => {
       Voice.destroy().then(Voice.removeAllListeners);
@@ -33,7 +53,7 @@ export default function VoiceInput({ containerStyle, inputStyle, ...props }: Voi
       setIsListening(true);
       await Voice.start("pt-BR");
     } catch (err) {
-      console.error(err);
+      console.error("Erro ao iniciar reconhecimento de voz:", err);
       setIsListening(false);
     }
   };
@@ -42,19 +62,32 @@ export default function VoiceInput({ containerStyle, inputStyle, ...props }: Voi
     <View style={[styles.container, containerStyle]}>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         <TextInput
+          {...props}
+          onFocus={props.onFocus}
+          onBlur={props.onBlur}
           style={[styles.input, inputStyle, { flex: 1 }]}
-          placeholderTextColor="rgba(255, 255, 255, 0.6)"
+          placeholderTextColor={placeholderTextColor}
+          secureTextEntry={isPassword && !mostrarSenha}
           value={value}
           onChangeText={(text) => {
             setValue(text);
-            props.onChangeText?.(text);
+            onChangeText?.(text);
           }}
-          {...props}
         />
-        <TouchableOpacity onPress={startListening} style={{ paddingHorizontal: 8 }}>
-          <Ionicons name={isListening ? "mic-circle" : "mic"} size={22} color="#fff" />
+
+        {/* 🎙 Microfone */}
+        <TouchableOpacity onPress={startListening} style={{ paddingHorizontal: 4 }}>
+          <Ionicons name={isListening ? "mic-circle" : "mic"} size={22} color={iconColor} />
         </TouchableOpacity>
+
+        {/* 👁 Olho para senha */}
+        {isPassword && (
+          <TouchableOpacity onPress={() => setMostrarSenha(!mostrarSenha)} style={{ paddingHorizontal: 4 }}>
+            <Ionicons name={mostrarSenha ? "eye-off" : "eye"} size={22} color={iconColor} />
+          </TouchableOpacity>
+        )}
       </View>
+
       <View style={styles.underline} />
     </View>
   );
