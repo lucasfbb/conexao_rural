@@ -9,10 +9,6 @@ import cloudinary.uploader
 
 router = APIRouter()
 
-BANNERS_DIR = "uploads/banners"
-
-os.makedirs(BANNERS_DIR, exist_ok=True)
-
 @router.post("/banners")
 async def upload_banner(file: UploadFile = File(...)):
     # print("CHEGOU UM UPLOAD:", file.filename)
@@ -40,7 +36,7 @@ async def list_banners():
 
 @router.delete("/banners/{public_id}")
 async def delete_banner(public_id: str):
-    print(public_id)
+    # print(public_id)
     try:
         result = cloudinary.uploader.destroy("conexaorural/banners/"+public_id, resource_type="image")
         if result.get("result") == "ok":

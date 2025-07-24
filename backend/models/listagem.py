@@ -14,7 +14,8 @@ class Listagem(Base):
     preco_promocional = Column(DECIMAL(10, 2))
     unidade = Column(String(50), nullable=True)
     descricao = Column(String(255), nullable=True)
-    foto = Column(String(100), nullable=True)
+    foto = Column(String(150), nullable=True)
+    foto_id = Column(String(50), nullable=True)  # ID da foto no Cloudinary
 
     produtor = relationship("Produtor", back_populates="listagens")
     produto = relationship("Produto", back_populates="listagens")

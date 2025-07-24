@@ -16,6 +16,7 @@ class Usuario(Base):
     e_vendedor = Column(Boolean, default=False)
     avaliacao = Column(String, nullable=True)
     foto_perfil = Column(String, nullable=True)
+    foto_id = Column(String, nullable=True)  # ID da foto no Cloudinary
     telefone_1 = Column(String, nullable=True)
     telefone_2 = Column(String, nullable=True)
     data_nascimento = Column(Date, nullable=True)

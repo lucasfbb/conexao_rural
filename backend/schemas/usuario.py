@@ -17,7 +17,7 @@ class UsuarioCreate(UsuarioBase):
     email: EmailStr
     senha: str
     cpf_cnpj: str
-    e_vendedor: bool
+    e_vendedor: bool = False
     telefone_1: str
     telefone_2: Optional[str] = None
 

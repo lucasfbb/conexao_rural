@@ -19,6 +19,8 @@ from models.produtor import Produtor
 from models.produto import Produto
 from models.listagem import Listagem
 from schemas.produtor import ProdutorOut, ProdutorUpdate
+from cloudinary_utils import cloudinary
+import cloudinary.uploader
 
 router = APIRouter()
 
@@ -287,15 +289,19 @@ async def adicionar_produto(
         db.commit()
         db.refresh(produto_existente)
     
-    # 3. Salvar imagem, se enviada
+    # 3. Salvar imagem, se enviada #TODO: Cloudinary
     foto_url = None
     if file is not None:
-        ext = file.filename.split('.')[-1]
-        filename = f"produto_{current_user.id}_{int(time.time())}.{ext}"
-        file_path = os.path.join(FOTO_PRODUTO_DIR, filename)
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-        foto_url = f"/uploads/fotoProduto/{filename}"
+        # ext = file.filename.split('.')[-1]
+        # filename = f"produto_{current_user.id}_{int(time.time())}.{ext}"
+        # file_path = os.path.join(FOTO_PRODUTO_DIR, filename)
+        # with open(file_path, "wb") as buffer:
+        #     shutil.copyfileobj(file.file, buffer)
+        # foto_url = f"/uploads/fotoProduto/{filename}"
+        contents = await file.read()
+        upload_result = cloudinary.uploader.upload(contents, resource_type="image", folder="conexaorural/fotoProduto")
+        foto_id = upload_result.get("public_id").split("/")[-1]  # Pega o ID da foto
+        foto_url = upload_result["secure_url"]
 
     # 4. Verifica se esse produto já foi listado por esse produtor
     listagem_existente = db.query(Listagem).filter(
@@ -315,7 +321,8 @@ async def adicionar_produto(
         produtor_id=produtor.id,
         unidade=unidade,
         descricao=descricao,
-        foto=foto_url
+        foto=foto_url,
+        foto_id=foto_id if foto_url else None,
     )
     db.add(listagem)
     db.commit()
@@ -329,10 +336,20 @@ async def adicionar_produto(
     }
 
 @router.delete("/produtores/produtos/remover/{listagem_id}", status_code=204)
-def remover_listagem_produto(listagem_id: int, db: Session = Depends(get_db)):
+async def remover_listagem_produto(listagem_id: int, db: Session = Depends(get_db)):
     listagem = db.query(Listagem).filter(Listagem.id == listagem_id).first()
     if not listagem:
         raise HTTPException(status_code=404, detail="Produto não encontrado na listagem do produtor")
+    
+    # try:
+    #     result = cloudinary.uploader.destroy("conexaorural/fotoProduto/"+listagem.foto_id, resource_type="image",invalidate=True)
+    #     if result.get("result") == "ok":
+    #         print("Foto removida com sucesso do Cloudinary")
+    #     else:
+    #         raise HTTPException(status_code=404, detail="foto não encontrado no Cloudinary")
+    # except Exception as e:
+    #     raise HTTPException(status_code=500, detail=str(e))
+
     db.delete(listagem)
     db.commit()
     return {"message": "Produto removido com sucesso!"}
@@ -363,12 +380,14 @@ async def editar_produto(
         listagem.descricao = descricao
     
     if file:
-        filename = f"produto_{listagem.id}_{file.filename}"
-        full_path = os.path.join("uploads/fotoProduto", filename)
-        os.makedirs(os.path.dirname(full_path), exist_ok=True)
-        with open(full_path, "wb") as buffer:
-            buffer.write(await file.read())
-        listagem.foto = f"/uploads/fotoProduto/{filename}"
+        # result = cloudinary.uploader.destroy("conexaorural/fotoProduto/"+listagem.foto_id, resource_type="image",invalidate=True)
+        # if result.get("result") == "ok":
+            contents = await file.read()
+            upload_result = cloudinary.uploader.upload(contents, resource_type="image", folder="conexaorural/fotoProduto",public_id=f"conexaorural/fotoProduto/{listagem.foto_id}",overwrite=True)
+            listagem.foto_id = upload_result.get("public_id").split("/")[-1]
+            listagem.foto = upload_result["secure_url"]
+        # else:
+        #     raise HTTPException(status_code=500, detail="Erro ao remover a foto antiga do Cloudinary")
     else:
         print("Nenhuma imagem enviada")
 

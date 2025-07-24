@@ -9,7 +9,9 @@ class Produtor(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     usuario_id = Column(Integer, ForeignKey('usuario.id'), nullable=False, unique=True)
     banner = Column(String, nullable=True)
+    banner_id = Column(String, nullable=True)  # ID do banner no Cloudinary
     foto = Column(String, nullable=True)
+    foto_id = Column(String, nullable=True)  # ID da foto no Cloudinary
     categoria = Column(String, nullable=True)
     endereco = Column(String, nullable=True)
     rua = Column(String, nullable=True)

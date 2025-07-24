@@ -28,27 +28,27 @@ def atualizar_sazonal(produto_id: int, update: ProdutoUpdate, db: Session = Depe
     db.refresh(produto)
     return produto
 
-@router.post("/produtos/{produto_id}/foto/upload")
-async def upload_foto_produto(produto_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
-    # Gere um nome único para o arquivo
-    ext = file.filename.split('.')[-1]
-    nome_arquivo = f"produto_{produto_id}_{uuid.uuid4().hex}.{ext}"
-    caminho = os.path.join(FOTO_PRODUTO_DIR, nome_arquivo)
+# @router.post("/produtos/{produto_id}/foto/upload")# TODO: conectar ao cloudinary
+# async def upload_foto_produto(produto_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
+#     # Gere um nome único para o arquivo
+#     ext = file.filename.split('.')[-1]
+#     nome_arquivo = f"produto_{produto_id}_{uuid.uuid4().hex}.{ext}"
+#     caminho = os.path.join(FOTO_PRODUTO_DIR, nome_arquivo)
 
-    # Salve o arquivo
-    with open(caminho, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+#     # Salve o arquivo
+#     with open(caminho, "wb") as buffer:
+#         shutil.copyfileobj(file.file, buffer)
 
-    # Atualize o campo foto no Produto
-    from models.produto import Produto
-    produto = db.query(Produto).get(produto_id)
-    if not produto:
-        raise HTTPException(status_code=404, detail="Produto não encontrado")
+#     # Atualize o campo foto no Produto
+#     from models.produto import Produto
+#     produto = db.query(Produto).get(produto_id)
+#     if not produto:
+#         raise HTTPException(status_code=404, detail="Produto não encontrado")
 
-    produto.foto = f"/uploads/fotoProduto/{nome_arquivo}"
-    db.commit()
+#     produto.foto = f"/uploads/fotoProduto/{nome_arquivo}"
+#     db.commit()
 
-    return {"foto": produto.foto}
+#     return {"foto": produto.foto}
 
 @router.post("/produtos", response_model=ProdutoOut)
 def criar_produto(produto: ProdutoCreate, db: Session = Depends(get_db)):

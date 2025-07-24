@@ -12,6 +12,7 @@ import MaskedInput from "@/components/maskedInput";
 import { TextInputMask } from "react-native-masked-text";
 
 type Produto = {
+  produto_id: string;
   id: string;
   listagem_id: number;
   nome: string;
@@ -295,7 +296,7 @@ export default function AreaProdutor() {
         quantidade: produto.estoque,
         descricao: produto.descricao,
         unidade: produto.unidade ?? 'unidade',
-        foto: produto.foto ? { uri: base + produto.foto } : require('../../../assets/images/pacote_produto.png'), // Imagem padrão se não tiver foto
+        foto: produto.foto ? { uri: produto.foto } : require('../../../assets/images/pacote_produto.png'), // Imagem padrão se não tiver foto
       }));
 
       setProdutos(produtosTratados);
