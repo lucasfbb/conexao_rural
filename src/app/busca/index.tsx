@@ -181,15 +181,15 @@ export default function Busca() {
                                   produtor_id: produtor?.id || 0,
                                   nome_produtor: produtor?.nome,
                                   imagem: produtoSelecionado?.imagem,
-                                  endereco_produtor: {
-                                    texto: enderecoTexto,
-                                    rua: produtor?.rua,
-                                    numero: produtor?.numero,
-                                    bairro: produtor?.bairro,
-                                    complemento: produtor?.complemento,
-                                    latitude: coords?.latitude,
-                                    longitude: coords?.longitude,
-                                  }
+                                  // endereco_produtor: {
+                                  //   texto: enderecoTexto,
+                                  //   rua: produtor?.rua,
+                                  //   numero: produtor?.numero,
+                                  //   bairro: produtor?.bairro,
+                                  //   complemento: produtor?.complemento,
+                                  //   latitude: coords?.latitude,
+                                  //   longitude: coords?.longitude,
+                                  // }
                                 });
                 
                                 Alert.alert(
