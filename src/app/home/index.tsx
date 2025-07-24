@@ -161,10 +161,15 @@ export default function Home(){
                             <View style={styles.searchContainer}>
 
                                 <Feather name="search" size={20} color={"#4D7E1B"} style={styles.icon} onPress={() => router.push({pathname: '/busca',params:{alvo : busca}})}/>
-                                <TextInput style={[styles.searchInput, { color: colors.text, borderBottomColor: colors.text }]} placeholder='O que você procura hoje ?' 
-                                value={busca} 
-                                onChangeText={(novaBusca:string) => setBusca(novaBusca)}
-                                placeholderTextColor={colors.text}/>
+                                <TextInput
+                                  style={[styles.searchInput, { color: colors.text, borderBottomColor: colors.text }]}
+                                  placeholder='O que você procura hoje ?'
+                                  value={busca}
+                                  onChangeText={setBusca}
+                                  placeholderTextColor={colors.text}
+                                  onSubmitEditing={() => router.push({ pathname: '/busca', params: { alvo: busca } })}
+                                  returnKeyType='search'
+                                />
 
                                 <TouchableOpacity style={[styles.locationButton, { marginTop: height * 0.01 }]}>
                                     <Ionicons name="location-outline" size={20} color={"#4D7E1B"} />
