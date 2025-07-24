@@ -18,7 +18,13 @@ type Produto = {
   sazonal: boolean;
 };
 
-const API_URL = baseURL; // Usando a URL base definida no api.ts
+// RESPOSTA DO CLOUDINARY
+type cloudinaryResponse = {
+    id: string;
+    url: string;
+}
+
+const API_URL = baseURL.slice(0,-1); // Usando a URL base definida no api.ts
 
 export default function Admin() {
   const { colors } = useTema();
@@ -49,8 +55,8 @@ export default function Admin() {
     setLoading(true);
     try {
       const res = await api.get("/banners");
-      const bannersAbs = res.data.map((url: string) =>
-        url.startsWith("http") ? url : `${API_URL}${url.slice(1)}`
+      const bannersAbs = res.data.map((img: cloudinaryResponse) =>
+        img.url.startsWith("http") ? img : `${API_URL}${img.url}` //.slice(1)
       );
       setBanners(bannersAbs);
     } catch (error) {
@@ -121,12 +127,12 @@ export default function Admin() {
     );
   }
 
-  const renderBanner = ({ item }: { item: string }) => (
+  const renderBanner = ({ item }: { item: cloudinaryResponse }) => (
     <View style={styles.bannerWrapper}>
-      <Image source={{ uri: item }} style={styles.banner} />
+      <Image source={{ uri: item.url }} style={styles.banner} />
       <TouchableOpacity
         style={styles.deleteButton}
-        onPress={() => handleDeleteBanner(item)}
+        onPress={() => handleDeleteBanner(item.id)}
       >
         <Text style={styles.deleteButtonText}>X</Text>
       </TouchableOpacity>

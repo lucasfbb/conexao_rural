@@ -29,13 +29,20 @@ export default function Home(){
 
     const base = baseURL.slice(0, -1);
     const { user, isLoading } = useUser();
+
+    // RESPOSTA DO CLOUDINARY
+    type cloudinaryResponse = {
+        id: string;
+        url: string;
+
+    }
     
     const fetchBanners = async () => {
         try {
             const res = await api.get("/banners");
-            const API_URL = baseURL; // Usando a URL base definida no api.ts
-            const bannersAbs = res.data.map((url: string) =>
-                url.startsWith("http") ? url : `${API_URL}${url.slice(1)}`
+            const API_URL = baseURL.slice(0,-1); // Usando a URL base definida no api.ts
+            const bannersAbs = res.data.map((img:cloudinaryResponse) =>
+                img.url.startsWith("http") ? img.url : `${API_URL}${img.url}` // .slice(1)
         );
         setBanners(bannersAbs);
         const token = await AsyncStorage.getItem("token");
