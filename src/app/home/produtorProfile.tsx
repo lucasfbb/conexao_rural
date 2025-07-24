@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
   produtorInfo: { alignItems: "center", padding: 15, borderBottomWidth: 1, borderColor: "#ddd" },
   logo: { width: 90, height: 90, borderRadius: 20, marginBottom: 5 },
   produtorNome: { fontWeight: "bold" }, // fontSize é dinâmico!
-  localizacao: { flexDirection: "row", alignItems: "center", marginVertical: 8 },
+  localizacao: { flexDirection: "row", alignItems: "center", marginVertical: 8, "borderColor": "black", borderWidth: 1, padding: 5, borderRadius: 5 },
   localizacaoText: { fontSize: fontSizePrecoRiscado, color: "black" },
   produtorDetalhes: { flexDirection: "row", alignItems: "center", gap: 5 },
   avaliacao: { fontWeight: "bold", color: "#4D7E1B", fontSize: fontSizePrecoRiscado },
