@@ -40,7 +40,7 @@ export default function ModalVisualizarPedidos({
   useEffect(() => {
     if (visible) {
       setLoading(true);
-      api.get("/pedidos/produtor") 
+      api.get("/pedidos/produtor")
         .then(response => {
           console.log("Pedidos do produtor:", response.data);
           setPedidos(response.data);
@@ -55,7 +55,7 @@ export default function ModalVisualizarPedidos({
   return (
     <Modal visible={visible} animationType="fade" transparent>
       <View style={styles.modalBackground}>
-        <View style={styles.modalWrapper}>
+        <View style={[styles.modalWrapper, { backgroundColor: colors.background }]}>
           <View style={styles.header}>
             <Text style={[styles.modalTitle, { color: colors.title }]}>
               Pedidos do Produtor
@@ -64,27 +64,41 @@ export default function ModalVisualizarPedidos({
 
           <ScrollView style={styles.scrollContent}>
             {loading ? (
-              <ActivityIndicator size="large" color="#4D7E1B" />
+              <ActivityIndicator size="large" color={colors.title} />
             ) : pedidos.length === 0 ? (
-              <Text style={{ textAlign: "center", marginTop: 20 }}>
+              <Text style={{ textAlign: "center", marginTop: 20, color: colors.title }}>
                 Nenhum pedido encontrado.
               </Text>
             ) : (
               pedidos.map((pedido) => (
-                <View key={pedido.id} style={styles.pedidoBox}>
-                  <Text style={styles.pedidoTitulo}>Pedido #{pedido.id}</Text>
-                  <Text>Nome do cliente: {pedido.nome_cliente}</Text>
-
-                  <Text>Status: {pedido.status}</Text>
-                  <Text>Valor: R$ {pedido.valor.toFixed(2)}</Text>
+                <View
+                  key={pedido.id}
+                  style={[
+                    styles.pedidoBox,
+                    {
+                      backgroundColor: colors.background,
+                      borderColor: colors.title + "55",
+                    },
+                  ]}
+                >
+                  <Text style={[styles.pedidoTitulo, { color: colors.title }]}>
+                    Pedido #{pedido.id}
+                  </Text>
+                  <Text style={{ color: colors.title }}>
+                    Nome do cliente: {pedido.nome_cliente}
+                  </Text>
+                  <Text style={{ color: colors.title }}>Status: {pedido.status}</Text>
+                  <Text style={{ color: colors.title }}>
+                    Valor: R$ {pedido.valor.toFixed(2)}
+                  </Text>
                 </View>
               ))
             )}
           </ScrollView>
 
-          <View style={styles.footer}>
+          <View style={[styles.footer, { backgroundColor: colors.background, borderColor: colors.title + "33" }]}>
             <TouchableOpacity onPress={onClose}>
-              <Text style={{ color: "#B00020" }}>Fechar</Text>
+              <Text style={{ color: colors.title }}>Fechar</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -105,7 +119,6 @@ const styles = StyleSheet.create({
     height: height * 0.85,
     borderRadius: 15,
     overflow: "hidden",
-    backgroundColor: "#FFF",
     justifyContent: "space-between",
   },
   header: {
@@ -119,9 +132,7 @@ const styles = StyleSheet.create({
   footer: {
     padding: 16,
     borderTopWidth: 1,
-    borderColor: "#ccc",
     alignItems: "center",
-    backgroundColor: "#FFF",
   },
   modalTitle: {
     fontSize: width * 0.05,
@@ -132,13 +143,10 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#ccc",
-    backgroundColor: "#FAFAFA",
   },
   pedidoTitulo: {
     fontWeight: "bold",
     fontSize: 16,
     marginBottom: 6,
-    color: "#4D7E1B",
   },
 });

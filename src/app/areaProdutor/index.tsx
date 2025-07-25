@@ -656,7 +656,7 @@ export default function AreaProdutor() {
               </TouchableOpacity>
 
               <View style={styles.nomeContainer}>
-                <Text style={styles.nomeProdutor}>{perfil.nome}</Text>
+                <Text style={[styles.nomeProdutor, { color: colors.title }]}>{perfil.nome}</Text>
                 <TouchableOpacity onPress={() => {
                   setNovoNome(perfil.nome);
                   setModalNome(true);
@@ -664,10 +664,10 @@ export default function AreaProdutor() {
                   <Feather name="edit-2" size={width * 0.05} color="#E15610" />
                 </TouchableOpacity>
               </View>
-              <Text style={styles.label}>{perfil.email || "teste@email.com"}</Text>
-              <Text style={styles.label}>{perfil.telefone_1 || "(21)972943363"}</Text>
+              <Text style={[styles.label, { color: colors.title }]}>{perfil.email || "teste@email.com"}</Text>
+              <Text style={[styles.label, { color: colors.title }]}>{perfil.telefone_1 || "(21)972943363"}</Text>
               { perfil.telefone_2 && (
-                  <Text style={styles.label}>{perfil.telefone_2}</Text>
+                  <Text style={[styles.label, { color: colors.title }]}>{perfil.telefone_2}</Text>
                 )
               }
               {/* <Text style={styles.label}>{perfil.categoria || "Teste"}</Text> */}
