@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Modal,
   View,
@@ -9,9 +9,11 @@ import {
   StyleSheet,
   Dimensions,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { useTema } from "@/contexts/ThemeContext";
+import VoiceInput from "@/components/voiceInput";
 
 const { width, height } = Dimensions.get("window");
 
@@ -34,6 +36,8 @@ interface ModalAddProdutoProps {
   loadingSugestoes: boolean;
   modoEdicao?: boolean;
   textBotao?: string;
+  nomeSugerido?:string;
+  carregandoSugestao?: boolean;
   buscarProdutosGlobais: (termo: string) => void;
   onNomeChange: (nome: string) => void;
   onPrecoChange: (preco: string) => void;
@@ -59,6 +63,8 @@ export default function ModalAddProduto({
   loadingSugestoes,
   modoEdicao,
   textBotao,
+  nomeSugerido,
+  carregandoSugestao,
   buscarProdutosGlobais,
   onNomeChange,
   onPrecoChange,
@@ -81,6 +87,12 @@ export default function ModalAddProduto({
     }, 120);
   }
 
+  useEffect(() => {
+    if (nomeSugerido && nome.trim() === "") {
+      onNomeChange(nomeSugerido);
+    }
+  }, [nomeSugerido]);
+
   return (
     <Modal visible={visible} animationType="fade" transparent>
       <View style={styles.modalBackground}>
@@ -101,7 +113,8 @@ export default function ModalAddProduto({
             {/* Nome do Produto com Autocomplete */}
             <View style={{ width: "100%" }}>
               <Text style={[styles.label, { color: colors.title }]}>Nome do Produto</Text>
-              <TextInput
+              
+              {/* <TextInput
                 placeholder="Digite o nome do produto"
                 style={[styles.input, { color: colors.title }]}
                 value={nome}
@@ -116,7 +129,26 @@ export default function ModalAddProduto({
                 }}
                 onBlur={handleBlur}
                 autoCapitalize="sentences"
+              /> */}
+
+              <VoiceInput
+                placeholder="Digite o nome do produto"
+                value={nome}
+                onChangeText={(text) => {
+                  onNomeChange(text);
+                  buscarProdutosGlobais(text);
+                  setShowSugestoes(true);
+                }}
+                onFocus={() => {
+                  setFocused(true);
+                  setShowSugestoes(true);
+                }}
+                onBlur={handleBlur}
+                inputStyle={[styles.input, { color: colors.title }]}
+                autoCapitalize="sentences"
               />
+
+              
               {showSugestoes && focused && nome.length >= 2 && (
                 <View style={styles.sugestoesBox}>
                   {loadingSugestoes && <Text style={{ padding: 10 }}>Carregando...</Text>}
@@ -221,7 +253,14 @@ export default function ModalAddProduto({
           {/* Rodapé */}
           <View style={styles.footer}>
             <TouchableOpacity onPress={onEscolherImagem}>
-              {imagemProduto ? (
+              {carregandoSugestao ? (
+                <View>
+                  <ActivityIndicator size="small" color="#4D7E1B" />
+                  <Text style={{ marginTop: 6, fontSize: 12, color: "#4D7E1B" }}>
+                    Sugerindo nome...
+                  </Text>
+                </View>
+              ) : imagemProduto ? (
                 <Image source={{ uri: imagemProduto }} style={styles.produtoImagemPreview} />
               ) : (
                 <View style={styles.placeholderImagem}>

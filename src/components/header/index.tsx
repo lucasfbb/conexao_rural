@@ -2,6 +2,7 @@ import { View, Image, TouchableOpacity, Text } from "react-native";
 import { DrawerToggleButton } from '@react-navigation/drawer';
 import { styles } from './styles';
 import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
+import { Feather } from "@expo/vector-icons";
 import { AntDesign, Fontisto } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useFavoritos } from "@/contexts/FavoritosContext";
@@ -70,19 +71,10 @@ export default function Header({ showFavoriteicon = false, showGoBack = false, c
                
                 {/* ícone de save ou espaço vazio */}
 
-                {/* Ícone de favorito */}
-                {showFavoriteicon && cpf_cnpj ? (
-                    <TouchableOpacity style={styles.save} onPress={toggleFavorito}>
-                        {favorito ? (
-                            <Fontisto name="favorite" size={20} color={'white'} />
-                        ) : (
-                            <Fontisto name="bookmark" size={20} />
-                        )}
-                    </TouchableOpacity>
-                ) : (
-                    <View style={{ width: 40 }} />
-                )}
-
+                {/* Ícone de carrinho */}
+                <TouchableOpacity style={styles.save} onPress={()=> router.push('/carrinho')}>
+                    <Feather name="shopping-cart" size={20} color={'white'} />
+                </TouchableOpacity>
                 
             </View>
        

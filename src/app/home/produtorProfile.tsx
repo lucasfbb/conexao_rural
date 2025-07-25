@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { View, Text, Image, TouchableOpacity, ScrollView, FlatList, StyleSheet, Dimensions, ActivityIndicator, Alert } from "react-native";
-import { Feather, MaterialIcons } from "@expo/vector-icons";
+import { Feather, MaterialIcons, Fontisto } from "@expo/vector-icons";
 import Entypo from '@expo/vector-icons/Entypo';
 import AwesomeAlert from 'react-native-awesome-alerts';
 
@@ -28,6 +28,7 @@ const fontSizePreco = width * 0.035;
 const fontSizeDescricao = width * 0.03;
 
 type Produto = {
+  produto_id: string;
   id: string;
   nome: string;
   descricao?: string;
@@ -43,6 +44,11 @@ export default function ProdutorScreen() {
   const { colors } = useTema();
   const { favoritarProduto, desfavoritarProduto, isProdutoFavorito } = useFavoritos();
   const { adicionarItem } = useCarrinho();
+  const { isFavorito, adicionarFavorito, removerFavorito } = useFavoritos();
+
+  const toggleFavorito = () => {
+        isFavorito(String(cpf_cnpj)) ? removerFavorito(String(cpf_cnpj)) : adicionarFavorito(String(cpf_cnpj));
+    };
 
   const base = baseURL.slice(0, -1);
 
@@ -74,14 +80,14 @@ export default function ProdutorScreen() {
         const resProdutos = await api.get(`/produtores/${usuario_id}/produtos`);
         // console.log(resProdutos.data)
         const produtosTratados: Produto[] = resProdutos.data.map((produto: any) => ({
-          // id: produto.id?.toString() ?? Math.random().toString(),
+          produto_id: produto.id.toString(),
           id: produto.listagem_id.toString(),
           nome: produto.nome,
           descricao: produto.descricao || "",
           preco: produto.preco ? produto.preco.toString() : "",
           preco_promocional: produto.preco_promocional ? produto.preco_promocional.toString() : "",
           imagem: produto.foto
-            ? { uri: base + produto.foto }
+            ? { uri: produto.foto }
             : require('../../../assets/images/principais/alface.png'),
         }));
 
@@ -175,6 +181,9 @@ export default function ProdutorScreen() {
             uri: produtor?.banner ? `${base}${produtor?.banner}` : undefined
           }} style={styles.banner} />
 
+          
+          
+          
           {/* Informações do Produtor */}
           <View style={styles.produtorInfo}>
             <Image source={{
@@ -190,6 +199,14 @@ export default function ProdutorScreen() {
               <Text style={styles.categoria}>- Legumes -</Text>
               <Text style={styles.distancia}>10km</Text>
             </View>
+            {/* Ícone de favorito */}
+            <TouchableOpacity style={styles.save} onPress={toggleFavorito}>
+                {isFavorito(String(cpf_cnpj)) ? (
+                    <Fontisto name="favorite" size={20} color={'black'} />
+                ) : (
+                    <Fontisto name="bookmark" size={20} color={'black'}/>
+                )}
+            </TouchableOpacity>
           </View>
 
           {/* Seção Promoções */}
@@ -240,16 +257,16 @@ export default function ProdutorScreen() {
                     {/* Botão de favoritar fora do Touchable principal */}
                     <TouchableOpacity
                       onPress={() => {
-                        isProdutoFavorito(Number(item.id))
-                          ? desfavoritarProduto(Number(item.id))
-                          : favoritarProduto(Number(item.id));
+                        isProdutoFavorito(Number(item.produto_id))
+                          ? desfavoritarProduto(Number(item.produto_id))
+                          : favoritarProduto(Number(item.produto_id));
                       }}
                       style={{ padding: 5 }}
                     >
                       <Entypo
-                        name={isProdutoFavorito(Number(item.id)) ? "heart" : "heart-outlined"}
+                        name={isProdutoFavorito(Number(item.produto_id)) ? "heart" : "heart-outlined"}
                         size={20}
-                        color={isProdutoFavorito(Number(item.id)) ? "#E15610" : "#999"}
+                        color={isProdutoFavorito(Number(item.produto_id)) ? "#E15610" : "#999"}
                       />
                     </TouchableOpacity>
                   </View>
@@ -294,15 +311,15 @@ export default function ProdutorScreen() {
                   {/* BOTÃO DE FAVORITAR */}
                   <TouchableOpacity
                     onPress={() => {
-                      isProdutoFavorito(Number(item.id))
-                        ? desfavoritarProduto(Number(item.id))
-                        : favoritarProduto(Number(item.id));
+                      isProdutoFavorito(Number(item.produto_id))
+                        ? desfavoritarProduto(Number(item.produto_id))
+                        : favoritarProduto(Number(item.produto_id));
                     }}
                   >
                     <Entypo
-                      name={isProdutoFavorito(Number(item.id)) ? "heart" : "heart-outlined"}
+                      name={isProdutoFavorito(Number(item.produto_id)) ? "heart" : "heart-outlined"}
                       size={20}
-                      color={isProdutoFavorito(Number(item.id)) ? "#E15610" : "#999"}
+                      color={isProdutoFavorito(Number(item.produto_id)) ? "#E15610" : "#999"}
                     />
                   </TouchableOpacity>
                 </View>
@@ -348,6 +365,11 @@ export default function ProdutorScreen() {
 }
 
 const styles = StyleSheet.create({
+  save:{
+    position: "absolute",
+    right: 20,
+    top: 10,
+  },
   container: { flex: 1, backgroundColor: "white" },
   banner: {
     width: "100%",

@@ -14,7 +14,9 @@ class ProdutorOut(BaseModel):
     distancia: Optional[float] = None
     categoria: Optional[str] = None
     foto: Optional[str] = None
+    foto_id: Optional[str] = None  # ID da foto no Cloudinary
     banner: Optional[str] = None
+    banner_id: Optional[str] = None  # ID do banner no Cloudinary
     email: Optional[str] = None
     telefone_1: Optional[str] = None
     telefone_2: Optional[str] = None

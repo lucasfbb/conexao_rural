@@ -27,6 +27,7 @@ const fontSizePreco = width * 0.035;
 const fontSizeDescricao = width * 0.03;
 
 type Produto = {
+  produto_id: string;
   id: string;
   nome: string;
   descricao?: string;
@@ -70,7 +71,7 @@ export default function Busca() {
             // Produtos desse produtor
             const resProdutos = await api.get(`/listagens/${alvo}`);
             const produtosTratados: Produto[] = resProdutos.data.map((produto: any) => ({
-              // id: produto.id?.toString() ?? Math.random().toString(),
+              produto_id: produto.id.toString(),
               id: produto.listagem_id.toString(),
               nome: produto.nome,
               descricao: produto.descricao || "",
@@ -78,7 +79,7 @@ export default function Busca() {
               preco_promocional: produto.preco_promocional ? produto.preco_promocional.toString() : "",
               vendedor: produto.vendedor,
               imagem: produto.foto
-                ? { uri: base + produto.foto }
+                ? { uri: produto.foto }
                 : require('../../../assets/images/principais/alface.png'),
             }));
     
@@ -181,15 +182,15 @@ export default function Busca() {
                                   produtor_id: produtor?.id || 0,
                                   nome_produtor: produtor?.nome,
                                   imagem: produtoSelecionado?.imagem,
-                                  endereco_produtor: {
-                                    texto: enderecoTexto,
-                                    rua: produtor?.rua,
-                                    numero: produtor?.numero,
-                                    bairro: produtor?.bairro,
-                                    complemento: produtor?.complemento,
-                                    latitude: coords?.latitude,
-                                    longitude: coords?.longitude,
-                                  }
+                                  // endereco_produtor: {
+                                  //   texto: enderecoTexto,
+                                  //   rua: produtor?.rua,
+                                  //   numero: produtor?.numero,
+                                  //   bairro: produtor?.bairro,
+                                  //   complemento: produtor?.complemento,
+                                  //   latitude: coords?.latitude,
+                                  //   longitude: coords?.longitude,
+                                  // }
                                 });
                 
                                 Alert.alert(
@@ -252,16 +253,16 @@ export default function Busca() {
                                     {/* Botão de favoritar fora do Touchable principal */}
                                     <TouchableOpacity
                                       onPress={() => {
-                                        isProdutoFavorito(Number(item.id))
-                                          ? desfavoritarProduto(Number(item.id))
-                                          : favoritarProduto(Number(item.id));
+                                        isProdutoFavorito(Number(item.produto_id))
+                                          ? desfavoritarProduto(Number(item.produto_id))
+                                          : favoritarProduto(Number(item.produto_id));
                                       }}
                                       style={{ padding: 5 }}
                                     >
                                       <Entypo
-                                        name={isProdutoFavorito(Number(item.id)) ? "heart" : "heart-outlined"}
+                                        name={isProdutoFavorito(Number(item.produto_id)) ? "heart" : "heart-outlined"}
                                         size={20}
-                                        color={isProdutoFavorito(Number(item.id)) ? "#E15610" : "#999"}
+                                        color={isProdutoFavorito(Number(item.produto_id)) ? "#E15610" : "#999"}
                                       />
                                     </TouchableOpacity>
                                   </View>
@@ -307,15 +308,15 @@ export default function Busca() {
                                   {/* BOTÃO DE FAVORITAR */}
                                   <TouchableOpacity
                                     onPress={() => {
-                                      isProdutoFavorito(Number(item.id))
-                                        ? desfavoritarProduto(Number(item.id))
-                                        : favoritarProduto(Number(item.id));
+                                      isProdutoFavorito(Number(item.produto_id))
+                                        ? desfavoritarProduto(Number(item.produto_id))
+                                        : favoritarProduto(Number(item.produto_id));
                                     }}
                                   >
                                     <Entypo
-                                      name={isProdutoFavorito(Number(item.id)) ? "heart" : "heart-outlined"}
+                                      name={isProdutoFavorito(Number(item.produto_id)) ? "heart" : "heart-outlined"}
                                       size={20}
-                                      color={isProdutoFavorito(Number(item.id)) ? "#E15610" : "#999"}
+                                      color={isProdutoFavorito(Number(item.produto_id)) ? "#E15610" : "#999"}
                                     />
                                   </TouchableOpacity>
                                 </View>

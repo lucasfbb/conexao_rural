@@ -143,3 +143,4 @@ export async function geocodeEndereco(enderecoTexto: string): Promise<{ latitude
   }
 }
 
+

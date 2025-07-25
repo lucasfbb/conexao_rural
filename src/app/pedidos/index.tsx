@@ -4,11 +4,13 @@ import { api } from '../../../services/api';
 import { PedidoOut } from '@/types/types';
 import Header from '@/components/header';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTema } from '@/contexts/ThemeContext';
 
 export default function AcompanhamentoPedidosScreen() {
   const [pedidos, setPedidos] = useState<PedidoOut[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const { isNightMode, colors } = useTema();
+  
   useEffect(() => {
     const buscarPedidos = async () => {
       try {
@@ -27,15 +29,15 @@ export default function AcompanhamentoPedidosScreen() {
   return (
     <>
       <SafeAreaView edges={['top']} style={{ backgroundColor: '#4D7E1B' }} />
-      <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
+      <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1, backgroundColor: colors.background }}>
         <Header />
-        <ScrollView contentContainerStyle={styles.container}>
-          <Text style={styles.title}>Meus Pedidos</Text>
+        <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
+          <Text style={[styles.title, { color: colors.title }]}>Meus Pedidos</Text>
 
           {loading ? (
             <ActivityIndicator size="large" color="#4D7E1B" />
           ) : pedidos.length === 0 ? (
-            <Text style={styles.texto}>Você ainda não realizou nenhum pedido.</Text>
+            <Text style={[styles.texto, { color: colors.title }]}>Você ainda não realizou nenhum pedido.</Text>
           ) : (
             pedidos.map((pedido) => (
               <View key={pedido.id} style={styles.card}>

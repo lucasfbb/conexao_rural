@@ -30,6 +30,8 @@ services:
       - 5000:5000
     volumes:
       - ./backend:/App
+    env_file:
+      - .env
     # deploy:
       # resources:
       # não usar esses limites de recurso no deployment final,
