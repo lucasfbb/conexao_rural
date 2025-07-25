@@ -1,8 +1,11 @@
+import json
 import os
+from pathlib import Path
 import time
 import httpx
 import shutil
 from typing import Optional
+from models.utils import reconhecer_alimento_clarifai
 from schemas.endereco import EnderecoInput
 from auth.auth_utils import get_current_user
 from models.endereco import Endereco
@@ -23,6 +26,8 @@ from cloudinary_utils import cloudinary
 import cloudinary.uploader
 
 router = APIRouter()
+
+TRADUCOES = json.loads(Path("alimentos_traduzidos.json").read_text(encoding="utf-8"))
 
 UPLOAD_BANNERS_DIR = "uploads/bannerProdutor"
 UPLOAD_PERFIS_DIR = "uploads/perfilProdutor"
@@ -272,16 +277,17 @@ async def adicionar_produto(
     quantidade: int = Form(...),
     unidade: str = Form(...),
     descricao: str = Form(None),
+    imagem_url: Optional[str] = Form(None),  # 👈 novo campo
     file: Optional[UploadFile] = File(None),
     current_user: Usuario = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    # 1. Busca o produtor pelo usuario_id
+    # 1. Busca o produtor
     produtor = db.query(Produtor).filter_by(usuario_id=current_user.id).first()
     if not produtor:
         raise HTTPException(status_code=404, detail="Produtor não encontrado")
 
-    # 2. Procura produto existente no catálogo
+    # 2. Produto global
     produto_existente = db.query(Produto).filter(Produto.nome.ilike(nome.strip())).first()
     if not produto_existente:
         produto_existente = Produto(nome=nome.strip())
@@ -289,21 +295,21 @@ async def adicionar_produto(
         db.commit()
         db.refresh(produto_existente)
     
-    # 3. Salvar imagem, se enviada #TODO: Cloudinary
+    # 3. Foto
     foto_url = None
-    if file is not None:
-        # ext = file.filename.split('.')[-1]
-        # filename = f"produto_{current_user.id}_{int(time.time())}.{ext}"
-        # file_path = os.path.join(FOTO_PRODUTO_DIR, filename)
-        # with open(file_path, "wb") as buffer:
-        #     shutil.copyfileobj(file.file, buffer)
-        # foto_url = f"/uploads/fotoProduto/{filename}"
+    foto_id = None
+
+    if imagem_url and imagem_url.startswith("https://res.cloudinary.com/"):
+        # Reutiliza imagem já hospedada
+        foto_url = imagem_url
+        foto_id = imagem_url.split("/")[-1].split(".")[0]  # pega nome da imagem sem extensão
+    elif file is not None:
         contents = await file.read()
         upload_result = cloudinary.uploader.upload(contents, resource_type="image", folder="conexaorural/fotoProduto")
-        foto_id = upload_result.get("public_id").split("/")[-1]  # Pega o ID da foto
         foto_url = upload_result["secure_url"]
+        foto_id = upload_result["public_id"].split("/")[-1]
 
-    # 4. Verifica se esse produto já foi listado por esse produtor
+    # 4. Verifica duplicidade
     listagem_existente = db.query(Listagem).filter(
         Listagem.produto_id == produto_existente.id,
         Listagem.produtor_id == produtor.id
@@ -311,7 +317,7 @@ async def adicionar_produto(
     if listagem_existente:
         raise HTTPException(status_code=400, detail="Este produto já está no estoque do produtor")
 
-    # 5. Cria a listagem
+    # 5. Cria listagem
     listagem = Listagem(
         produto_id=produto_existente.id,
         preco=preco,
@@ -322,7 +328,7 @@ async def adicionar_produto(
         unidade=unidade,
         descricao=descricao,
         foto=foto_url,
-        foto_id=foto_id if foto_url else None,
+        foto_id=foto_id,
     )
     db.add(listagem)
     db.commit()
@@ -363,33 +369,40 @@ async def editar_produto(
     quantidade: Optional[float] = Form(None),
     unidade: Optional[str] = Form(None),
     descricao: Optional[str] = Form(None),
+    imagem_url: Optional[str] = Form(None),
     file: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db)
 ):
     listagem = db.query(Listagem).filter_by(id=listagem_id).first()
     if not listagem:
-        print("Produto não encontrado!")
         raise HTTPException(status_code=404, detail="Produto não encontrado")
-    produto = listagem.produto
 
-    # Só altera o nome_personalizado do estoque do produtor!
     if nome is not None:
         listagem.nome_personalizado = nome.strip()
-        
+
     if descricao is not None:
         listagem.descricao = descricao
-    
+
     if file:
-        # result = cloudinary.uploader.destroy("conexaorural/fotoProduto/"+listagem.foto_id, resource_type="image",invalidate=True)
-        # if result.get("result") == "ok":
-            contents = await file.read()
-            upload_result = cloudinary.uploader.upload(contents, resource_type="image", folder="conexaorural/fotoProduto",public_id=f"conexaorural/fotoProduto/{listagem.foto_id}",overwrite=True)
-            listagem.foto_id = upload_result.get("public_id").split("/")[-1]
-            listagem.foto = upload_result["secure_url"]
-        # else:
-        #     raise HTTPException(status_code=500, detail="Erro ao remover a foto antiga do Cloudinary")
-    else:
-        print("Nenhuma imagem enviada")
+        # Upload de imagem nova com `file`
+        contents = await file.read()
+        upload_result = cloudinary.uploader.upload(
+            contents,
+            resource_type="image",
+            folder="conexaorural/fotoProduto",
+            public_id=f"conexaorural/fotoProduto/{listagem.foto_id}",
+            overwrite=True
+        )
+        listagem.foto_id = upload_result.get("public_id").split("/")[-1]
+        listagem.foto = upload_result["secure_url"]
+
+    elif imagem_url:
+        # Apenas atualizar a URL e ID da imagem já existente
+        listagem.foto = imagem_url
+        if "/conexaorural/fotoProduto/" in imagem_url:
+            listagem.foto_id = imagem_url.split("/conexaorural/fotoProduto/")[-1].split(".")[0]
+        else:
+            listagem.foto_id = None  # fallback se não estiver no padrão esperado
 
     if preco is not None:
         listagem.preco = preco
@@ -405,7 +418,7 @@ async def editar_produto(
     return {
         "message": "Produto atualizado com sucesso",
         "foto": listagem.foto,
-        "nome": listagem.nome_personalizado,  # Retorna o nome personalizado
+        "nome": listagem.nome_personalizado,
         "preco": listagem.preco,
         "quantidade": listagem.estoque,
         "unidade": listagem.unidade,
@@ -449,3 +462,43 @@ def get_endereco_com_coordenadas(produtor_id: int, db: Session = Depends(get_db)
         "numero": produtor.numero,
         "bairro": produtor.bairro
     }
+
+@router.post("/produtores/produtos/sugerirnome")
+async def sugerir_nome_produto(file: UploadFile = File(...)):
+    try:
+        # 1. Lê os bytes da imagem
+        contents = await file.read()
+
+        # 2. Faz o upload para o Cloudinary
+        print('fazendo upload no cloudinary')
+
+        upload_result = cloudinary.uploader.upload(
+            contents,
+            resource_type="image",
+            folder="conexaorural/fotoProduto"
+        )
+        url_imagem = upload_result["secure_url"]
+
+        # 3. Chama o Clarifai com essa URL
+        print('chamando api')
+        conceitos = reconhecer_alimento_clarifai(url_imagem)
+
+        if not conceitos:
+            raise HTTPException(status_code=422, detail="Nenhum item reconhecido na imagem")
+        
+        print(conceitos)
+
+        def traduzir(nome: str) -> str:
+            return TRADUCOES.get(nome.lower(), nome).capitalize()
+
+        return {
+            "nome_sugerido": traduzir(conceitos[0]["nome"]),
+            "conceitos": [
+                {"nome": traduzir(c["nome"]), "confiança": c["confiança"]}
+                for c in conceitos[:5]
+            ],
+            "imagem_url": url_imagem
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao processar imagem: {str(e)}")
