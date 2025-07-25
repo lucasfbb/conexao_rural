@@ -782,7 +782,33 @@ export default function AreaProdutor() {
                 </View>
               </View>
             </Modal>
+        <ModalAddProduto
+                      visible={modalNovoProduto}
+                      nome={novoNomeProd}
+                      preco={novoPrecoProd}
+                      precoPromocional={novoPrecoPromocional}
+                      quantidade={novaQtdProd}
+                      unidade={unidade}
+                      nomeSugerido={nomeProduto}
+                      descricao={novaDescricaoProd}
+                      imagemProduto={imagemProdutoNovo}
+                      produtosGlobais={produtosGlobais}
+                      loadingSugestoes={loadingSugestoes}
+                      buscarProdutosGlobais={buscarProdutosGlobais}
+                      onNomeChange={setNovoNomeProd}
+                      onPrecoChange={handlePrecoChange}
+                      onPrecoPromocionalChange={handlePrecoPromocionalChange}
+                      onQuantidadeChange={handleQuantidadeChange}
+                      onUnidadeChange={setUnidade}
+                      onDescricaoChange={setNovaDescricaoProd} 
+                      onEscolherImagem={escolherImagemProduto}
+                      onSave={salvarProduto}
+                      onClose={handleFecharModal}
+                      modoEdicao={modoEdicao}
+                      carregandoSugestao={carregandoSugestao}
+                    />
 
+                    
       <ModalVisualizarPedidos
         visible={modalPedidos}
         onClose={() => {
