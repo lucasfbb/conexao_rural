@@ -240,3 +240,79 @@ def listar_pedidos_usuario(db: Session = Depends(get_db), current_user: Usuario 
         })
 
     return retorno
+
+
+@router.get("/pedidos/produtor")
+def listar_pedidos_usuario(db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
+    pedidos = (
+        db.query(Pedido)
+        .filter(Listagem.produto_id == current_user.id)
+        .order_by(desc(Pedido.id))
+        .options(joinedload(Pedido.itens).joinedload(ItemPedido.listagem).joinedload(Listagem.produtor))
+        .all()
+    )
+
+    if not pedidos:
+        return []
+
+    retorno = []
+    for pedido in pedidos:
+        nome_cliente = pedido.usuario.nome
+        nome_produtor = None
+        if pedido.itens and pedido.itens[0].listagem and pedido.itens[0].listagem.produtor:
+            nome_produtor = pedido.itens[0].listagem.produtor.nome or "Produtor"
+
+        #tentativa de pegar o endereço do pedido (não deu certo, depois verificar isso)
+        endereco = db.query(Endereco).filter_by(id=pedido.id_endereco).first()
+        retorno.append({
+            "id": pedido.id,
+            "usuario_id": pedido.usuario_id,
+            "Endereco": endereco,
+            "status": pedido.status,
+            "valor": pedido.valor,
+            "nome_produtor": nome_produtor, 
+            "nome_cliente": nome_cliente
+        })
+
+    return retorno
+
+
+
+
+
+
+
+
+
+
+
+
+# @router.get("/pedidos/acompanharProdutor/{group_hash}")
+# def acompanhar_pedidos(group_hash: str, db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
+#     pedidos = (
+#         db.query(Pedido)
+#         .filter(Pedido.group_hash == group_hash, Listagem.produto_id == current_user.id)
+#         .options(joinedload(Pedido.itens).joinedload(ItemPedido.listagem).joinedload(Listagem.produtor))
+#         .all()
+#     )
+
+#     if not pedidos:
+#         raise HTTPException(404, detail="Nenhum pedido encontrado com esse group_hash.")
+
+#     retorno = []
+#     for pedido in pedidos:
+#         nome_produtor = None
+
+#         # Obtém o nome do produtor a partir do primeiro item
+#         if pedido.itens and pedido.itens[0].listagem and pedido.itens[0].listagem.produtor:
+#             nome_produtor = pedido.itens[0].listagem.produtor.nome or "Produtor"
+
+#         retorno.append({
+#             "id": pedido.id,
+#             "usuario_id": pedido.usuario_id,
+#             "id_endereco": pedido.id_endereco,
+#             "status": pedido.status,
+#             "valor": pedido.valor
+#         })
+
+#     return retorno

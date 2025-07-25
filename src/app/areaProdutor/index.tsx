@@ -6,6 +6,7 @@ import Header from "@/components/header";
 import { api, baseURL } from "../../../services/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ModalAddProduto from "@/components/modais/produtos/modalAddProduto";
+import ModalVisualizarPedidos from "@/components/modais/pedidos/modalVisualizarPedidos";
 import { ProdutoGlobal } from "@/components/autoComplete";
 import AwesomeAlert from "react-native-awesome-alerts";
 import MaskedInput from "@/components/maskedInput";
@@ -94,6 +95,7 @@ export default function AreaProdutor() {
 
   // Modal de novo produto
   const [modalNovoProduto, setModalNovoProduto] = useState(false);
+  const [modalPedidos, setModalPedidos] = useState(false);
   const [novoNomeProd, setNovoNomeProd] = useState("");
   const [novoPrecoProd, setNovoPrecoProd] = useState("");
   const [novoPrecoPromocional, setNovoPrecoPromocional] = useState("");
@@ -116,6 +118,10 @@ export default function AreaProdutor() {
     } else {
       setShowAlert(true);
     }
+  }; 
+
+  const abrirModalPedidos = () => {
+    setModalPedidos(true);
   };  
 
   const abrirModalEditar = (produto: Produto) => {
@@ -645,7 +651,7 @@ export default function AreaProdutor() {
         <TouchableOpacity style={styles.buttonAdicionar} onPress={() => abrirModalAdicao()}>
           <Text style={styles.title}>Adicionar Produto</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.buttonPedidos} onPress={() => alert("Ver pedidos")}>
+        <TouchableOpacity style={styles.buttonPedidos} onPress={() => abrirModalPedidos()}>
           <Text style={styles.title}>Ver Pedidos</Text>
         </TouchableOpacity>
       </View>
@@ -698,6 +704,14 @@ export default function AreaProdutor() {
         }}
         modoEdicao={modoEdicao}
       />
+
+      <ModalVisualizarPedidos
+        visible={modalPedidos}
+        onClose={() => {
+          setModalPedidos(false);
+        }}
+      />
+
 
       <AwesomeAlert
           show={showAlert}
