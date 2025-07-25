@@ -10,6 +10,8 @@ import { ProdutoGlobal } from "@/components/autoComplete";
 import AwesomeAlert from "react-native-awesome-alerts";
 import MaskedInput from "@/components/maskedInput";
 import { TextInputMask } from "react-native-masked-text";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useTema } from "@/contexts/ThemeContext";
 
 type Produto = {
   produto_id: string;
@@ -78,7 +80,10 @@ export default function AreaProdutor() {
   });
 
   const [showAlert, setShowAlert] = useState(false);
+
   const [carregando, setCarregando] = useState(true);
+  const [carregandoSugestao, setCarregandoSugestao] = useState(false);
+
   const [validandoEndereco, setValidandoEndereco] = useState(false);
   const [editando, setEditando] = useState(false);
 
@@ -92,6 +97,7 @@ export default function AreaProdutor() {
 
   // Produtos
   const [produtos, setProdutos] = useState<Produto[]>([]);
+  const [nomeProduto, setNomeProduto] = useState("");
 
   // Modal de novo produto
   const [modalNovoProduto, setModalNovoProduto] = useState(false);
@@ -102,7 +108,6 @@ export default function AreaProdutor() {
   const [novaDescricaoProd, setNovaDescricaoProd] = useState("");
   const [imagemProdutoNovo, setImagemProdutoNovo] = useState<string | null>(null);
   const [unidade, setUnidade] = useState("unidade");
-
   const [editandoProduto, setEditandoProduto] = useState<Produto | null>(null);
   const [modoEdicao, setModoEdicao] = useState(false);
 
@@ -110,6 +115,8 @@ export default function AreaProdutor() {
   const [produtosGlobais, setProdutosGlobais] = useState<ProdutoGlobal[]>([]);
   const [loadingSugestoes, setLoadingSugestoes] = useState(false);
   const buscaTimeout = useRef<any>(null);
+
+  const { colors, isNightMode } = useTema()
   
   const abrirModalAdicao = () => {
     if (perfil.bairro || perfil.rua || perfil.numero) {
@@ -393,18 +400,28 @@ export default function AreaProdutor() {
         formData.append("nome", novoNomeProd);
         formData.append("descricao", novaDescricaoProd);
         formData.append("preco", precoFloat.toString());
+
         if (precoPromocional) {
           formData.append("preco_promocional", precoPromocional.toString());
         }
+
         formData.append("quantidade", quantidadeFloat.toString());
         formData.append("unidade", unidade);
+
         if (imagemProdutoNovo && imagemProdutoNovo !== editandoProduto.foto?.uri) {
-          formData.append('file', {
-            uri: imagemProdutoNovo,
-            name: "produto.jpg",
-            type: "image/jpeg"
-          } as any);
+          if (imagemProdutoNovo.startsWith("https://res.cloudinary.com/")) {
+            // Já está no Cloudinary, evita reupload
+            formData.append("imagem_url", imagemProdutoNovo);
+          } else {
+            // É imagem local, precisa enviar
+            formData.append("file", {
+              uri: imagemProdutoNovo,
+              name: "produto.jpg",
+              type: "image/jpeg"
+            } as any);
+          }
         }
+
         await api.patch(`/produtores/produtos/editar/${editandoProduto.listagem_id}`, formData, {
           headers: { "Content-Type": "multipart/form-data" }
         });
@@ -421,7 +438,10 @@ export default function AreaProdutor() {
         formData.append('quantidade', quantidadeFloat.toString());
         formData.append('unidade', unidade);
         formData.append('descricao', novaDescricaoProd || "");
-        if (imagemProdutoNovo) {
+        
+        if (imagemProdutoNovo?.startsWith("https://res.cloudinary.com/")) {
+          formData.append('imagem_url', imagemProdutoNovo);
+        } else if (imagemProdutoNovo) {
           formData.append('file', {
             uri: imagemProdutoNovo,
             name: "produto.jpg",
@@ -452,10 +472,88 @@ export default function AreaProdutor() {
     }
   };
 
+  // const escolherImagemProduto = async () => {
+  //   const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images });
+  //   if (!result.canceled) setImagemProdutoNovo(result.assets[0].uri);
+  // };
+
   const escolherImagemProduto = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images });
-    if (!result.canceled) setImagemProdutoNovo(result.assets[0].uri);
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.7,
+    });
+
+    if (!result.canceled && result.assets.length > 0) {
+      setCarregandoSugestao(true);
+
+      const image = result.assets[0];
+      const localUri = image.uri;
+      const filename = localUri.split("/").pop() || "imagem.jpg";
+      const fileType = filename.split(".").pop() || "jpg";
+
+      const file = {
+        uri: localUri,
+        name: filename,
+        type: `image/${fileType}`,
+      };
+
+      const formData = new FormData();
+      formData.append("file", file as any);
+
+      // Função auxiliar com retry automático
+      const tentarUpload = async (tentativas = 3, atraso = 1000): Promise<any> => {
+        for (let i = 0; i < tentativas; i++) {
+          try {
+            const response = await api.post(
+              "produtores/produtos/sugerirnome",
+              formData,
+              {
+                headers: {
+                  "Content-Type": "multipart/form-data",
+                },
+                timeout: 15000,
+              }
+            );
+            return response.data;
+          } catch (error: any) {
+            console.warn(`Tentativa ${i + 1} falhou`, error.message || error);
+            if (i < tentativas - 1) {
+              await new Promise((res) => setTimeout(res, atraso)); // espera antes de tentar de novo
+            } else {
+              throw error;
+            }
+          }
+        }
+      };
+
+      try {
+        const { imagem_url, nome_sugerido } = await tentarUpload();
+
+        setImagemProdutoNovo(imagem_url);
+        setNomeProduto(nome_sugerido);
+      } catch (error) {
+        console.error("Erro ao sugerir nome após várias tentativas:", error);
+        alert("Não foi possível sugerir um nome para essa imagem.");
+      } finally {
+        setCarregandoSugestao(false);
+      }
+    }
   };
+  
+  const handleFecharModal = () => {
+    setNovoNomeProd('')
+    setNomeProduto('')
+    setNovoPrecoProd('')
+    setNovoPrecoPromocional('')
+    setNovaQtdProd('')
+    setUnidade('')
+    setNovaDescricaoProd('')
+    setImagemProdutoNovo(null)
+    setModalNovoProduto(false);
+    setModoEdicao(false);
+    setEditandoProduto(null);
+  };
+  
 
   const handlePrecoChange = (text: string) => {
     // Permite apenas números, vírgula e ponto (para decimais)
@@ -509,252 +607,267 @@ export default function AreaProdutor() {
   }
 
   return (
-    <ScrollView contentContainerStyle={{ paddingBottom: height * 0.03 }}>
-      <Header />
+    <>
 
-      {/* Banner */}
-      <View style={{ alignItems: 'center', marginTop: height * 0.015 }}>
-        <TouchableOpacity onPress={escolherImagemBanner}>
-          {imagemBanner ? (
-            <Image source={{
-              uri: imagemBanner ? `${base}${imagemBanner}` : undefined
-            }} style={styles.bannerImg} />
-          ) : (
-            <View style={styles.bannerPlaceholder}>
-              <Text>Adicionar Banner</Text>
-            </View>
-          )}
-        </TouchableOpacity>
-      </View>
+    <SafeAreaView
+        edges={["top"]}
+        style={{ backgroundColor: '#4D7E1B' }} 
+    />
 
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["left", "right"]}>
+      <View style={{ flex: 1 }}>
+        <Header />
 
-      {/* Foto de perfil */}
-      <View style={{ alignItems: 'center', marginTop: height * -0.006}}>
-        <TouchableOpacity onPress={escolherImagemProdutor}>
-          {imagemProdutor ? (
-            <Image source={{
-              uri: imagemProdutor ? `${base}${imagemProdutor}` : undefined
-            }} style={styles.imagemPerfil} />
-          ) : (
-            <View style={styles.placeholderImagem}>
-              <Text>Adicionar Foto</Text>
-            </View>
-          )}
-        </TouchableOpacity>
-
-        <View style={styles.nomeContainer}>
-          <Text style={styles.nomeProdutor}>{perfil.nome}</Text>
-          <TouchableOpacity onPress={() => {
-            setNovoNome(perfil.nome);
-            setModalNome(true);
-          }}>
-            <Feather name="edit-2" size={width * 0.05} color="#E15610" />
-          </TouchableOpacity>
-        </View>
-        <Text style={styles.label}>{perfil.email || "teste@email.com"}</Text>
-        <Text style={styles.label}>{perfil.telefone_1 || "(21)972943363"}</Text>
-        { perfil.telefone_2 && (
-            <Text style={styles.label}>{perfil.telefone_2}</Text>
-          )
-        }
-        {/* <Text style={styles.label}>{perfil.categoria || "Teste"}</Text> */}
-      </View>
-
-      {/* Editar perfil */}
-      {editando && (
-        <View style={{ marginHorizontal: width * 0.06 }}>
-          <Text style={styles.inputLabel}>Nome</Text>
-          <TextInput style={styles.input} value={perfil.nome} onChangeText={nome => setPerfil(p => ({ ...p, nome }))} />
-          <Text style={styles.inputLabel}>Email</Text>
-          <TextInput style={styles.input} value={perfil.email} onChangeText={email => setPerfil(p => ({ ...p, email }))} />
-          {/* <Text style={styles.inputLabel}>Endereço</Text>
-          <TextInput style={styles.input} value={perfil.endereco} onChangeText={endereco => setPerfil(p => ({ ...p, endereco }))} /> */}
-          <Text style={styles.inputLabel}>Rua</Text>
-          <TextInput style={styles.input} value={perfil.rua} onChangeText={rua => setPerfil(p => ({ ...p, rua }))} />
-          <Text style={styles.inputLabel}>Número</Text>
-          <TextInput style={styles.input} value={perfil.numero} onChangeText={numero => setPerfil(p => ({ ...p, numero }))} />
-          <Text style={styles.inputLabel}>Complemento</Text>
-          <TextInput style={styles.input} value={perfil.complemento} onChangeText={complemento => setPerfil(p => ({ ...p, complemento }))} />
-          <Text style={styles.inputLabel}>Bairro</Text>
-          <TextInput style={styles.input} value={perfil.bairro} onChangeText={bairro => setPerfil(p => ({ ...p, bairro }))} />            
-          
-          
-          <Text style={styles.inputLabel}>Telefone</Text>
-          <TextInputMask
-            type={'cel-phone'}
-            value={perfil.telefone_1}
-            onChangeText={(telefone_1: string) =>
-              setPerfil(p => ({ ...p, telefone_1 }))
-            }
-            options={{
-              maskType: 'BRL',
-              withDDD: true,
-              dddMask: '(99) '
-            }}
-            style={[styles.input, { color: '#000' }]}
-          />
-
-          <Text style={styles.inputLabel}>Telefone 2</Text>
-          <TextInputMask
-            type={'cel-phone'}
-            value={perfil.telefone_2}
-            onChangeText={(telefone_2: string) =>
-              setPerfil(p => ({ ...p, telefone_2 }))
-            }
-            options={{
-              maskType: 'BRL',
-              withDDD: true,
-              dddMask: '(99) '
-            }}
-            style={[styles.input, { color: '#000' }]}
-          />
-          
-          
-          {/* <Text style={styles.inputLabel}>Categoria</Text>
-          <TextInput style={styles.input} value={perfil.categoria} onChangeText={categoria => setPerfil(p => ({ ...p, categoria }))} /> */}
-
-          <View style={{ flexDirection: "row", gap: width * 0.04, justifyContent: "space-between", marginTop: height * 0.01 }}>
-            <TouchableOpacity style={styles.buttonSalvar} onPress={validarEnderecoAntesDeSalvar}>
-              <Text style={styles.title}>Salvar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.buttonCancelar} onPress={() => setEditando(false)}>
-              <Text style={styles.title}>Cancelar</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
-
-      {!editando && (
-        <TouchableOpacity style={styles.buttonEditar} onPress={() => setEditando(true)}>
-          <Feather name="edit" size={width * 0.055} color="#fff" />
-          <Text style={[styles.title, { marginLeft: width * 0.025 }]}>Editar informações</Text>
-        </TouchableOpacity>
-      )}
-
-      {/* Produtos */}
-      <Text style={styles.titulo}>Estoque dos produtos</Text>
-
-      <FlatList
-        data={produtos}
-        keyExtractor={item => item.id}
-        renderItem={renderItem}
-        style={{ marginHorizontal: width * 0.05, marginTop: height * 0.01 }}
-        scrollEnabled={false}
-      />
-
-      <View style={{ margin: width * 0.05, gap: height * 0.012 }}>
-        <TouchableOpacity style={styles.buttonAdicionar} onPress={() => abrirModalAdicao()}>
-          <Text style={styles.title}>Adicionar Produto</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.buttonPedidos} onPress={() => alert("Ver pedidos")}>
-          <Text style={styles.title}>Ver Pedidos</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Modal editar nome produtor */}
-      <Modal visible={modalNome} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalBox}>
-            <Text style={styles.modalTitle}>Editar nome do produtor</Text>
-            <TextInput style={styles.input} value={novoNome} onChangeText={setNovoNome} />
-            <View style={styles.modalButtons}>
-              <TouchableOpacity onPress={() => setModalNome(false)}>
-                <Text style={{ color: '#B00020' }}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => {
-                setPerfil(p => ({ ...p, nome: novoNome }));
-                setModalNome(false);
-              }}>
-                <Text style={{ color: '#4CAF50' }}>Salvar</Text>
+        <ScrollView contentContainerStyle={{ paddingBottom: height * 0.03 }}>
+            {/* Banner */}
+            <View style={{ alignItems: 'center', marginTop: height * 0.015 }}>
+              <TouchableOpacity onPress={escolherImagemBanner}>
+                {imagemBanner ? (
+                  <Image source={{
+                    uri: imagemBanner ? `${base}${imagemBanner}` : undefined
+                  }} style={styles.bannerImg} />
+                ) : (
+                  <View style={styles.bannerPlaceholder}>
+                    <Text>Adicionar Banner</Text>
+                  </View>
+                )}
               </TouchableOpacity>
             </View>
-          </View>
-        </View>
-      </Modal>
 
-      <ModalAddProduto
-        visible={modalNovoProduto}
-        nome={novoNomeProd}
-        preco={novoPrecoProd}
-        precoPromocional={novoPrecoPromocional}
-        quantidade={novaQtdProd}
-        unidade={unidade}
-        descricao={novaDescricaoProd}
-        imagemProduto={imagemProdutoNovo}
-        produtosGlobais={produtosGlobais}
-        loadingSugestoes={loadingSugestoes}
-        buscarProdutosGlobais={buscarProdutosGlobais}
-        onNomeChange={setNovoNomeProd}
-        onPrecoChange={handlePrecoChange}
-        onPrecoPromocionalChange={handlePrecoPromocionalChange}
-        onQuantidadeChange={handleQuantidadeChange}
-        onUnidadeChange={setUnidade}
-        onDescricaoChange={setNovaDescricaoProd} 
-        onEscolherImagem={escolherImagemProduto}
-        onSave={salvarProduto}
-        onClose={() => {
-          setModalNovoProduto(false);
-          setModoEdicao(false);
-          setEditandoProduto(null);
-        }}
-        modoEdicao={modoEdicao}
-      />
 
-      <AwesomeAlert
-          show={showAlert}
-          showProgress={false}
-          title="Atenção"
-          message={"Você precisa preencher seu endereço primeiro, antes de adicionar produtos."}
-          closeOnTouchOutside={true}
-          showConfirmButton={true}
-          confirmText="OK"
-          confirmButtonColor="green"
-          onConfirmPressed={() => setShowAlert(false)}
-          contentStyle={{
-            width: 300,        // LARGURA do alerta
-            padding: 20,       // Espaçamento interno
-            backgroundColor: '#fefefe',
-            borderRadius: 10,
-          }}
-          titleStyle={{
-            fontSize: 24,         // aumenta a fonte do título
-            fontWeight: 'bold',
-            textAlign: 'center',
-          }}
-          messageStyle={{
-            fontSize: 18,         // aumenta a fonte da mensagem
-            textAlign: 'center',
-          }}
-      />
+            {/* Foto de perfil */}
+            <View style={{ alignItems: 'center', marginTop: height * -0.006}}>
+              <TouchableOpacity onPress={escolherImagemProdutor}>
+                {imagemProdutor ? (
+                  <Image source={{
+                    uri: imagemProdutor ? `${base}${imagemProdutor}` : undefined
+                  }} style={styles.imagemPerfil} />
+                ) : (
+                  <View style={styles.placeholderImagem}>
+                    <Text>Adicionar Foto</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
 
-      <AwesomeAlert
-        show={validandoEndereco}
-        showProgress={true}
-        title="Verificando endereço"
-        message="Por favor, aguarde..."
-        closeOnTouchOutside={false}
-        closeOnHardwareBackPress={false}
-        showConfirmButton={false}
-        contentStyle={{
-          width: 280,
-          padding: 20,
-          borderRadius: 10,
-          backgroundColor: '#fff',
-        }}
-        titleStyle={{
-          fontSize: 20,
-          fontWeight: 'bold',
-          textAlign: 'center',
-          marginBottom: 10,
-        }}
-        messageStyle={{
-          fontSize: 16,
-          textAlign: 'center',
-          color: '#333',
-        }}
-      />
+              <View style={styles.nomeContainer}>
+                <Text style={styles.nomeProdutor}>{perfil.nome}</Text>
+                <TouchableOpacity onPress={() => {
+                  setNovoNome(perfil.nome);
+                  setModalNome(true);
+                }}>
+                  <Feather name="edit-2" size={width * 0.05} color="#E15610" />
+                </TouchableOpacity>
+              </View>
+              <Text style={styles.label}>{perfil.email || "teste@email.com"}</Text>
+              <Text style={styles.label}>{perfil.telefone_1 || "(21)972943363"}</Text>
+              { perfil.telefone_2 && (
+                  <Text style={styles.label}>{perfil.telefone_2}</Text>
+                )
+              }
+              {/* <Text style={styles.label}>{perfil.categoria || "Teste"}</Text> */}
+            </View>
 
-    </ScrollView>
+            {/* Editar perfil */}
+            {editando && (
+              <View style={{ marginHorizontal: width * 0.06 }}>
+                <Text style={styles.inputLabel}>Nome</Text>
+                <TextInput style={styles.input} value={perfil.nome} onChangeText={nome => setPerfil(p => ({ ...p, nome }))} />
+                <Text style={styles.inputLabel}>Email</Text>
+                <TextInput style={styles.input} value={perfil.email} onChangeText={email => setPerfil(p => ({ ...p, email }))} />
+                {/* <Text style={styles.inputLabel}>Endereço</Text>
+                <TextInput style={styles.input} value={perfil.endereco} onChangeText={endereco => setPerfil(p => ({ ...p, endereco }))} /> */}
+                <Text style={styles.inputLabel}>Rua</Text>
+                <TextInput style={styles.input} value={perfil.rua} onChangeText={rua => setPerfil(p => ({ ...p, rua }))} />
+                <Text style={styles.inputLabel}>Número</Text>
+                <TextInput style={styles.input} value={perfil.numero} onChangeText={numero => setPerfil(p => ({ ...p, numero }))} />
+                <Text style={styles.inputLabel}>Complemento</Text>
+                <TextInput style={styles.input} value={perfil.complemento} onChangeText={complemento => setPerfil(p => ({ ...p, complemento }))} />
+                <Text style={styles.inputLabel}>Bairro</Text>
+                <TextInput style={styles.input} value={perfil.bairro} onChangeText={bairro => setPerfil(p => ({ ...p, bairro }))} />            
+                
+                
+                <Text style={styles.inputLabel}>Telefone</Text>
+                <TextInputMask
+                  type={'cel-phone'}
+                  value={perfil.telefone_1}
+                  onChangeText={(telefone_1: string) =>
+                    setPerfil(p => ({ ...p, telefone_1 }))
+                  }
+                  options={{
+                    maskType: 'BRL',
+                    withDDD: true,
+                    dddMask: '(99) '
+                  }}
+                  style={[styles.input, { color: '#000' }]}
+                />
+
+                <Text style={styles.inputLabel}>Telefone 2</Text>
+                <TextInputMask
+                  type={'cel-phone'}
+                  value={perfil.telefone_2}
+                  onChangeText={(telefone_2: string) =>
+                    setPerfil(p => ({ ...p, telefone_2 }))
+                  }
+                  options={{
+                    maskType: 'BRL',
+                    withDDD: true,
+                    dddMask: '(99) '
+                  }}
+                  style={[styles.input, { color: '#000' }]}
+                />
+                
+                
+                {/* <Text style={styles.inputLabel}>Categoria</Text>
+                <TextInput style={styles.input} value={perfil.categoria} onChangeText={categoria => setPerfil(p => ({ ...p, categoria }))} /> */}
+
+                <View style={{ flexDirection: "row", gap: width * 0.04, justifyContent: "space-between", marginTop: height * 0.01 }}>
+                  <TouchableOpacity style={styles.buttonSalvar} onPress={validarEnderecoAntesDeSalvar}>
+                    <Text style={styles.title}>Salvar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.buttonCancelar} onPress={() => setEditando(false)}>
+                    <Text style={styles.title}>Cancelar</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+
+            {!editando && (
+              <TouchableOpacity style={styles.buttonEditar} onPress={() => setEditando(true)}>
+                <Feather name="edit" size={width * 0.055} color="#fff" />
+                <Text style={[styles.title, { marginLeft: width * 0.025 }]}>Editar informações</Text>
+              </TouchableOpacity>
+            )}
+
+            {/* Produtos */}
+            <Text style={styles.titulo}>Estoque dos produtos</Text>
+
+            <FlatList
+              data={produtos}
+              keyExtractor={item => item.id}
+              renderItem={renderItem}
+              style={{ marginHorizontal: width * 0.05, marginTop: height * 0.01 }}
+              scrollEnabled={false}
+            />
+
+            <View style={{ margin: width * 0.05, gap: height * 0.012 }}>
+              <TouchableOpacity style={styles.buttonAdicionar} onPress={() => abrirModalAdicao()}>
+                <Text style={styles.title}>Adicionar Produto</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.buttonPedidos} onPress={() => alert("Ver pedidos")}>
+                <Text style={styles.title}>Ver Pedidos</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Modal editar nome produtor */}
+            <Modal visible={modalNome} transparent animationType="fade">
+              <View style={styles.modalOverlay}>
+                <View style={styles.modalBox}>
+                  <Text style={styles.modalTitle}>Editar nome do produtor</Text>
+                  <TextInput style={styles.input} value={novoNome} onChangeText={setNovoNome} />
+                  <View style={styles.modalButtons}>
+                    <TouchableOpacity onPress={() => setModalNome(false)}>
+                      <Text style={{ color: '#B00020' }}>Cancelar</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => {
+                      setPerfil(p => ({ ...p, nome: novoNome }));
+                      setModalNome(false);
+                    }}>
+                      <Text style={{ color: '#4CAF50' }}>Salvar</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </Modal>
+
+            <ModalAddProduto
+              visible={modalNovoProduto}
+              nome={novoNomeProd}
+              preco={novoPrecoProd}
+              precoPromocional={novoPrecoPromocional}
+              quantidade={novaQtdProd}
+              unidade={unidade}
+              nomeSugerido={nomeProduto}
+              descricao={novaDescricaoProd}
+              imagemProduto={imagemProdutoNovo}
+              produtosGlobais={produtosGlobais}
+              loadingSugestoes={loadingSugestoes}
+              buscarProdutosGlobais={buscarProdutosGlobais}
+              onNomeChange={setNovoNomeProd}
+              onPrecoChange={handlePrecoChange}
+              onPrecoPromocionalChange={handlePrecoPromocionalChange}
+              onQuantidadeChange={handleQuantidadeChange}
+              onUnidadeChange={setUnidade}
+              onDescricaoChange={setNovaDescricaoProd} 
+              onEscolherImagem={escolherImagemProduto}
+              onSave={salvarProduto}
+              onClose={handleFecharModal}
+              modoEdicao={modoEdicao}
+              carregandoSugestao={carregandoSugestao}
+            />
+
+            <AwesomeAlert
+                show={showAlert}
+                showProgress={false}
+                title="Atenção"
+                message={"Você precisa preencher seu endereço primeiro, antes de adicionar produtos."}
+                closeOnTouchOutside={true}
+                showConfirmButton={true}
+                confirmText="OK"
+                confirmButtonColor="green"
+                onConfirmPressed={() => setShowAlert(false)}
+                contentStyle={{
+                  width: 300,        // LARGURA do alerta
+                  padding: 20,       // Espaçamento interno
+                  backgroundColor: '#fefefe',
+                  borderRadius: 10,
+                }}
+                titleStyle={{
+                  fontSize: 24,         // aumenta a fonte do título
+                  fontWeight: 'bold',
+                  textAlign: 'center',
+                }}
+                messageStyle={{
+                  fontSize: 18,         // aumenta a fonte da mensagem
+                  textAlign: 'center',
+                }}
+            />
+
+            <AwesomeAlert
+              show={validandoEndereco}
+              showProgress={true}
+              title="Verificando endereço"
+              message="Por favor, aguarde..."
+              closeOnTouchOutside={false}
+              closeOnHardwareBackPress={false}
+              showConfirmButton={false}
+              contentStyle={{
+                width: 280,
+                padding: 20,
+                borderRadius: 10,
+                backgroundColor: '#fff',
+              }}
+              titleStyle={{
+                fontSize: 20,
+                fontWeight: 'bold',
+                textAlign: 'center',
+                marginBottom: 10,
+              }}
+              messageStyle={{
+                fontSize: 16,
+                textAlign: 'center',
+                color: '#333',
+              }}
+            />
+
+          </ScrollView>
+
+      </View>
+
+    </SafeAreaView>
+
+
+    
+    </>
   );
 }
 

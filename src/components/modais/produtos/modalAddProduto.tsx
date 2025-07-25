@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Modal,
   View,
@@ -9,6 +9,7 @@ import {
   StyleSheet,
   Dimensions,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { useTema } from "@/contexts/ThemeContext";
@@ -35,6 +36,8 @@ interface ModalAddProdutoProps {
   loadingSugestoes: boolean;
   modoEdicao?: boolean;
   textBotao?: string;
+  nomeSugerido?:string;
+  carregandoSugestao?: boolean;
   buscarProdutosGlobais: (termo: string) => void;
   onNomeChange: (nome: string) => void;
   onPrecoChange: (preco: string) => void;
@@ -60,6 +63,8 @@ export default function ModalAddProduto({
   loadingSugestoes,
   modoEdicao,
   textBotao,
+  nomeSugerido,
+  carregandoSugestao,
   buscarProdutosGlobais,
   onNomeChange,
   onPrecoChange,
@@ -81,6 +86,12 @@ export default function ModalAddProduto({
       setShowSugestoes(false);
     }, 120);
   }
+
+  useEffect(() => {
+    if (nomeSugerido && nome.trim() === "") {
+      onNomeChange(nomeSugerido);
+    }
+  }, [nomeSugerido]);
 
   return (
     <Modal visible={visible} animationType="fade" transparent>
@@ -242,7 +253,14 @@ export default function ModalAddProduto({
           {/* Rodapé */}
           <View style={styles.footer}>
             <TouchableOpacity onPress={onEscolherImagem}>
-              {imagemProduto ? (
+              {carregandoSugestao ? (
+                <View>
+                  <ActivityIndicator size="small" color="#4D7E1B" />
+                  <Text style={{ marginTop: 6, fontSize: 12, color: "#4D7E1B" }}>
+                    Sugerindo nome...
+                  </Text>
+                </View>
+              ) : imagemProduto ? (
                 <Image source={{ uri: imagemProduto }} style={styles.produtoImagemPreview} />
               ) : (
                 <View style={styles.placeholderImagem}>
