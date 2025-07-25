@@ -96,40 +96,20 @@ export default function ModalAddProduto({
   return (
     <Modal visible={visible} animationType="fade" transparent>
       <View style={styles.modalBackground}>
-        <View style={styles.modalWrapper}>
-          {/* Cabeçalho */}
-          <View style={styles.header}>
+        <View style={[styles.modalWrapper, { backgroundColor: colors.background }]}>
+          <View style={[styles.header, { backgroundColor: colors.background }]}>
             <Text style={[styles.modalTitle, { color: colors.title }]}>
               {modoEdicao ? "Editar Produto" : "Novo Produto"}
             </Text>
           </View>
 
-          {/* Conteúdo rolável */}
           <ScrollView
             style={styles.scrollContent}
             contentContainerStyle={{ paddingBottom: 20 }}
             showsVerticalScrollIndicator={false}
           >
-            {/* Nome do Produto com Autocomplete */}
             <View style={{ width: "100%" }}>
               <Text style={[styles.label, { color: colors.title }]}>Nome do Produto</Text>
-              
-              {/* <TextInput
-                placeholder="Digite o nome do produto"
-                style={[styles.input, { color: colors.title }]}
-                value={nome}
-                onChangeText={(text) => {
-                  onNomeChange(text);
-                  buscarProdutosGlobais(text);
-                  setShowSugestoes(true);
-                }}
-                onFocus={() => {
-                  setFocused(true);
-                  setShowSugestoes(true);
-                }}
-                onBlur={handleBlur}
-                autoCapitalize="sentences"
-              /> */}
 
               <VoiceInput
                 placeholder="Digite o nome do produto"
@@ -144,16 +124,15 @@ export default function ModalAddProduto({
                   setShowSugestoes(true);
                 }}
                 onBlur={handleBlur}
-                inputStyle={[styles.input, { color: colors.title }]}
+                inputStyle={[styles.input, { color: colors.title, borderBottomColor: colors.title , textColor: colors.title}]}
                 autoCapitalize="sentences"
               />
 
-              
               {showSugestoes && focused && nome.length >= 2 && (
-                <View style={styles.sugestoesBox}>
-                  {loadingSugestoes && <Text style={{ padding: 10 }}>Carregando...</Text>}
+                <View style={[styles.sugestoesBox, { backgroundColor: colors.background, borderColor: colors.title }]}>
+                  {loadingSugestoes && <Text style={{ padding: 10, color: colors.title }}>Carregando...</Text>}
                   {!loadingSugestoes && produtosGlobais.length === 0 && (
-                    <Text style={{ padding: 10, color: "#888" }}>Nenhum produto encontrado</Text>
+                    <Text style={{ padding: 10, color: colors.title + "88" }}>Nenhum produto encontrado</Text>
                   )}
                   {produtosGlobais.map((produto) => (
                     <TouchableOpacity
@@ -165,9 +144,9 @@ export default function ModalAddProduto({
                       }}
                       style={{ padding: 12 }}
                     >
-                      <Text>{produto.nome}</Text>
+                      <Text style={{ color: colors.title }}>{produto.nome}</Text>
                       {produto.categoria && (
-                        <Text style={{ fontSize: 12, color: "#aaa" }}>{produto.categoria}</Text>
+                        <Text style={{ fontSize: 12, color: colors.title + "88" }}>{produto.categoria}</Text>
                       )}
                     </TouchableOpacity>
                   ))}
@@ -177,10 +156,16 @@ export default function ModalAddProduto({
 
             {/* Descrição */}
             <View style={{ width: "100%" }}>
-              <Text style={styles.label}>Descrição</Text>
+              <Text style={[styles.label, { color: colors.title }]}>Descrição</Text>
               <TextInput
                 placeholder="Digite uma descrição para o produto"
-                style={[styles.input, { minHeight: 60, textAlignVertical: "top" }]}
+                placeholderTextColor={colors.title + "66"}
+                style={[styles.input, {
+                  minHeight: 60,
+                  textAlignVertical: "top",
+                  color: colors.title,
+                  borderBottomColor: colors.title
+                }]}
                 value={descricao}
                 onChangeText={onDescricaoChange}
                 multiline
@@ -190,10 +175,11 @@ export default function ModalAddProduto({
 
             {/* Preço */}
             <View style={{ width: "100%" }}>
-              <Text style={styles.label}>Preço</Text>
+              <Text style={[styles.label, { color: colors.title }]}>Preço</Text>
               <TextInput
                 placeholder="Preço"
-                style={styles.input}
+                placeholderTextColor={colors.title + "66"}
+                style={[styles.input, { color: colors.title, borderBottomColor: colors.title }]}
                 value={preco}
                 onChangeText={onPrecoChange}
                 keyboardType="decimal-pad"
@@ -203,10 +189,11 @@ export default function ModalAddProduto({
 
             {/* Preço Promocional */}
             <View style={{ width: "100%" }}>
-              <Text style={styles.label}>Preço promocional</Text>
+              <Text style={[styles.label, { color: colors.title }]}>Preço promocional</Text>
               <TextInput
                 placeholder="Preço promocional (opcional)"
-                style={styles.input}
+                placeholderTextColor={colors.title + "66"}
+                style={[styles.input, { color: colors.title, borderBottomColor: colors.title }]}
                 value={precoPromocional}
                 onChangeText={onPrecoPromocionalChange}
                 keyboardType="decimal-pad"
@@ -215,10 +202,11 @@ export default function ModalAddProduto({
 
             {/* Quantidade */}
             <View style={{ width: "100%" }}>
-              <Text style={styles.label}>Quantidade</Text>
+              <Text style={[styles.label, { color: colors.title }]}>Quantidade</Text>
               <TextInput
                 placeholder="Quantidade"
-                style={styles.input}
+                placeholderTextColor={colors.title + "66"}
+                style={[styles.input, { color: colors.title, borderBottomColor: colors.title }]}
                 value={quantidade}
                 onChangeText={onQuantidadeChange}
                 keyboardType="numeric"
@@ -231,16 +219,16 @@ export default function ModalAddProduto({
               style={{
                 width: "100%",
                 borderBottomWidth: 1,
-                borderBottomColor: "#4D7E1B",
+                borderBottomColor: colors.title,
                 marginBottom: 20,
               }}
             >
-              <Text style={styles.label}>Unidade</Text>
+              <Text style={[styles.label, { color: colors.title }]}>Unidade</Text>
               <Picker
                 selectedValue={unidade}
-                style={{ color: "#4D7E1B" }}
+                style={{ color: colors.title }}
                 onValueChange={onUnidadeChange}
-                dropdownIconColor="#4D7E1B"
+                dropdownIconColor={colors.title}
               >
                 <Picker.Item label="unid." value="unidade" />
                 <Picker.Item label="g" value="g" />
@@ -251,12 +239,12 @@ export default function ModalAddProduto({
           </ScrollView>
 
           {/* Rodapé */}
-          <View style={styles.footer}>
+          <View style={[styles.footer, { backgroundColor: colors.background, borderColor: colors.title + "33" }]}>
             <TouchableOpacity onPress={onEscolherImagem}>
               {carregandoSugestao ? (
                 <View>
-                  <ActivityIndicator size="small" color="#4D7E1B" />
-                  <Text style={{ marginTop: 6, fontSize: 12, color: "#4D7E1B" }}>
+                  <ActivityIndicator size="small" color={colors.title} />
+                  <Text style={{ marginTop: 6, fontSize: 12, color: colors.title }}>
                     Sugerindo nome...
                   </Text>
                 </View>
@@ -264,17 +252,17 @@ export default function ModalAddProduto({
                 <Image source={{ uri: imagemProduto }} style={styles.produtoImagemPreview} />
               ) : (
                 <View style={styles.placeholderImagem}>
-                  <Text>Imagem</Text>
+                  <Text >Imagem</Text>
                 </View>
               )}
             </TouchableOpacity>
 
             <View style={styles.modalButtons}>
               <TouchableOpacity onPress={onClose}>
-                <Text style={{ color: "#B00020" }}>Cancelar</Text>
+                <Text style={{ color: colors.title }}>Cancelar</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={onSave}>
-                <Text style={{ color: "#4CAF50" }}>
+                <Text style={{ color: colors.title }}>
                   {textBotao || (modoEdicao ? "Salvar alterações" : "Salvar")}
                 </Text>
               </TouchableOpacity>
