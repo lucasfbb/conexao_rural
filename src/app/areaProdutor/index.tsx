@@ -584,8 +584,8 @@ export default function AreaProdutor() {
       <View style={styles.produtoEsquerda}>
         <Image source={item.foto} style={styles.produtoImagem} />
         <View>
-          <Text style={styles.produtoNome}>{item.nome_personalizado}</Text>
-          <Text style={styles.produtoPreco}>
+          <Text style={[styles.produtoNome, { color: colors.title }]}>{item.nome_personalizado}</Text>
+          <Text style={[styles.produtoPreco, { color: colors.text }]}>
             {item.unidade === "unidade"
               ? `${item.quantidade} unidade(s) - R$ ${item.preco}`
               : `${item.quantidade} ${item.unidade} - R$ ${item.preco}`
