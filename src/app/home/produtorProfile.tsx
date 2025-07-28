@@ -190,7 +190,7 @@ export default function ProdutorScreen() {
               uri: produtor?.foto ? `${base}${produtor?.foto}` : undefined
             }} style={styles.logo} />
             <Text style={[styles.produtorNome, { color: colors.text }]}>{produtor?.nome || "Nome não disponível"}</Text>
-            <TouchableOpacity style={styles.localizacao} onPress={() => router.push('/home/localizacaoProdutor')}>
+            <TouchableOpacity style={styles.localizacao} onPress={() => router.push({ pathname: '/home/localizacaoProdutor', params: { usuario_id: usuario_id, cpf_cnpj: cpf_cnpj} })}>
               <Feather name="map-pin" size={fontSizePrecoRiscado} color={colors.text} />
               <Text style={[styles.localizacaoText, { color: colors.text }]}> Localização</Text>
             </TouchableOpacity>
