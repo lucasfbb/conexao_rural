@@ -9,7 +9,7 @@ import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { EnderecoOut, FormaPagamentoOut } from '@/types/types';
 import AwesomeAlert from 'react-native-awesome-alerts';
-
+import { useTema } from "@/contexts/ThemeContext";
 import { geocodeEndereco, obterFrete } from '../../../services/utils';
 import ModalPixPagamento from '@/components/modais/pagamentos/modalPixPagamento';
 
@@ -19,7 +19,7 @@ export default function Finalizacao() {
   const { user } = useUser();
   const { itens, limparCarrinho } = useCarrinho();
   const router = useRouter();
-
+  const { colors } = useTema()
   const { enderecoId, pagamentoId } = useLocalSearchParams();
 
   const [alertPedido, setAlertPedido] = useState(false);
@@ -200,15 +200,15 @@ export default function Finalizacao() {
   return (
     <>
       <SafeAreaView edges={["top"]} style={{ backgroundColor: '#4D7E1B' }} />
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }} edges={["left", "right"]}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={["left", "right"]}>
         <View style={{ flex: 1 }}>
           <Header showGoBack />
 
           <ScrollView contentContainerStyle={{ padding: 25 }} showsVerticalScrollIndicator={false} bounces={false}>
-            <Text style={styles.title}>Finalização</Text>
+            <Text style={[styles.title, { color: colors.text }]}>Finalização</Text>
 
             {/* Endereço selecionado */}
-            <Text style={styles.label}>Endereço de Entrega</Text>
+            <Text style={[styles.label, { color: colors.text }]}>Endereço de Entrega</Text>
             <View style={styles.card}>
               <Text style={styles.texto}>
                 {enderecoSelecionado ? formatarEndereco(enderecoSelecionado) : 'Carregando...'}
@@ -217,7 +217,7 @@ export default function Finalizacao() {
 
             {/* Resumo */}
             <View style={styles.resumo}>
-              <View style={styles.linha}><Text style={styles.label}>Subtotal</Text><Text style={styles.valor}>R$ {subtotal.toFixed(2)}</Text></View>
+              <View style={styles.linha}><Text style={[styles.label, { color: colors.text }]}>Subtotal</Text><Text style={[styles.valor, { color: colors.text }]}>R$ {subtotal.toFixed(2)}</Text></View>
               {/* <View style={styles.linha}><Text style={styles.label}>Frete</Text><Text style={styles.valor}>R$ {frete.toFixed(2)}</Text></View> */}
               
               {Object.entries(fretesPorProdutor).map(([chave, valor], idx) => {
@@ -230,21 +230,21 @@ export default function Finalizacao() {
 
                 return (
                   <View style={styles.linha} key={chave}>
-                    <Text style={styles.label}>Frete ({nomeProdutor})</Text>
-                    <Text style={styles.valor}>R$ {valor.toFixed(2)}</Text>
+                    <Text style={[styles.label, { color: colors.text }]}>Frete ({nomeProdutor})</Text>
+                    <Text style={[styles.valor, { color: colors.text }]}>R$ {valor.toFixed(2)}</Text>
                   </View>
                 );
               })}
-              
-              <View style={styles.linha}><Text style={[styles.label, { fontWeight: 'bold' }]}>Total</Text><Text style={[styles.valor, { fontWeight: 'bold' }]}>R$ {total.toFixed(2)}</Text></View>
+
+              <View style={styles.linha}><Text style={[styles.label, { fontWeight: 'bold', color: colors.text }]}>Total</Text><Text style={[styles.valor, { fontWeight: 'bold', color: colors.text }]}>R$ {total.toFixed(2)}</Text></View>
             </View>
           </ScrollView>
 
           {/* Rodapé */}
           <SafeAreaView style={styles.footer} edges={["bottom"]}>
-            <Text style={styles.total}>Total com entrega R$ {total.toFixed(2)}</Text>
+            <Text style={[styles.total, { color: colors.text }]}>Total com entrega R$ {total.toFixed(2)}</Text>
             <TouchableOpacity style={styles.btnFinalizar} onPress={finalizarPedido}>
-              <Text style={styles.btnTexto}>Finalizar Pedido</Text>
+              <Text style={[styles.btnTexto, { color: colors.text }]}>Finalizar Pedido</Text>
             </TouchableOpacity>
           </SafeAreaView>
         </View>
