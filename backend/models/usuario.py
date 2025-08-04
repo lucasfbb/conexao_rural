@@ -19,7 +19,7 @@ class Usuario(Base):
     foto_id = Column(String, nullable=True)  # ID da foto no Cloudinary
     telefone_1 = Column(String, nullable=True)
     telefone_2 = Column(String, nullable=True)
-    data_nascimento = Column(Date, nullable=True)
+    # data_nascimento = Column(Date, nullable=True)
     criado_em = Column(DateTime, default=agora_brasil)
 
     # # Campos para recuperação de senha
