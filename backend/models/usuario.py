@@ -22,6 +22,10 @@ class Usuario(Base):
     data_nascimento = Column(Date, nullable=True)
     criado_em = Column(DateTime, default=agora_brasil)
 
+    # # Campos para recuperação de senha
+    token_recuperacao = Column(String, nullable=True)
+    token_expira_em = Column(DateTime, nullable=True)
+
     produtor = relationship("Produtor", back_populates="usuario", uselist=False)
 
     enderecos = relationship("Endereco", back_populates="usuario")
