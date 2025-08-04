@@ -7,8 +7,8 @@ class Produto(Base):
     __tablename__ = 'produto'
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    nome = Column(String, nullable=False) # Nome canônico do produto
-    categoria = Column(String, nullable=True)
+    nome = Column(String(100), nullable=False)           # Nome canônico do produto
+    categoria = Column(String(50), nullable=True)
     sazonal = Column(Boolean, default=False)
 
     listagens = relationship("Listagem", back_populates="produto")

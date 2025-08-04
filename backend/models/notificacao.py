@@ -10,9 +10,9 @@ class Notificacao(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     usuario_id = Column(Integer, ForeignKey("usuario.id"), nullable=False)
-    titulo = Column(String, nullable=False)
+    titulo = Column(String(120), nullable=False)         # Título da notificação
     mensagem = Column(Text, nullable=False)
-    tipo = Column(String, nullable=True)
+    tipo = Column(String(30), nullable=True)             # Ex: "sistema", "pedido", etc.
     lida = Column(Boolean, default=False)
     criado_em = Column(DateTime(timezone=True), default=agora_brasil)
 

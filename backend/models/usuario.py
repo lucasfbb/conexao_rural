@@ -9,21 +9,21 @@ class Usuario(Base):
     __tablename__ = 'usuario'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    cpf_cnpj = Column(String, unique=True, index=True)
-    email = Column(String, unique=True, index=True)
-    senha = Column(String)
-    nome = Column(String)
+    cpf_cnpj = Column(String(20), unique=True, index=True)  # CPF: 11, CNPJ: 14 + margem
+    email = Column(String(120), unique=True, index=True)    # emails longos e seguros
+    senha = Column(String(128))                             # hash de senha (ex: bcrypt)
+    nome = Column(String(100))
     e_vendedor = Column(Boolean, default=False)
-    avaliacao = Column(String, nullable=True)
-    foto_perfil = Column(String, nullable=True)
-    foto_id = Column(String, nullable=True)  # ID da foto no Cloudinary
-    telefone_1 = Column(String, nullable=True)
-    telefone_2 = Column(String, nullable=True)
+    avaliacao = Column(String(5), nullable=True)            # ex: "4.5"
+    foto_perfil = Column(String(255), nullable=True)        # URL pode ser longa
+    foto_id = Column(String(100), nullable=True)            # ID interno do Cloudinary
+    telefone_1 = Column(String(20), nullable=True)          # inclui DDD + número
+    telefone_2 = Column(String(20), nullable=True)
     # data_nascimento = Column(Date, nullable=True)
     criado_em = Column(DateTime, default=agora_brasil)
 
     # # Campos para recuperação de senha
-    token_recuperacao = Column(String, nullable=True)
+    token_recuperacao = Column(String(100), nullable=True)  # pode usar UUID/token seguro
     token_expira_em = Column(DateTime, nullable=True)
 
     produtor = relationship("Produtor", back_populates="usuario", uselist=False)

@@ -7,7 +7,8 @@ class Listagem(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     produto_id = Column(Integer, ForeignKey('produto.id'))
-    nome_personalizado = Column(String(255), nullable=True) # Nome personalizado do produto na listagem do produtor
+
+    nome_personalizado = Column(String(255), nullable=True)
     preco = Column(DECIMAL(10, 2))
     estoque = Column(Integer)
     produtor_id = Column(Integer, ForeignKey('produtor.id'), nullable=False)
@@ -15,7 +16,7 @@ class Listagem(Base):
     unidade = Column(String(50), nullable=True)
     descricao = Column(String(255), nullable=True)
     foto = Column(String(150), nullable=True)
-    foto_id = Column(String(50), nullable=True)  # ID da foto no Cloudinary
+    foto_id = Column(String(50), nullable=True)
 
     produtor = relationship("Produtor", back_populates="listagens")
     produto = relationship("Produto", back_populates="listagens")

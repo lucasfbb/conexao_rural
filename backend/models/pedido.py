@@ -7,13 +7,12 @@ class Pedido(Base):
     __tablename__ = 'pedido'
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    # produto = Column(String)
     quantidade = Column(Integer)
     valor = Column(Integer)
     momento_compra = Column(DateTime, default=datetime.datetime.utcnow)
-    status = Column(String)
-    group_hash = Column(String, index=True)  # Agrupador de pedidos
-    avaliacao = Column(String)
+    status = Column(String(20))                # Ex: "pendente", "pago", "cancelado"
+    group_hash = Column(String(64), index=True)  # Usualmente é um hash (como SHA-256 base64)
+    avaliacao = Column(String(5))              # Ex: "4.5"
 
     usuario_id = Column(Integer, ForeignKey("usuario.id"))
     id_endereco = Column(Integer, ForeignKey("endereco.id"))
@@ -26,7 +25,6 @@ class Pedido(Base):
     def to_dict(self):
         return {
             "id": self.id,
-            # "produto": self.produto,
             "quantidade": self.quantidade,
             "valor": self.valor,
             "momento_compra": self.momento_compra.isoformat() if self.momento_compra else None,

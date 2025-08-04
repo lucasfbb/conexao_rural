@@ -8,9 +8,9 @@ class ItemPedido(Base):
     id = Column(Integer, primary_key=True, index=True)
     pedido_id = Column(Integer, ForeignKey("pedido.id"))
     produto_id = Column(Integer, ForeignKey("produto.id"))
-    nome_personalizado = Column(String)
+    nome_personalizado_comprado = Column(String(255), nullable=True)
     quantidade = Column(Integer)
-    valor_unitario = Column(Integer)
+    valor_unitario_comprado = Column(Integer)
     listagem_id = Column(Integer, ForeignKey("listagem.id"))
 
     listagem = relationship("Listagem")
